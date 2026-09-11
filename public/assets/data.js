@@ -14,7 +14,7 @@ window.SITE = {
     fullName: 'Cosmos Wong · 王宏宇',
     title: '运营十年 · 游戏 / 活动 / 社群 / 内容',
     tagline: '把活动做起来，把用户留下来，把复杂的事做清楚。',
-    email: '',                               // 想公开就填，例如 cosmoswong@proton.me；留空不显示
+    email: 'wangyuwangxinxin@gmail.com',     // 公开邮箱；留空则不显示
     location: '上海',
     links: [
       { label: 'GitHub', url: 'https://github.com/wangyucosmos' }
@@ -104,7 +104,7 @@ window.SITE = {
     pdf: '',                                  // 放 PDF 到 public/ 下后填 '/resume.pdf'
     summary: '十年以上互联网运营经验，游戏运营出身，活动、用户、社群、内容都做过，也带过团队、做过项目统筹。习惯把一件事从策划、规则、文案做到原型和复盘，交付能直接进设计和开发。2026 年起把 AI 当协作者用：自己定义产品、让 AI 写代码，从零上线过多人协作网站和 macOS 应用。目前开放游戏运营 / 活动运营 / 社群运营方向的机会。',
     experience: [
-      { org: '卓望 · 咪咕视频合作项目', role: '内容运营', period: '2026 — 至今',
+      { org: '卓望 · 咪咕视频合作项目', role: '内容运营', period: '2026.07 — 至今',
         points: [
           '负责河南、安徽、浙江、海南、广东五省福利中心的活动策划案与原型，按省做方言、民俗、赛事、政策本地化',
           '负责咪咕视频全国促活活动的大页面策划案与活动原型，含活动规则、客服文档、题库与上线拨测报告',
