@@ -1,0 +1,19 @@
+# cosmoswong.com 个人主页 —— 纯静态站，Cloudflare Worker 静态资源托管，没有后端。
+# 部署：cd cosmoswong-site && npx wrangler deploy
+
+name = "cosmoswong-site"
+compatibility_date = "2026-05-22"
+
+[assets]
+directory = "./public"
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+
+# 主域名 + www 都指到这里；`wrangler deploy` 会自动建域名绑定和 DNS 记录
+[[routes]]
+pattern = "cosmoswong.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.cosmoswong.com"
+custom_domain = true

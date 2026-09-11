@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cosmoswong.com · 风格样稿</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#0b0d12;color:#e8ecf3;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+
+/* ===== 顶部切换条（样稿专用，不属于任何风格） ===== */
+.switch{position:fixed;top:0;left:0;right:0;z-index:999;display:flex;gap:6px;justify-content:center;padding:10px;background:rgba(10,12,18,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08)}
+.switch button{font:inherit;font-size:13px;padding:8px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.15);background:transparent;color:#aab;cursor:pointer;white-space:nowrap}
+.switch button.on{background:#fff;color:#000;border-color:#fff;font-weight:600}
+.style{display:none;min-height:100vh;padding-top:56px}
+.style.on{display:block}
+.hint{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);z-index:999;font-size:12px;color:#889;background:rgba(10,12,18,.8);padding:6px 14px;border-radius:14px;backdrop-filter:blur(8px)}
+
+/* ===== 通用骨架（每个风格自己上色） ===== */
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.nav{display:flex;align-items:center;justify-content:space-between;height:64px}
+.nav .logo{font-weight:700;letter-spacing:2px;font-size:15px}
+.nav ul{display:flex;gap:26px;list-style:none;font-size:14px}
+.hero{min-height:calc(100vh - 120px);display:flex;flex-direction:column;justify-content:center;position:relative}
+.hero h1{font-size:clamp(40px,7vw,84px);line-height:1.05;font-weight:800;letter-spacing:-2px}
+.hero p.sub{font-size:clamp(15px,2vw,20px);margin-top:20px;max-width:560px;opacity:.8}
+.cta{display:inline-flex;gap:12px;margin-top:34px}
+.cta a{padding:13px 24px;border-radius:10px;font-size:14px;font-weight:600}
+.sec{padding:80px 0 40px}
+.sec h2{font-size:13px;letter-spacing:4px;text-transform:uppercase;opacity:.55;margin-bottom:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+.card{border-radius:14px;padding:22px;min-height:180px;display:flex;flex-direction:column;justify-content:flex-end;position:relative;overflow:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.card:hover{transform:translateY(-6px)}
+.card .k{font-size:11px;letter-spacing:2px;opacity:.6;margin-bottom:8px}
+.card h3{font-size:18px;font-weight:700}
+.card p{font-size:13px;opacity:.65;margin-top:6px}
+.trip{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:18px}
+@media(max-width:760px){.trip{grid-template-columns:1fr}.nav ul{display:none}}
+.pill{display:inline-block;font-size:11px;padding:4px 10px;border-radius:20px;margin-right:6px;margin-bottom:8px}
+.tools{display:flex;gap:14px;flex-wrap:wrap}
+.tool{padding:12px 18px;border-radius:10px;font-size:14px;display:flex;gap:10px;align-items:center}
+
+/* ======================= A · 深空粒子 ======================= */
+#A{background:#05070d;color:#dfe7f5}
+#A canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#A .hero{overflow:hidden}
+#A .nav{border-bottom:1px solid rgba(120,160,255,.12)}
+#A .nav ul li{opacity:.7}#A .nav ul li:hover{opacity:1;color:#8cc8ff}
+#A .eyebrow{font-size:13px;letter-spacing:5px;color:#5aa9ff;margin-bottom:22px;opacity:0;animation:a-up .9s .2s forwards}
+#A h1{background:linear-gradient(120deg,#fff 0%,#9ed0ff 45%,#6b8cff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;opacity:0;animation:a-up 1s .4s forwards}
+#A p.sub{opacity:0;animation:a-up 1s .7s forwards}
+#A .cta{opacity:0;animation:a-up 1s .9s forwards}
+@keyframes a-up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+#A .cta a:first-child{background:linear-gradient(90deg,#4f8cff,#7c5cff);color:#fff;box-shadow:0 0 30px rgba(92,120,255,.45)}
+#A .cta a:last-child{border:1px solid rgba(140,180,255,.35);color:#bcd}
+#A .card{background:rgba(255,255,255,.035);border:1px solid rgba(140,180,255,.14);backdrop-filter:blur(10px)}
+#A .card::before{content:"";position:absolute;inset:-1px;background:radial-gradient(400px circle at var(--mx,50%) var(--my,50%),rgba(110,150,255,.22),transparent 45%);opacity:0;transition:opacity .3s}
+#A .card:hover::before{opacity:1}
+#A .card:hover{box-shadow:0 20px 60px rgba(60,100,255,.25);border-color:rgba(140,180,255,.4)}
+#A .pill{background:rgba(90,150,255,.15);color:#9cc8ff;border:1px solid rgba(90,150,255,.3)}
+#A .tool{background:rgba(255,255,255,.04);border:1px solid rgba(140,180,255,.14)}
+#A .glow{position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.35;pointer-events:none}
+#A .g1{background:#2b5cff;top:-200px;right:-100px;animation:a-float 14s ease-in-out infinite}
+#A .g2{background:#7a3cff;bottom:-250px;left:-150px;animation:a-float 18s ease-in-out infinite reverse}
+@keyframes a-float{0%,100%{transform:translate(0,0)}50%{transform:translate(-40px,60px)}}
+
+/* ======================= B · 终端网格 ======================= */
+#B{background:#0a0c0a;color:#c9f5d0;font-family:ui-monospace,"SF Mono",Menlo,Consolas,"PingFang SC",monospace}
+#B::before{content:"";position:fixed;inset:0;top:56px;background-image:linear-gradient(rgba(80,255,120,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(80,255,120,.06) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+#B .wrap{position:relative;z-index:1}
+#B .nav{border-bottom:1px dashed rgba(120,255,150,.25)}
+#B .nav .logo::before{content:"~/ ";opacity:.5}
+#B .nav ul li::before{content:"./";opacity:.4}
+#B .nav ul li:hover{color:#7dffa0}
+#B .hero h1{font-weight:600;letter-spacing:-1px;font-size:clamp(32px,6vw,64px)}
+#B .hero h1 .cur{display:inline-block;width:.55em;height:1em;background:#7dffa0;vertical-align:-.1em;animation:b-blink 1s steps(1) infinite;margin-left:4px}
+@keyframes b-blink{50%{opacity:0}}
+#B .prompt{color:#7dffa0;font-size:14px;margin-bottom:16px;opacity:.8}
+#B .prompt::before{content:"$ ";opacity:.6}
+#B .meta{display:grid;grid-template-columns:repeat(4,auto);gap:30px;margin-top:40px;font-size:12px;opacity:.7}
+#B .meta b{display:block;font-size:22px;color:#7dffa0;font-weight:500}
+#B .cta a:first-child{background:#7dffa0;color:#052;border-radius:4px}
+#B .cta a:last-child{border:1px solid rgba(125,255,160,.4);border-radius:4px}
+#B .card{border:1px solid rgba(125,255,160,.22);border-radius:4px;background:rgba(0,20,8,.5)}
+#B .card::after{content:"";position:absolute;right:12px;top:12px;width:8px;height:8px;border-radius:50%;background:#7dffa0;box-shadow:0 0 12px #7dffa0;animation:b-blink 2s infinite}
+#B .card:hover{border-color:#7dffa0;box-shadow:0 0 0 1px #7dffa0 inset}
+#B .card .k{color:#7dffa0}
+#B .pill{border:1px solid rgba(125,255,160,.35);border-radius:3px;color:#a8ffbe}
+#B .tool{border:1px solid rgba(125,255,160,.22);border-radius:4px;background:rgba(0,20,8,.5)}
+#B .tool::before{content:">";color:#7dffa0}
+#B .scan{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(125,255,160,.5),transparent);animation:b-scan 6s linear infinite;pointer-events:none;z-index:2}
+@keyframes b-scan{from{top:56px}to{top:100vh}}
+
+/* ======================= C · 流光渐变 ======================= */
+#C{background:#0e0a1a;color:#fff}
+#C .mesh{position:fixed;inset:0;top:56px;z-index:0;overflow:hidden;filter:blur(70px) saturate(1.4)}
+#C .mesh i{position:absolute;border-radius:50%;opacity:.75;mix-blend-mode:screen}
+#C .mesh i:nth-child(1){width:60vw;height:60vw;background:#7c3aed;top:-20%;left:-10%;animation:c-m1 16s ease-in-out infinite}
+#C .mesh i:nth-child(2){width:50vw;height:50vw;background:#06b6d4;bottom:-20%;right:-10%;animation:c-m2 20s ease-in-out infinite}
+#C .mesh i:nth-child(3){width:45vw;height:45vw;background:#ec4899;top:30%;left:40%;animation:c-m3 18s ease-in-out infinite}
+@keyframes c-m1{50%{transform:translate(20vw,15vh) scale(1.2)}}
+@keyframes c-m2{50%{transform:translate(-25vw,-10vh) scale(.9)}}
+@keyframes c-m3{50%{transform:translate(-15vw,20vh) scale(1.3)}}
+#C .wrap{position:relative;z-index:1}
+#C .nav{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border-radius:0 0 18px 18px;padding:0 24px;margin:0 -24px}
+#C .nav ul li{opacity:.75}#C .nav ul li:hover{opacity:1}
+#C h1{font-weight:900;letter-spacing:-3px;font-size:clamp(46px,8.5vw,110px);line-height:.95}
+#C h1 span{display:block;background:linear-gradient(90deg,#fff,#c4b5fd,#67e8f9,#f9a8d4,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:c-shine 6s linear infinite}
+@keyframes c-shine{to{background-position:300% 0}}
+#C .cta a:first-child{background:#fff;color:#1a0f2e;border-radius:40px}
+#C .cta a:last-child{background:rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:40px;border:1px solid rgba(255,255,255,.25)}
+#C .card{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(24px);border-radius:22px;transform-style:preserve-3d}
+#C .card:hover{box-shadow:0 30px 80px rgba(120,80,255,.35)}
+#C .pill{background:rgba(255,255,255,.15);color:#fff}
+#C .tool{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(20px);border-radius:40px}
+
+/* ======================= D · 线框蓝图 ======================= */
+#D{background:#061020;color:#cfe4ff;font-family:"SF Mono",Menlo,"PingFang SC",monospace}
+#D::before{content:"";position:fixed;inset:0;top:56px;background:radial-gradient(circle at 50% 30%,rgba(40,120,255,.12),transparent 60%),repeating-linear-gradient(0deg,transparent 0 3px,rgba(0,0,0,.18) 3px 4px);pointer-events:none;z-index:0}
+#D .wrap{position:relative;z-index:1}
+#D .nav{border-bottom:1px solid rgba(80,160,255,.3)}
+#D .nav ul li{padding:4px 8px;border:1px solid transparent}#D .nav ul li:hover{border-color:rgba(80,160,255,.5);color:#8ec5ff}
+#D .hud{position:absolute;width:26px;height:26px;border:2px solid #4da3ff;pointer-events:none}
+#D .hud.tl{top:0;left:0;border-right:0;border-bottom:0}#D .hud.tr{top:0;right:0;border-left:0;border-bottom:0}
+#D .hud.bl{bottom:0;left:0;border-right:0;border-top:0}#D .hud.br{bottom:0;right:0;border-left:0;border-top:0}
+#D .hero{padding:40px 30px}
+#D .tag{font-size:12px;letter-spacing:3px;color:#4da3ff;margin-bottom:18px}
+#D .tag::before{content:"[ ";}#D .tag::after{content:" ]";}
+#D h1{font-weight:700;color:#e9f3ff;text-shadow:0 0 30px rgba(77,163,255,.4)}
+#D svg.draw{position:absolute;right:0;top:50%;transform:translateY(-50%);width:min(420px,45%);opacity:.9}
+#D svg.draw path,#D svg.draw circle{fill:none;stroke:#4da3ff;stroke-width:1.2;stroke-dasharray:1200;stroke-dashoffset:1200;animation:d-draw 4s ease-out forwards}
+#D svg.draw circle{animation-delay:1.5s}
+@keyframes d-draw{to{stroke-dashoffset:0}}
+#D .cta a:first-child{background:#4da3ff;color:#031226;border-radius:2px;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px))}
+#D .cta a:last-child{border:1px solid #4da3ff;border-radius:2px}
+#D .card{border:1px solid rgba(80,160,255,.35);border-radius:2px;background:rgba(10,30,60,.5)}
+#D .card::before{content:"";position:absolute;inset:6px;border:1px dashed rgba(80,160,255,.2);pointer-events:none}
+#D .card:hover{border-color:#4da3ff;box-shadow:0 0 25px rgba(77,163,255,.25)}
+#D .card .k{color:#4da3ff}
+#D .pill{border:1px solid rgba(80,160,255,.4);border-radius:2px;color:#8ec5ff}
+#D .tool{border:1px solid rgba(80,160,255,.35);border-radius:2px;background:rgba(10,30,60,.5)}
+#D .ticker{font-size:11px;color:#4da3ff;opacity:.6;letter-spacing:1px;margin-top:40px;white-space:nowrap;overflow:hidden}
+#D .ticker span{display:inline-block;animation:d-tick 30s linear infinite}
+@keyframes d-tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ======================= E · A + C 组合 ======================= */
+/* 底：A 的深蓝黑 + 星空粒子（更克制）；点睛：C 的流光标题 + 一团流动极光；卡片：A 的玻璃描边 + C 的 3D 倾斜 */
+#E{background:#070a14;color:#e4eaf7}
+#E canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.7}
+#E .hero{overflow:hidden}
+#E .aurora{position:absolute;inset:0;pointer-events:none;filter:blur(90px) saturate(1.3);opacity:.5}
+#E .aurora i{position:absolute;border-radius:50%;mix-blend-mode:screen}
+#E .aurora i:nth-child(1){width:55vw;height:55vw;background:#5b3df5;top:-25%;right:-15%;animation:e-a1 18s ease-in-out infinite}
+#E .aurora i:nth-child(2){width:40vw;height:40vw;background:#0ea5e9;bottom:-30%;left:-10%;animation:e-a2 22s ease-in-out infinite}
+#E .aurora i:nth-child(3){width:30vw;height:30vw;background:#db2777;top:40%;left:50%;animation:e-a3 20s ease-in-out infinite;opacity:.6}
+@keyframes e-a1{50%{transform:translate(-15vw,12vh) scale(1.15)}}
+@keyframes e-a2{50%{transform:translate(18vw,-8vh) scale(.9)}}
+@keyframes e-a3{50%{transform:translate(-12vw,-15vh) scale(1.25)}}
+#E .nav{border-bottom:1px solid rgba(140,160,255,.14)}
+#E .nav .logo{background:linear-gradient(90deg,#fff,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+#E .nav ul li{opacity:.7;transition:.2s}#E .nav ul li:hover{opacity:1;color:#c4b5fd}
+#E .eyebrow{font-size:13px;letter-spacing:5px;color:#a78bfa;margin-bottom:22px;opacity:0;animation:a-up .9s .2s forwards}
+#E h1{font-weight:900;letter-spacing:-3px;font-size:clamp(46px,8vw,100px);line-height:1;opacity:0;animation:a-up 1s .4s forwards}
+#E h1 span{display:block;background:linear-gradient(90deg,#fff 0%,#c4b5fd 30%,#7dd3fc 55%,#f9a8d4 75%,#fff 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:c-shine 7s linear infinite}
+#E p.sub{opacity:0;animation:a-up 1s .7s forwards}
+#E .cta{opacity:0;animation:a-up 1s .9s forwards}
+#E .cta a:first-child{background:linear-gradient(90deg,#6366f1,#a855f7);color:#fff;border-radius:40px;box-shadow:0 0 34px rgba(140,100,255,.45)}
+#E .cta a:last-child{border:1px solid rgba(196,181,253,.35);color:#d6ddf5;border-radius:40px;backdrop-filter:blur(10px)}
+#E .card{background:rgba(255,255,255,.04);border:1px solid rgba(160,150,255,.16);backdrop-filter:blur(14px);border-radius:18px;transform-style:preserve-3d}
+#E .card::before{content:"";position:absolute;inset:-1px;border-radius:18px;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(168,140,255,.22),transparent 45%);opacity:0;transition:opacity .3s}
+#E .card:hover::before{opacity:1}
+#E .card:hover{box-shadow:0 26px 70px rgba(110,80,255,.3);border-color:rgba(196,181,253,.45)}
+#E .card .k{color:#a78bfa;opacity:.9}
+#E .pill{background:rgba(167,139,250,.14);color:#c4b5fd;border:1px solid rgba(167,139,250,.3)}
+#E .tool{background:rgba(255,255,255,.04);border:1px solid rgba(160,150,255,.16);border-radius:40px;backdrop-filter:blur(10px)}
+#E .tool:hover{border-color:#a78bfa;color:#e9d5ff}
+#E .sec h2{color:#a78bfa;opacity:.8}
+</style>
+</head>
+<body>
+
+<div class="switch">
+  <button data-s="A" class="on">A · 深空粒子</button>
+  <button data-s="B">B · 终端网格</button>
+  <button data-s="C">C · 流光渐变</button>
+  <button data-s="D">D · 线框蓝图</button>
+  <button data-s="E" style="border-color:#c4b5fd;color:#c4b5fd">E · A+C 组合</button>
+</div>
+<div class="hint">五个风格 · 顶部切换 · 内容都是占位</div>
+
+<!-- ============ A ============ -->
+<section id="A" class="style on">
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="wrap">
+    <nav class="nav"><span class="logo">COSMOS WONG</span>
+      <ul><li>作品集</li><li>简历</li><li>旅游计划</li><li>工具箱</li><li>收藏</li></ul></nav>
+    <div class="hero"><canvas id="starfield"></canvas>
+      <div style="position:relative">
+        <p class="eyebrow">CONTENT · OPERATIONS · DESIGN</p>
+        <h1>把想法<br>做成看得见的东西。</h1>
+        <p class="sub">内容运营 · 活动策划 · 原型设计。这里放我的作品、简历，还有一些我自己做的小工具和旅行计划。</p>
+        <div class="cta"><a href="#">看作品集 →</a><a href="#">下载简历</a></div>
+      </div>
+    </div>
+    <div class="sec"><h2>作品集 / Portfolio</h2>
+      <div class="grid">
+        <div class="card"><div class="k">01 · 活动策划</div><h3>作品标题占位</h3><p>一句话说明这个项目做了什么、结果如何。</p></div>
+        <div class="card"><div class="k">02 · H5 原型</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">03 · 数据复盘</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">04 · 视觉方案</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+      </div></div>
+    <div class="sec"><h2>旅游计划 / Trips</h2>
+      <div class="trip">
+        <div class="card" style="min-height:220px"><div class="k">2026 · 国庆 · 东南亚</div><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>10.01 – 10.09 · 协作行程站 →</p><div style="margin-top:12px"><span class="pill">进行中</span><span class="pill">3 人</span></div></div>
+        <div class="card"><div class="k">分类</div><h3>东南亚</h3><p>1 次旅行</p></div>
+        <div class="card"><div class="k">分类</div><h3>日本</h3><p>规划中</p></div>
+      </div></div>
+    <div class="sec" style="padding-bottom:100px"><h2>工具箱 / Tools</h2>
+      <div class="tools"><div class="tool">🧮 汇率速算</div><div class="tool">📋 客服文档生成器</div><div class="tool">🗓 活动排期表</div><div class="tool">＋ 更多</div></div></div>
+  </div>
+</section>
+
+<!-- ============ B ============ -->
+<section id="B" class="style">
+  <div class="scan"></div>
+  <div class="wrap">
+    <nav class="nav"><span class="logo">cosmoswong</span>
+      <ul><li>portfolio</li><li>resume</li><li>trips</li><li>tools</li><li>bookmarks</li></ul></nav>
+    <div class="hero">
+      <p class="prompt">whoami</p>
+      <h1><span id="typed"></span><span class="cur"></span></h1>
+      <p class="sub" style="opacity:.7">// 内容运营 · 活动策划 · 原型设计<br>// 作品、简历、工具、旅行计划都在这里</p>
+      <div class="cta"><a href="#">cat portfolio/</a><a href="#">open resume.pdf</a></div>
+      <div class="meta"><div><b>12</b>projects</div><div><b>5</b>provinces</div><div><b>3</b>trips</div><div><b>∞</b>ideas</div></div>
+    </div>
+    <div class="sec"><h2>// portfolio</h2>
+      <div class="grid">
+        <div class="card"><div class="k">001 / campaign</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">002 / prototype</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">003 / analytics</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">004 / visual</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+      </div></div>
+    <div class="sec"><h2>// trips</h2>
+      <div class="trip">
+        <div class="card" style="min-height:220px"><div class="k">2026-10 / southeast-asia</div><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>10.01 – 10.09 · indonesia.cosmoswong.com</p><div style="margin-top:12px"><span class="pill">active</span><span class="pill">3 members</span></div></div>
+        <div class="card"><div class="k">dir</div><h3>southeast-asia/</h3><p>1 item</p></div>
+        <div class="card"><div class="k">dir</div><h3>japan/</h3><p>planning</p></div>
+      </div></div>
+    <div class="sec" style="padding-bottom:100px"><h2>// tools</h2>
+      <div class="tools"><div class="tool">fx-calc</div><div class="tool">doc-gen</div><div class="tool">schedule</div><div class="tool">…</div></div></div>
+  </div>
+</section>
+
+<!-- ============ C ============ -->
+<section id="C" class="style">
+  <div class="mesh"><i></i><i></i><i></i></div>
+  <div class="wrap">
+    <nav class="nav"><span class="logo">Cosmos</span>
+      <ul><li>作品集</li><li>简历</li><li>旅游计划</li><li>工具箱</li><li>收藏</li></ul></nav>
+    <div class="hero">
+      <h1><span>Hello,</span><span>I'm Cosmos.</span></h1>
+      <p class="sub">内容运营 · 活动策划 · 原型设计。<br>把复杂的事情做得清楚、好看、能落地。</p>
+      <div class="cta"><a href="#">看作品集</a><a href="#">下载简历</a></div>
+    </div>
+    <div class="sec"><h2>作品集</h2>
+      <div class="grid">
+        <div class="card tilt"><div class="k">活动策划</div><h3>作品标题占位</h3><p>一句话说明这个项目。</p></div>
+        <div class="card tilt"><div class="k">H5 原型</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card tilt"><div class="k">数据复盘</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card tilt"><div class="k">视觉方案</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+      </div></div>
+    <div class="sec"><h2>旅游计划</h2>
+      <div class="trip">
+        <div class="card tilt" style="min-height:220px"><div class="k">2026 · 国庆</div><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>10.01 – 10.09 · 协作行程站 →</p><div style="margin-top:12px"><span class="pill">进行中</span><span class="pill">3 人</span></div></div>
+        <div class="card tilt"><div class="k">分类</div><h3>东南亚</h3><p>1 次旅行</p></div>
+        <div class="card tilt"><div class="k">分类</div><h3>日本</h3><p>规划中</p></div>
+      </div></div>
+    <div class="sec" style="padding-bottom:100px"><h2>工具箱</h2>
+      <div class="tools"><div class="tool">🧮 汇率速算</div><div class="tool">📋 客服文档生成器</div><div class="tool">🗓 活动排期表</div><div class="tool">＋ 更多</div></div></div>
+  </div>
+</section>
+
+<!-- ============ D ============ -->
+<section id="D" class="style">
+  <div class="wrap">
+    <nav class="nav"><span class="logo">COSMOS_WONG</span>
+      <ul><li>PORTFOLIO</li><li>RESUME</li><li>TRIPS</li><li>TOOLS</li><li>ARCHIVE</li></ul></nav>
+    <div class="hero">
+      <i class="hud tl"></i><i class="hud tr"></i><i class="hud bl"></i><i class="hud br"></i>
+      <svg class="draw" viewBox="0 0 400 400" aria-hidden="true">
+        <circle cx="200" cy="200" r="150"/><circle cx="200" cy="200" r="110"/><circle cx="200" cy="200" r="40"/>
+        <path d="M50 200 H350 M200 50 V350 M95 95 L305 305 M305 95 L95 305"/>
+        <path d="M200 60 L340 200 L200 340 L60 200 Z"/>
+        <path d="M120 200 a80 80 0 0 1 160 0"/>
+      </svg>
+      <div style="position:relative;max-width:560px">
+        <p class="tag">SYSTEM ONLINE · v2026.09</p>
+        <h1>COSMOS<br>WONG</h1>
+        <p class="sub">内容运营 / 活动策划 / 原型设计<br>作品 · 简历 · 工具 · 旅行档案</p>
+        <div class="cta"><a href="#">ACCESS PORTFOLIO</a><a href="#">RESUME.PDF</a></div>
+      </div>
+      <div class="ticker"><span>PORTFOLIO_LOADED ▸ 12 PROJECTS ▸ TRIPS: INDONESIA_2026 ACTIVE ▸ TOOLS: 3 ONLINE ▸ LAST_SYNC 2026-09-11 ▸ PORTFOLIO_LOADED ▸ 12 PROJECTS ▸ TRIPS: INDONESIA_2026 ACTIVE ▸ TOOLS: 3 ONLINE ▸ LAST_SYNC 2026-09-11 ▸ </span></div>
+    </div>
+    <div class="sec"><h2>[ PORTFOLIO ]</h2>
+      <div class="grid">
+        <div class="card"><div class="k">P-001 / CAMPAIGN</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">P-002 / PROTOTYPE</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">P-003 / ANALYTICS</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card"><div class="k">P-004 / VISUAL</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+      </div></div>
+    <div class="sec"><h2>[ TRIPS ]</h2>
+      <div class="trip">
+        <div class="card" style="min-height:220px"><div class="k">T-2026-10 / SE-ASIA</div><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>10.01 – 10.09 · indonesia.cosmoswong.com</p><div style="margin-top:12px"><span class="pill">ACTIVE</span><span class="pill">3 MEMBERS</span></div></div>
+        <div class="card"><div class="k">CATEGORY</div><h3>东南亚</h3><p>1 RECORD</p></div>
+        <div class="card"><div class="k">CATEGORY</div><h3>日本</h3><p>PLANNING</p></div>
+      </div></div>
+    <div class="sec" style="padding-bottom:100px"><h2>[ TOOLS ]</h2>
+      <div class="tools"><div class="tool">FX-CALC</div><div class="tool">DOC-GEN</div><div class="tool">SCHEDULE</div><div class="tool">+ MORE</div></div></div>
+  </div>
+</section>
+
+<!-- ============ E · A+C 组合 ============ -->
+<section id="E" class="style">
+  <div class="wrap">
+    <nav class="nav"><span class="logo">COSMOS WONG</span>
+      <ul><li>作品集</li><li>简历</li><li>旅游计划</li><li>工具箱</li><li>收藏</li></ul></nav>
+    <div class="hero">
+      <div class="aurora"><i></i><i></i><i></i></div>
+      <canvas id="starfieldE"></canvas>
+      <div style="position:relative">
+        <p class="eyebrow">CONTENT · OPERATIONS · DESIGN</p>
+        <h1><span>把想法</span><span>做成看得见的东西。</span></h1>
+        <p class="sub">内容运营 · 活动策划 · 原型设计。这里放我的作品、简历，还有一些我自己做的小工具和旅行计划。</p>
+        <div class="cta"><a href="#">看作品集 →</a><a href="#">下载简历</a></div>
+      </div>
+    </div>
+    <div class="sec"><h2>作品集 / Portfolio</h2>
+      <div class="grid">
+        <div class="card tilt"><div class="k">01 · 活动策划</div><h3>作品标题占位</h3><p>一句话说明这个项目做了什么、结果如何。</p></div>
+        <div class="card tilt"><div class="k">02 · H5 原型</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card tilt"><div class="k">03 · 数据复盘</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+        <div class="card tilt"><div class="k">04 · 视觉方案</div><h3>作品标题占位</h3><p>一句话说明。</p></div>
+      </div></div>
+    <div class="sec"><h2>旅游计划 / Trips</h2>
+      <div class="trip">
+        <div class="card tilt" style="min-height:220px"><div class="k">2026 · 国庆 · 东南亚</div><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>10.01 – 10.09 · 协作行程站 →</p><div style="margin-top:12px"><span class="pill">进行中</span><span class="pill">3 人</span></div></div>
+        <div class="card tilt"><div class="k">分类</div><h3>东南亚</h3><p>1 次旅行</p></div>
+        <div class="card tilt"><div class="k">分类</div><h3>日本</h3><p>规划中</p></div>
+      </div></div>
+    <div class="sec" style="padding-bottom:100px"><h2>工具箱 / Tools</h2>
+      <div class="tools"><div class="tool">🧮 汇率速算</div><div class="tool">📋 客服文档生成器</div><div class="tool">🗓 活动排期表</div><div class="tool">＋ 更多</div></div></div>
+  </div>
+</section>
+
+<script>
+/* 切换 */
+const secs={A:'#A',B:'#B',C:'#C',D:'#D'};
+document.querySelectorAll('.switch button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.switch button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.style').forEach(s=>s.classList.toggle('on',s.id===b.dataset.s));
+  window.scrollTo(0,0);
+  if(b.dataset.s==='B') typeIt(); if(b.dataset.s==='A') startStars('starfield'); if(b.dataset.s==='E') startStars('starfieldE');
+});
+
+/* A · 粒子星空，随鼠标轻微视差 */
+let stars=null,raf=null;
+function startStars(id='starfield'){
+  const c=document.getElementById(id); if(!c) return;
+  const ctx=c.getContext('2d'); const hero=c.parentElement;
+  const size=()=>{c.width=hero.clientWidth*devicePixelRatio;c.height=hero.clientHeight*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0)};
+  size(); window.onresize=size;
+  const W=()=>hero.clientWidth,H=()=>hero.clientHeight;
+  if(!stars) stars=Array.from({length:160},()=>({x:Math.random(),y:Math.random(),z:Math.random()*.8+.2,s:Math.random()*1.6+.4,v:Math.random()*.0004+.0001}));
+  let mx=0,my=0; hero.onmousemove=e=>{mx=(e.clientX/W()-.5);my=(e.clientY/H()-.5)};
+  cancelAnimationFrame(raf);
+  (function draw(){
+    ctx.clearRect(0,0,W(),H());
+    stars.forEach(s=>{
+      s.y-=s.v*s.z; if(s.y<0)s.y=1;
+      const x=(s.x+mx*.03*s.z)*W(), y=(s.y+my*.03*s.z)*H();
+      ctx.beginPath(); ctx.arc(x,y,s.s*s.z,0,Math.PI*2);
+      ctx.fillStyle=`rgba(160,200,255,${.25+s.z*.6})`; ctx.fill();
+    });
+    // 连线
+    ctx.strokeStyle='rgba(120,160,255,.08)';
+    for(let i=0;i<stars.length;i+=4){const a=stars[i];for(let j=i+1;j<stars.length;j+=6){const b=stars[j];
+      const dx=(a.x-b.x)*W(),dy=(a.y-b.y)*H();const d=dx*dx+dy*dy;
+      if(d<14000){ctx.beginPath();ctx.moveTo(a.x*W(),a.y*H());ctx.lineTo(b.x*W(),b.y*H());ctx.stroke()}}}
+    raf=requestAnimationFrame(draw);
+  })();
+}
+startStars();
+document.querySelectorAll('#A .card, #E .card').forEach(c=>c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--mx',(e.clientX-r.left)+'px');c.style.setProperty('--my',(e.clientY-r.top)+'px')}));
+
+/* B · 打字机 */
+let typing=null;
+function typeIt(){
+  const el=document.getElementById('typed'); const lines=['cosmos wong','内容运营 · 活动策划','把想法做成看得见的东西'];
+  let li=0,ci=0,del=false; clearTimeout(typing);
+  (function step(){
+    const t=lines[li];
+    el.textContent=t.slice(0,ci);
+    if(!del&&ci<t.length){ci++;typing=setTimeout(step,70)}
+    else if(!del){del=true;typing=setTimeout(step,1600)}
+    else if(ci>0){ci--;typing=setTimeout(step,30)}
+    else{del=false;li=(li+1)%lines.length;typing=setTimeout(step,300)}
+  })();
+}
+
+/* C · 卡片 3D 倾斜 */
+document.querySelectorAll('#C .tilt, #E .tilt').forEach(c=>{
+  c.onmousemove=e=>{const r=c.getBoundingClientRect();const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+    c.style.transform=`translateY(-6px) rotateX(${-y*10}deg) rotateY(${x*10}deg)`};
+  c.onmouseleave=()=>c.style.transform='';
+});
+</script>
+</body>
+</html>
