@@ -24,7 +24,32 @@
       <span>© ${new Date().getFullYear()} ${esc(S.me.name)}</span>
       <span>${S.me.email ? `<a href="mailto:${esc(S.me.email)}">${esc(S.me.email)}</a>` : ''}${S.me.links.map(l => ` · <a href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('')}</span>
     </footer></div>`);
-  $('.burger').onclick = e => { const m = $('#menu'); m.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', m.classList.contains('open')); };
+  /* 手机菜单：打开时锁住页面滚动（记住位置，关掉后还原），点遮罩或链接关闭 */
+  document.body.insertAdjacentHTML('beforeend', '<div class="menu-backdrop" aria-hidden="true"></div>');
+  let lockedY = 0;
+  const setMenu = open => {
+    const m = $('#menu'), b = $('.burger');
+    if (open) {
+      lockedY = window.scrollY;
+      document.body.style.top = -lockedY + 'px';
+      document.body.classList.add('menu-open');
+      m.classList.add('open'); b.classList.add('on'); b.textContent = '✕';
+      // 菜单很短时容器刚好包住内容，iOS 不把它当滚动区、没有回弹。
+      // 让容器比内容矮 1px，它就"可滚动"了，滑到头会有原生的橡皮筋效果。
+      m.style.maxHeight = '';
+      requestAnimationFrame(() => { if (m.scrollHeight <= m.clientHeight) m.style.maxHeight = (m.clientHeight - 1) + 'px'; });
+    } else {
+      m.classList.remove('open'); b.classList.remove('on'); b.textContent = '☰';
+      document.body.classList.remove('menu-open');
+      document.body.style.top = '';
+      window.scrollTo(0, lockedY);
+    }
+    b.setAttribute('aria-expanded', open);
+  };
+  $('.burger').onclick = () => setMenu(!$('#menu').classList.contains('open'));
+  $('.menu-backdrop').onclick = () => setMenu(false);
+  $('#menu').addEventListener('click', e => { if (e.target.closest('a')) setMenu(false); });
+  window.addEventListener('resize', () => { if (innerWidth > 820 && $('#menu').classList.contains('open')) setMenu(false); });
   if (page !== 'home') document.body.classList.add('inner');
 
   /* ---------- 卡片 3D 倾斜 ---------- */
