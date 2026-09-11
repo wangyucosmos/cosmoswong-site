@@ -53,10 +53,10 @@ header.top{position:sticky;top:0;z-index:50;padding:12px 0}
 /* ---------- 首页 hero ---------- */
 .hero{min-height:calc(100vh - 100px);display:flex;flex-direction:column;justify-content:center;padding:40px 0}
 .hero h1{font-size:clamp(46px,8.5vw,110px);font-weight:900;letter-spacing:-3px;line-height:.95}
-.hero h1 span{display:block;background:linear-gradient(90deg,#fff,#c4b5fd,#67e8f9,#f9a8d4,#fff);background-size:300% 100%;
+.hero h1 span{display:block;padding-bottom:.14em;margin-bottom:-.14em;background:linear-gradient(90deg,#fff,#c4b5fd,#67e8f9,#f9a8d4,#fff);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 6s linear infinite}
 @keyframes shine{to{background-position:300% 0}}
-.hero h1 .pre{font-size:.34em;font-weight:600;letter-spacing:0;line-height:1.2;margin-bottom:.35em;
+.hero h1 .pre{font-size:.34em;font-weight:600;letter-spacing:0;line-height:1.2;padding-bottom:0;margin-bottom:.35em;
   background:none;-webkit-text-fill-color:var(--muted);color:var(--muted);animation:none}
 .hero .sub{font-size:clamp(16px,2vw,21px);color:var(--muted);margin-top:24px;max-width:600px}
 .hero .sub b{color:#fff;font-weight:600}
