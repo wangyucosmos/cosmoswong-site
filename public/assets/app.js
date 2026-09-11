@@ -15,13 +15,13 @@
   document.body.insertAdjacentHTML('afterbegin', `
     <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
     <header class="top"><div class="wrap"><nav class="nav">
-      <a class="logo" href="/">${esc(S.me.fullName).toUpperCase()}</a>
+      <a class="logo" href="/">${esc(S.me.name).toUpperCase()}</a>
       <ul id="menu">${NAV.map(([h, t]) => `<li><a href="${h}" class="${(h === '/' ? here === '/' : here.startsWith(h)) ? 'on' : ''}">${t}</a></li>`).join('')}</ul>
       <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
     </nav></div></header>`);
   document.body.insertAdjacentHTML('beforeend', `
     <div class="wrap"><footer>
-      <span>© ${new Date().getFullYear()} ${esc(S.me.fullName)}</span>
+      <span>© ${new Date().getFullYear()} ${esc(S.me.name)}</span>
       <span>${S.me.email ? `<a href="mailto:${esc(S.me.email)}">${esc(S.me.email)}</a>` : ''}${S.me.links.map(l => ` · <a href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('')}</span>
     </footer></div>`);
   $('.burger').onclick = e => { const m = $('#menu'); m.classList.toggle('open'); e.currentTarget.setAttribute('aria-expanded', m.classList.contains('open')); };
@@ -64,7 +64,7 @@
     const trips = S.trips.flatMap(c => c.items.map(t => ({ ...t, category: c.category })));
     return `
     <section class="hero">
-      <h1 class="up"><span>Hello,</span><span>I'm ${esc(S.me.name)}.</span></h1>
+      <h1 class="up"><span class="pre">Hello, I'm</span><span>${esc(S.me.name)}.</span></h1>
       <p class="sub up d1"><b>${esc(S.me.title)}</b><br>${esc(S.me.tagline)}</p>
       <div class="cta up d2"><a class="btn solid" href="/portfolio">看作品集 →</a>
         ${S.resume.pdf ? `<a class="btn glass" href="${esc(S.resume.pdf)}" download>下载简历</a>` : `<a class="btn glass" href="/resume">看简历</a>`}</div>
