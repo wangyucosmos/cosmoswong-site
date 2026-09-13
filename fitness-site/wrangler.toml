@@ -1,0 +1,14 @@
+# 宏宇的新手健身指南 —— 独立静态站
+# Cloudflare Workers Builds：根目录 fitness-site，部署命令 npm run deploy
+
+name = "jianshen-guide"
+compatibility_date = "2026-09-13"
+
+[assets]
+directory = "./public"
+html_handling = "auto-trailing-slash"
+not_found_handling = "single-page-application"
+
+[[routes]]
+pattern = "jianshen.cosmoswong.com"
+custom_domain = true

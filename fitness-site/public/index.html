@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081722">
+  <meta name="description" content="宏宇的 8 周新手健身房器械图文与视频指南：认器械、调座椅、选重量、练 A/B 全身计划。">
+  <title>宏宇的新手健身器械指南</title>
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+CiAgPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTYiIGZpbGw9IiMwODE3MjIiLz4KICA8cGF0aCBkPSJNMTUgMjV2MTRNMjEgMjF2MjJNNDMgMjF2MjJNNDkgMjV2MTRNMjEgMzJoMjIiIHN0cm9rZT0iI2Q4ZjU2ZCIgc3Ryb2tlLXdpZHRoPSI2IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+Cg==" type="image/svg+xml">
+  <style>
+:root {
+  --ink: #0b1b25;
+  --muted: #5a6c76;
+  --paper: #f7faf8;
+  --panel: #ffffff;
+  --navy: #081722;
+  --teal: #18a999;
+  --cyan: #6de0d2;
+  --lime: #d8f56d;
+  --line: #dce7e5;
+  --danger: #bd4b3e;
+  --shadow: 0 18px 50px rgba(7, 37, 45, .08);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; color: var(--ink); background: var(--paper); font-size: 16px; line-height: 1.65; }
+a { color: inherit; }
+button { font: inherit; }
+.shell { width: min(1120px, calc(100% - 32px)); margin-inline: auto; }
+
+.topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px max(20px, calc((100vw - 1120px)/2)); color: #fff; background: rgba(8, 23, 34, .94); backdrop-filter: blur(16px); border-bottom: 1px solid rgba(255,255,255,.1); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; line-height: 1.2; }
+.brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--navy); background: var(--lime); font-weight: 900; letter-spacing: -.04em; }
+.brand strong, .brand small { display: block; }
+.brand small { margin-top: 4px; color: #a9bec6; font-size: 12px; }
+nav { display: flex; gap: 20px; }
+nav a { color: #c9d7dc; text-decoration: none; font-size: 14px; }
+nav a:hover { color: #fff; }
+.mobile-nav { display: none; }
+
+.intro { display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: end; padding-block: 68px 40px; }
+.eyebrow { margin: 0 0 10px; color: #087f74; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+h1 { max-width: 780px; margin: 0; font-size: clamp(38px, 6vw, 76px); line-height: 1.02; letter-spacing: -.055em; }
+.lead { max-width: 750px; margin: 24px 0 0; color: var(--muted); font-size: clamp(18px, 2vw, 22px); }
+.quick-card { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; padding: 24px; color: #fff; background: var(--navy); border-radius: 24px; box-shadow: var(--shadow); }
+.quick-card p, .quick-card strong { margin: 0; }
+.quick-card p { color: #9db2bb; }
+.quick-card strong { color: var(--lime); text-align: right; }
+
+.safety { display: flex; gap: 18px; align-items: flex-start; padding: 22px 24px; background: #fff7e7; border: 1px solid #f1d69f; border-radius: 20px; }
+.safety-icon { flex: 0 0 auto; display: grid; place-items: center; width: 34px; height: 34px; color: #fff; background: var(--danger); border-radius: 50%; font-weight: 900; }
+.safety h2 { margin: 0 0 4px; font-size: 20px; }
+.safety p { margin: 0; color: #674e3b; }
+
+.section { padding-block: 72px; scroll-margin-top: 70px; }
+.alt { background: #eaf3f1; }
+.section-head { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 26px; }
+h2 { margin: 0; font-size: clamp(30px, 4vw, 48px); line-height: 1.1; letter-spacing: -.035em; }
+.subtle { color: var(--muted); font-size: 14px; }
+
+.session-switch { display: inline-flex; gap: 6px; padding: 6px; background: #dce8e5; border-radius: 14px; }
+.session-btn, .filter { border: 0; cursor: pointer; }
+.session-btn { min-width: 120px; padding: 11px 20px; color: #49606a; background: transparent; border-radius: 10px; font-weight: 800; }
+.session-btn.active { color: #fff; background: var(--navy); }
+.workout-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.reset-button { padding: 10px 14px; color: #49606a; background: #edf3f2; border: 0; border-radius: 10px; cursor: pointer; font-weight: 800; }
+.session-summary { margin: 18px 0; color: var(--muted); }
+.workout-list { display: grid; gap: 10px; padding: 0; margin: 0; list-style: none; counter-reset: workout; }
+.workout-list li { counter-increment: workout; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 16px; padding: 15px 18px; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; }
+.workout-list li::before { content: counter(workout, decimal-leading-zero); display: grid; place-items: center; width: 42px; height: 42px; color: var(--navy); background: var(--lime); border-radius: 12px; font-weight: 900; }
+.workout-list strong { display: block; font-size: 18px; }
+.workout-list small { color: var(--muted); }
+.workout-list a { padding: 8px 12px; color: #087f74; text-decoration: none; background: #e7f7f4; border-radius: 10px; font-weight: 700; white-space: nowrap; }
+.workout-actions { display: flex; gap: 8px; align-items: center; }
+.check-action { min-width: 72px; padding: 8px 12px; color: #31505a; background: #edf3f2; border: 0; border-radius: 10px; cursor: pointer; font-weight: 800; white-space: nowrap; }
+.workout-list li.done { background: #f2f8dc; border-color: #c8dc84; }
+.workout-list li.done .check-action { color: #fff; background: #6f8f17; }
+.workout-list li.done strong { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: #8aaa31; }
+.finish-card { display: grid; grid-template-columns: 220px 1fr; gap: 18px; margin-top: 12px; padding: 20px; color: #fff; background: #0f3841; border-radius: 16px; }
+.finish-card span { color: #bdd5da; }
+
+.route-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.route-grid article { min-height: 200px; padding: 22px; background: var(--panel); border-radius: 20px; box-shadow: var(--shadow); }
+.route-grid span { color: var(--teal); font-size: 13px; font-weight: 900; }
+.route-grid h3 { margin: 34px 0 8px; font-size: 19px; line-height: 1.3; }
+.route-grid p { margin: 0; color: var(--muted); }
+
+.filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.filter { padding: 8px 15px; color: #40555d; background: #e4eeec; border-radius: 999px; font-weight: 700; }
+.filter.active { color: #fff; background: var(--teal); }
+.machine-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.machine-card { overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 22px; box-shadow: 0 10px 35px rgba(9, 44, 52, .05); }
+.machine-top { display: grid; grid-template-columns: 130px 1fr; gap: 20px; align-items: center; padding: 22px; background: linear-gradient(135deg, #0d2934, #124950); color: #fff; }
+.machine-figure { display: grid; place-items: center; height: 110px; color: var(--cyan); background: rgba(255,255,255,.07); border-radius: 18px; }
+.machine-figure svg { width: 105px; height: 88px; stroke: currentColor; fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.machine-kicker { color: var(--cyan); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+.machine-top h3 { margin: 4px 0 6px; font-size: 25px; line-height: 1.15; }
+.machine-top p { margin: 0; color: #b7ccd2; font-size: 14px; }
+.machine-body { padding: 22px; }
+.machine-meta { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 18px; }
+.chip { padding: 4px 9px; color: #476069; background: #eef4f3; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.howto { display: grid; gap: 14px; margin: 0; }
+.howto div { display: grid; grid-template-columns: 72px 1fr; gap: 12px; }
+.howto dt { color: #087f74; font-weight: 800; }
+.howto dd { margin: 0; color: #3f535c; }
+.cue { margin: 18px 0 0; padding: 13px 15px; color: #29454d; background: #f0f8d6; border-left: 4px solid #a9ca39; border-radius: 8px; }
+.machine-actions { display: flex; gap: 8px; margin-top: 18px; }
+.machine-actions a { flex: 1; padding: 10px 12px; text-align: center; text-decoration: none; border-radius: 10px; font-weight: 800; }
+.primary-link { color: #fff; background: var(--teal); }
+.secondary-link { color: #087f74; background: #e6f5f2; }
+
+.weight-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 60px; align-items: start; }
+.lead-small { color: var(--muted); font-size: 18px; }
+.weight-steps { display: grid; gap: 10px; }
+.weight-steps article { display: grid; grid-template-columns: 42px 1fr; gap: 16px; align-items: center; padding: 14px 16px; background: #fff; border-radius: 14px; }
+.weight-steps span { display: grid; place-items: center; width: 38px; height: 38px; color: #fff; background: var(--teal); border-radius: 50%; font-weight: 900; }
+.weight-steps p { margin: 0; }
+
+.timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.timeline article { padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+.timeline span { color: #087f74; font-size: 13px; font-weight: 900; }
+.timeline h3 { margin: 18px 0 8px; }
+.timeline p { margin: 0; color: var(--muted); }
+.week-table-wrap { overflow-x: auto; margin-top: 18px; border: 1px solid var(--line); border-radius: 16px; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: #31505a; background: #edf5f3; }
+tbody tr:last-child td { border-bottom: 0; }
+
+.food-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.food-card { padding: 24px; background: #fff; border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); }
+.food-card span { display: inline-grid; place-items: center; min-width: 46px; height: 30px; padding-inline: 10px; color: var(--navy); background: var(--lime); border-radius: 999px; font-size: 12px; font-weight: 900; }
+.food-card h3 { margin: 18px 0 8px; font-size: 22px; }
+.food-card p { margin: 0; color: var(--muted); }
+.food-note { margin-top: 18px; padding: 18px 20px; color: #2d4c55; background: #e6f5f2; border-radius: 16px; }
+
+.video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.video-card { overflow: hidden; background: #fff; border-radius: 20px; box-shadow: var(--shadow); }
+.video-card.featured { grid-column: 1 / -1; display: grid; grid-template-columns: 1.25fr 1fr; }
+.video-frame { position: relative; min-height: 260px; background: #06141c; }
+.video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-card > div:last-child { padding: 22px; }
+.source-tag { color: #087f74; font-size: 12px; font-weight: 900; }
+.video-card h3 { margin: 8px 0; font-size: 21px; }
+.video-card p { color: var(--muted); }
+.video-card a { color: #087f74; font-weight: 800; text-decoration: none; }
+.article-card { display: grid; grid-template-columns: 180px 1fr; }
+.article-visual { display: grid; place-content: center; min-height: 260px; color: var(--navy); background: var(--lime); font-size: 48px; font-weight: 900; line-height: 1; text-align: center; }
+.article-visual small { margin-top: 10px; font-size: 15px; }
+.source-list { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; padding: 18px; background: rgba(255,255,255,.6); border-radius: 16px; }
+.source-list h3 { width: 100%; margin: 0 0 4px; font-size: 16px; }
+.source-list a { padding: 8px 12px; color: #087f74; background: #fff; border-radius: 8px; text-decoration: none; font-size: 14px; }
+
+.log-example { padding: 28px; color: #d4e5e7; background: var(--navy); border-radius: 22px; }
+.log-example code { display: block; overflow-x: auto; color: var(--lime); font: 700 17px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+.log-example p { margin: 12px 0 0; }
+footer { padding-block: 36px; color: #afc0c6; background: var(--navy); }
+footer strong { color: #fff; }
+footer p { max-width: 850px; margin: 8px 0 0; }
+
+@media (max-width: 860px) {
+  nav { display: none; }
+  .intro, .weight-layout { grid-template-columns: 1fr; }
+  .quick-card { max-width: 420px; }
+  .route-grid, .timeline { grid-template-columns: repeat(2, 1fr); }
+  .machine-grid { grid-template-columns: 1fr; }
+  .video-card.featured, .article-card { display: block; }
+  .article-visual { min-height: 180px; }
+  .food-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 560px) {
+  .shell { width: min(100% - 22px, 1120px); }
+  .topbar { padding: 10px 12px; }
+  .intro { gap: 26px; padding-block: 44px 28px; }
+  .section { padding-block: 52px; }
+  .section-head { display: block; }
+  .subtle { display: block; margin-top: 10px; }
+  .workout-list li { grid-template-columns: 38px 1fr; gap: 12px; }
+  .workout-list li::before { width: 38px; height: 38px; }
+  .workout-actions { grid-column: 2; justify-self: stretch; }
+  .workout-actions > * { flex: 1; text-align: center; }
+  .finish-card { grid-template-columns: 1fr; gap: 6px; }
+  .route-grid, .timeline, .video-grid { grid-template-columns: 1fr; }
+  .route-grid article { min-height: auto; }
+  .route-grid h3 { margin-top: 18px; }
+  .machine-top { grid-template-columns: 105px 1fr; gap: 14px; padding: 16px; }
+  .machine-figure { height: 96px; }
+  .machine-figure svg { width: 88px; }
+  .machine-top h3 { font-size: 21px; }
+  .machine-body { padding: 18px; }
+  .howto div { grid-template-columns: 62px 1fr; }
+  .machine-actions { flex-direction: column; }
+  body { padding-bottom: 72px; }
+  .mobile-nav { position: fixed; z-index: 30; inset: auto 10px 10px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 6px; background: rgba(8, 23, 34, .96); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; box-shadow: 0 12px 34px rgba(0,0,0,.25); backdrop-filter: blur(16px); }
+  .mobile-nav a { padding: 9px 4px; color: #c9d7dc; text-align: center; text-decoration: none; border-radius: 10px; font-size: 12px; font-weight: 800; }
+  .mobile-nav a:active { color: var(--navy); background: var(--lime); }
+}
+
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="brand-mark">HY</span>
+      <span><strong>宏宇的健身教练</strong><small>8 周新手器械指南</small></span>
+    </a>
+    <nav aria-label="页面导航">
+      <a href="#today">今天练什么</a>
+      <a href="#food">饮食恢复</a>
+      <a href="#machines">器械教程</a>
+      <a href="#videos">视频</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="intro shell">
+      <div>
+        <p class="eyebrow">从 182 斤到 150 斤 · 下一阶段：稳稳减脂，保住肌肉</p>
+        <h1>第一次进健身房，<br>照着这个页面练就行。</h1>
+        <p class="lead">你不用一次认全健身房。前 8 周只学 <strong>7 台固定器械 + 1 个核心模块</strong>，每次按顺序做，先把动作练熟。</p>
+      </div>
+      <div class="quick-card" aria-label="计划摘要">
+        <p>每周</p><strong>3 次</strong>
+        <p>每次</p><strong>50–65 分钟</strong>
+        <p>额外快走</p><strong>每周 2 次</strong>
+        <p>强度</p><strong>始终留 2–4 次余力</strong>
+      </div>
+    </section>
+
+    <section class="safety shell" aria-labelledby="safety-title">
+      <span class="safety-icon">!</span>
+      <div>
+        <h2 id="safety-title">先把安全线划清楚</h2>
+        <p>你之前出现过头晕、恶心，所以前 4 周不要长时间空腹训练。训练前 1–2 小时吃一顿正常餐或小份碳水＋蛋白质；当天仍头晕、恶心或明显乏力就不练。若胸痛、接近晕厥、异常气促、心跳明显不规则，立即停止并求助。若准备重新使用替尔泊肽，先和开药医生确认训练与进食安排。</p>
+      </div>
+    </section>
+
+    <section id="today" class="section shell">
+      <div class="section-head">
+        <div><p class="eyebrow">训练台</p><h2>今天练什么？</h2></div>
+        <span class="subtle">A / B 交替，不连续两天力量训练</span>
+      </div>
+      <div class="workout-controls">
+        <div class="session-switch" role="tablist" aria-label="选择训练日">
+          <button class="session-btn active" data-session="A" role="tab" aria-selected="true">训练 A</button>
+          <button class="session-btn" data-session="B" role="tab" aria-selected="false">训练 B</button>
+        </div>
+        <button id="reset-workout" class="reset-button" type="button">清空本次勾选</button>
+      </div>
+      <div id="session-summary" class="session-summary"></div>
+      <ol id="workout-list" class="workout-list"></ol>
+      <div class="finish-card">
+        <strong>收尾有氧 10–20 分钟</strong>
+        <span>跑步机快走 / 椭圆机 / 单车任选。能说完整句子、但呼吸比平时快，就是合适强度。</span>
+      </div>
+    </section>
+
+    <section id="food" class="section alt" aria-labelledby="food-title">
+      <div class="shell">
+        <div class="section-head"><div><p class="eyebrow">减脂不靠饿</p><h2 id="food-title">饮食与恢复执行卡</h2></div><span class="subtle">先稳定 2–3 周，再根据周均体重调整</span></div>
+        <div class="food-grid">
+          <article class="food-card"><span>蛋白质</span><h3>每天约 90–120 克</h3><p>按当前约 75 kg 体重，以 1.2–1.6 g/kg/天作为实用范围，尽量分到 2–3 餐。鸡蛋、牛奶、鱼虾、瘦肉、豆腐都可以；蛋白粉不是必须品。</p></article>
+          <article class="food-card"><span>训练前</span><h3>别再长时间空腹硬练</h3><p>前 4 周在训练前 1–2 小时吃小份碳水＋蛋白质，例如香蕉配酸奶、牛奶配面包。训练后正常吃一餐，补足主食、蛋白质和蔬菜。</p></article>
+          <article class="food-card"><span>减重速度</span><h3>每周约 0.2–0.6 kg</h3><p>看 7 天平均体重和腰围，不因某一天波动突然节食或加有氧。连续 3 周体重周均值和腰围都不变，再做小幅调整。</p></article>
+          <article class="food-card"><span>恢复</span><h3>补水＋尽量睡够 7 小时</h3><p>训练前分次喝水，训练中小口补水。连续两晚明显睡不好时，重量保持不变，少做 1 组或缩短有氧。</p></article>
+        </div>
+        <p class="food-note"><strong>目标不是回到“一天一顿”。</strong>力量训练阶段更需要稳定能量和蛋白质，温和热量缺口比极端断食更容易保住肌肉和长期坚持。若有肾病、肝病或医生限制蛋白质，请以医生要求为准。</p>
+      </div>
+    </section>
+
+    <section class="section alt" aria-labelledby="first-visit-title">
+      <div class="shell">
+        <div class="section-head"><div><p class="eyebrow">第一次到店</p><h2 id="first-visit-title">10 分钟认器械路线</h2></div></div>
+        <div class="route-grid">
+          <article><span>01</span><h3>先找更衣室和饮水处</h3><p>水杯、毛巾、手机准备好，不急着开始。</p></article>
+          <article><span>02</span><h3>找到插销配重区</h3><p>认准一排带数字的铁片和黄色/红色插销。第一次都从最轻档试。</p></article>
+          <article><span>03</span><h3>按 A 计划找 4 台器械</h3><p>腿推、胸推、高位下拉、腿弯举。拍下机器侧面的动作示意图。</p></article>
+          <article><span>04</span><h3>请巡场教练只帮一件事</h3><p>请他说：“帮我调一次座椅和安全挡，我想自己练。”这是正常且免费的安全询问。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="machines" class="section shell">
+      <div class="section-head">
+        <div><p class="eyebrow">图文卡片</p><h2>8 个动作，逐个学会</h2></div>
+        <span class="subtle">机器外形因品牌不同，但识别逻辑相同</span>
+      </div>
+      <div class="filter-row" role="group" aria-label="筛选器械">
+        <button class="filter active" data-filter="all">全部</button>
+        <button class="filter" data-filter="A">训练 A</button>
+        <button class="filter" data-filter="B">训练 B</button>
+        <button class="filter" data-filter="core">核心</button>
+      </div>
+      <div id="machine-grid" class="machine-grid"></div>
+    </section>
+
+    <section class="section alt" aria-labelledby="weight-title">
+      <div class="shell weight-layout">
+        <div>
+          <p class="eyebrow">最重要的新手技能</p>
+          <h2 id="weight-title">重量不是猜公斤，是用余力测试</h2>
+          <p class="lead-small">不同品牌器械的“20 kg”手感可能完全不同，所以不用记别人的重量，只记录自己这台机器的插销位置。</p>
+        </div>
+        <div class="weight-steps">
+          <article><span>1</span><p>先用最轻或第二轻档，慢慢做 <strong>8 次</strong>。</p></article>
+          <article><span>2</span><p>停下时感觉还能标准做 <strong>4 次左右</strong>：本周就用它。</p></article>
+          <article><span>3</span><p>还能做 8 次以上：上肢加一小格，下肢加一格再试。</p></article>
+          <article><span>4</span><p>做不到 8 次或身体借力：立刻降 <strong>10%–20%</strong>。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="progress-title">
+      <div class="section-head"><div><p class="eyebrow">8 周进度</p><h2 id="progress-title">只在动作稳定后加量</h2></div></div>
+      <div class="timeline">
+        <article><span>第 1–2 周</span><h3>认识器械</h3><p>每个动作 2 组 × 10–12 次，余力 3–4 次；周中那次可只做 25–35 分钟轻有氧＋每台机器 1 个轻重量练习组。</p></article>
+        <article><span>第 3–4 周</span><h3>建立规律</h3><p>每个动作 2–3 组 × 10–12 次，余力 3 次；A/B/A 与 B/A/B 逐周交替。</p></article>
+        <article><span>第 5–6 周</span><h3>稳步进步</h3><p>主要器械 3 组 × 8–12 次，余力 2–3 次；动作全程受控。</p></article>
+        <article><span>第 7–8 周</span><h3>双重进阶</h3><p>同一重量三组都做到 12 次且姿势稳定，下次只加最小一格，次数回到 8–10 次。</p></article>
+      </div>
+      <div class="week-table-wrap">
+        <table>
+          <thead><tr><th>周次</th><th>周一</th><th>周三</th><th>周六</th></tr></thead>
+          <tbody>
+            <tr><td>1–2</td><td>力量 A</td><td>轻有氧＋器械复习</td><td>力量 B</td></tr>
+            <tr><td>3、5、7</td><td>力量 A</td><td>力量 B</td><td>力量 A</td></tr>
+            <tr><td>4、6、8</td><td>力量 B</td><td>力量 A</td><td>力量 B</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="videos" class="section alt" aria-labelledby="video-title">
+      <div class="shell">
+        <div class="section-head"><div><p class="eyebrow">已筛选的中文入口</p><h2 id="video-title">先看这 3 个，再进健身房</h2></div></div>
+        <div class="video-grid">
+          <article class="video-card featured">
+            <div class="video-frame"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/jzdpUOEziXo" title="新手必练：适合初学者的5个器材" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+            <div><span class="source-tag">More Fit · YouTube</span><h3>新手必练：适合初学者的 5 个器材</h3><p>最适合先建立“机器长什么样”的整体认识。看完后再对照下面的单项卡片。</p><a href="https://www.youtube.com/watch?v=jzdpUOEziXo" target="_blank" rel="noopener">在 YouTube 打开 ↗</a></div>
+          </article>
+          <article class="video-card">
+            <div class="video-frame"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/3QzdCRv0tR4" title="新手均衡发展健身房训练菜" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>
+            <div><span class="source-tag">教官训练教室 · YouTube</span><h3>新手必学：均衡发展的健身房训练</h3><p>用较少动作理解全身训练逻辑。先学稳定轨迹，不追求练到力竭。</p><a href="https://www.youtube.com/watch?v=3QzdCRv0tR4" target="_blank" rel="noopener">在 YouTube 打开 ↗</a></div>
+          </article>
+          <article class="video-card article-card">
+            <div class="article-visual">12–15<br><small>次 / 组</small></div>
+            <div><span class="source-tag">妙佑医疗国际 · 中文图文视频</span><h3>坐姿划船：背部中立、动作受控</h3><p>讲清楚“不耸肩、不后仰”和肩胛骨向中间靠拢的感觉，适合用来校准坐姿划船。</p><a href="https://www.mayoclinic.org/zh-hans/healthy-lifestyle/fitness/multimedia/seated-row/vid-20084669" target="_blank" rel="noopener">打开中文教程 ↗</a></div>
+          </article>
+        </div>
+        <div class="source-list">
+          <h3>补充资料（用于核对动作与器械选择）</h3>
+          <a href="https://www.fitnessfactory.com.tw/tw/blog/%E8%A8%93%E7%B7%B4%E5%B0%88%E5%8D%80/%E6%95%99%E7%B7%B4%E6%BF%80%E6%8E%A8%E5%81%A5%E8%BA%AB%E6%88%BF%E6%96%B0%E6%89%8B%E5%BF%85%E7%B7%B4%E5%8D%81%E5%A4%A7%E8%87%AA%E4%B8%BB%E8%A8%93%E7%B7%B4%E5%99%A8%E6%9D%90(%E4%B8%8A)_G" target="_blank" rel="noopener">胸推、肩推、下拉、划船、腿推图文示范（健身工厂）</a>
+          <a href="https://www.youtube.com/playlist?list=PL3TDxMgnr9RvITeyfWRZf8jyKlINxScjw" target="_blank" rel="noopener">健身器材使用中文播放列表（YouTube）</a>
+          <a href="https://www.mayoclinic.org/zh-hans/healthy-lifestyle/fitness/multimedia/seated-row/vid-20084669" target="_blank" rel="noopener">坐姿划船中文医学示范（妙佑医疗国际）</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="log-title">
+      <div class="section-head"><div><p class="eyebrow">每次 20 秒</p><h2 id="log-title">训练记录只写 4 件事</h2></div></div>
+      <div class="log-example">
+        <code>腿推机｜座椅 4｜35 kg｜12 / 12 / 11｜余力 3</code>
+        <p>动作名、座椅档位、重量、每组次数、余力。连续两次都轻松达到上限，再加最小一格。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell"><strong>宏宇的 8 周新手计划</strong><p>这是一般性健身教育，不替代医生、物理治疗师或现场教练的个别评估。器械结构与安全挡各有不同，第一次务必阅读机身说明。计划依据成年人身体活动建议与规范动作原则整理。</p><div class="source-list"><h3>依据与延伸阅读</h3><a href="https://www.who.int/zh/news-room/fact-sheets/detail/physical-activity" target="_blank" rel="noopener">世界卫生组织：身体活动</a><a href="https://www.mayoclinic.org/zh-hans/healthy-lifestyle/fitness/multimedia/seated-row/vid-20084669" target="_blank" rel="noopener">妙佑医疗国际：坐姿划船示范</a></div></div>
+  </footer>
+  <nav class="mobile-nav" aria-label="手机快捷导航"><a href="#today">今日训练</a><a href="#machines">器械</a><a href="#food">饮食</a><a href="#videos">视频</a></nav>
+  <script>
+const icons = {
+  press: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M18 76h86M28 72V34h22v38M50 43h23M73 30v46M73 30h20M93 22v16M42 22v16"/><circle cx="45" cy="18" r="7"/><path d="M45 26v22m0-12 22 7m-22 5 16 18"/></svg>`,
+  pull: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M18 78h88M26 78V12M96 78V12M26 12h70M42 23h38M61 23v15"/><circle cx="61" cy="46" r="7"/><path d="M61 54v20M61 58 42 40m19 18 19-18M48 78v-7h26v7"/></svg>`,
+  leg: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M13 76h95M25 70l16-29h28L55 70zM80 18l24 46M75 22l16-9 18 34"/><circle cx="48" cy="35" r="7"/><path d="M54 39l23 14 18-13M45 43l-10 21"/></svg>`,
+  curl: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M16 76h88M32 72V39h37v33M35 30h35M70 30v40M72 55h23M93 47v16"/><circle cx="48" cy="23" r="7"/><path d="M48 31v24m0-10 22 7M48 55l28 8 14-10"/></svg>`,
+  row: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M13 76h94M28 72V53h35v19M92 19v57M80 30h12M80 30v27M80 57H60"/><circle cx="49" cy="32" r="7"/><path d="M49 40v23m0-16 25 6M49 63l-11 9m11-9 12 9"/></svg>`,
+  hip: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M12 76h96M25 72V53h30v19M64 67h36M91 67V35M78 41h25"/><circle cx="49" cy="36" r="7"/><path d="M45 42 59 59h30M59 59 45 70M58 50l22-9"/></svg>`,
+  cable: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M16 78h88M25 78V12h24v66M31 20h12M31 30h12M31 40h12M49 28h23"/><circle cx="82" cy="30" r="7"/><path d="M82 38v35m0-25L66 38m16 10 14-8M82 73l-11 5m11-5 12 5"/></svg>`,
+  core: `<svg viewBox="0 0 120 90" aria-hidden="true"><path d="M12 76h96"/><circle cx="58" cy="45" r="7"/><path d="M52 50 41 61 57 69 75 58M41 61 25 46M75 58 92 42M57 69 42 75m15-6 18 6"/></svg>`
+};
+
+const machines = [
+  {
+    id: "leg-press", name: "腿推机", en: "Leg Press", session: "A B", type: "leg", focus: "大腿前侧・臀部", order: "A1 / B1",
+    identify: "找一台有大靠背、面前有大脚踏板的机器。坐下后双脚是往前上方推，不是向下踩。",
+    adjust: "臀部和腰背贴住靠垫。起始时膝盖约 90°–110°；若膝盖挤到胸口，把座椅往后调。先确认安全把手怎么开关。",
+    do: "脚掌与肩同宽，膝盖朝脚尖方向。推到膝盖接近伸直但不锁死，再用 2–3 秒慢慢下降。",
+    error: "膝盖向内夹、臀部离开座垫、放到底时腰变圆、推到顶猛锁膝。",
+    sets: "2–3 组 × 10–12 次", cue: "口令：脚掌踩稳，膝盖跟脚尖走，屁股别离座。",
+    query: "腿推机 正确动作 新手 教学"
+  },
+  {
+    id: "chest-press", name: "坐姿胸推机", en: "Seated Chest Press", session: "A", type: "press", focus: "胸部・肱三头", order: "A2",
+    identify: "像一张带靠背的椅子，左右各有一只位于胸前的推把；坐下后动作像把门推开。",
+    adjust: "调座高，让握把大致对准胸口中部；肩膀放松，前臂尽量接近水平。若把手在耳朵高度，座位太低。",
+    do: "后脑、上背和臀部靠稳。呼气推前，手肘不必完全锁死；吸气慢慢回到胸旁。",
+    error: "耸肩、手腕折弯、腰过度拱起、重量回落时撞片。",
+    sets: "2–3 组 × 8–12 次", cue: "口令：肩膀往下，胸口微抬，把手平稳推出。",
+    query: "坐姿胸推机 正确动作 新手 教学"
+  },
+  {
+    id: "lat-pulldown", name: "高位下拉", en: "Lat Pulldown", session: "A", type: "pull", focus: "背阔肌・上背", order: "A3",
+    identify: "头顶有一根长横杆，座椅前方有两块固定大腿的压垫；钢索从上方下来。",
+    adjust: "坐好后把腿垫压在大腿上方，既固定身体又不夹痛。双手比肩略宽，不需要握到横杆最外侧。",
+    do: "身体只微微后倾。先把肩膀向下，再把杆拉向上胸；手肘朝地面走，随后受控伸直手臂。",
+    error: "猛然后仰、把杆拉到后颈、耸肩、用身体甩动。",
+    sets: "2–3 组 × 8–12 次", cue: "口令：胸口找横杆，手肘往裤兜。",
+    query: "高位下拉 正确动作 中文 新手 教学"
+  },
+  {
+    id: "leg-curl", name: "坐姿腿弯举", en: "Seated Leg Curl", session: "A", type: "curl", focus: "大腿后侧", order: "A4",
+    identify: "坐椅前方有两根软垫：一根压在大腿上方，一根贴在小腿后方；动作是把脚往座椅下方勾。",
+    adjust: "膝关节对准机器转轴；小腿垫放在脚踝上方，不要压在跟腱；大腿垫贴紧但不夹痛。",
+    do: "抓住把手稳住骨盆，把脚跟往下后方勾；停一拍，再慢慢伸回，重量片不要撞。",
+    error: "膝盖没对准转轴、臀部抬起、快速弹回、只动很小范围。",
+    sets: "2–3 组 × 10–15 次", cue: "口令：膝盖对轴，脚跟往座位底下收。",
+    query: "坐姿腿弯举 腿屈曲机 正确动作 教学"
+  },
+  {
+    id: "seated-row", name: "坐姿划船机", en: "Seated Row", session: "B", type: "row", focus: "中背・背阔肌", order: "B2",
+    identify: "坐下后胸前或前方有把手，通常有脚踏或胸垫；把手沿水平方向拉向身体。",
+    adjust: "若有胸垫，调到胸骨能轻贴且手臂伸直时肩膀不被扯起；若无胸垫，坐直、膝微屈。",
+    do: "先保持胸口稳定，把手拉向肋骨下缘；肩胛骨轻轻靠近，再慢慢送回。",
+    error: "整个人前后摇、耸肩、手肘抬太高、回程含胸塌腰。",
+    sets: "2–3 组 × 8–12 次", cue: "口令：胸口不动，手肘向后，夹住一支铅笔。",
+    query: "坐姿划船机 正确动作 中文 新手 教学"
+  },
+  {
+    id: "shoulder-press", name: "坐姿肩推机", en: "Shoulder Press", session: "B", type: "press", focus: "肩部・肱三头", order: "B3",
+    identify: "有竖直靠背，左右把手位于肩膀或耳朵两侧；动作是把手向头顶上方推。",
+    adjust: "调座高，让起始把手略低于或齐于肩膀；双脚踩地，腰背贴垫。肩前方不舒服就换中立握法。",
+    do: "肋骨收住，呼气向上推；顶端不耸肩、不锁肘，慢慢回到舒适深度。",
+    error: "腰拱很大、耸肩、把手落得过深、用腿蹬地借力。",
+    sets: "2–3 组 × 8–12 次", cue: "口令：肋骨收住，肩膀远离耳朵。",
+    query: "坐姿肩推机 正确动作 新手 教学"
+  },
+  {
+    id: "hip-thrust", name: "臀推机 / 臀桥", en: "Hip Thrust / Glute Bridge", session: "B", type: "hip", focus: "臀部・大腿后侧", order: "B4",
+    identify: "臀推机通常有横跨髋部的厚软垫和脚踏板。若馆里没有，就在垫子上做徒手臀桥。",
+    adjust: "软垫放在髋骨下方的折痕处，不压腹部；脚踩到顶端时小腿大致竖直。先问工作人员如何解锁。",
+    do: "下巴微收，收紧腹部；脚跟发力把髋推起，到肩—髋—膝接近一条线，夹臀一拍后慢慢下放。",
+    error: "用腰顶而不是臀部、脚太远或太近、抬头、顶端肋骨外翻。",
+    sets: "2–3 组 × 10–15 次", cue: "口令：下巴收、肋骨收、用臀把髋送上去。",
+    query: "臀推机 臀桥 正确动作 新手 教学"
+  },
+  {
+    id: "core", name: "核心：死虫 / 抗旋转", en: "Dead Bug / Pallof Press", session: "A B core", type: "core", focus: "腹部稳定", order: "A5 / B5",
+    identify: "A 日在垫子上做死虫；B 日用可调滑轮，站在钢索侧面做抗旋转推。器械区拥挤时两天都做死虫即可。",
+    adjust: "死虫：仰卧、髋膝约 90°。抗旋转：把滑轮调到胸口高度，轻重量，侧身站立。",
+    do: "死虫时腰背轻贴地面，对侧手脚慢慢伸远。抗旋转时把手从胸前推出，身体不被钢索扭转。",
+    error: "憋气、腰离地、动作太快；抗旋转重量太大导致身体歪斜。",
+    sets: "每侧 2 组 × 6–10 次", cue: "口令：先呼气收紧腹部，再慢慢移动四肢。",
+    query: "死虫式 Pallof press 抗旋转 中文 教学"
+  }
+];
+
+const sessions = {
+  A: { text: "下肢推 + 胸推 + 竖直拉 + 腿后侧 + 水平拉 + 核心。动作之间休息 60–90 秒；腿推可休息到 120 秒。", ids: ["leg-press", "chest-press", "lat-pulldown", "leg-curl", "seated-row", "core"] },
+  B: { text: "下肢推 + 水平拉 + 肩推 + 竖直拉 + 臀部 + 核心。动作之间休息 60–90 秒；呼吸恢复再开始下一组。", ids: ["leg-press", "seated-row", "shoulder-press", "lat-pulldown", "hip-thrust", "core"] }
+};
+
+let activeSession = "A";
+
+function completedItems(session) {
+  try { return JSON.parse(localStorage.getItem(`hy-workout-${session}`) || "[]"); }
+  catch { return []; }
+}
+
+function videoLinks(query) {
+  const q = encodeURIComponent(query);
+  return {
+    youtube: `https://www.youtube.com/results?search_query=${q}`,
+    bilibili: `https://search.bilibili.com/all?keyword=${q}`
+  };
+}
+
+function renderWorkout(session) {
+  activeSession = session;
+  const data = sessions[session];
+  const completed = completedItems(session);
+  document.querySelector("#session-summary").textContent = data.text;
+  document.querySelector("#workout-list").innerHTML = data.ids.map(id => {
+    const item = machines.find(machine => machine.id === id);
+    const done = completed.includes(id);
+    return `<li class="${done ? "done" : ""}" data-workout-item="${id}"><div><strong>${item.name}</strong><small>${item.focus} · ${item.sets}</small></div><div class="workout-actions"><button class="check-action" type="button" aria-pressed="${done}">${done ? "已完成 ✓" : "完成"}</button><a href="#${item.id}">看教程 ↓</a></div></li>`;
+  }).join("");
+}
+
+function cardTemplate(item) {
+  const links = videoLinks(item.query);
+  return `<article class="machine-card" id="${item.id}" data-tags="${item.session}">
+    <div class="machine-top">
+      <div class="machine-figure">${icons[item.type]}</div>
+      <div><span class="machine-kicker">${item.order} · ${item.en}</span><h3>${item.name}</h3><p>${item.focus}</p></div>
+    </div>
+    <div class="machine-body">
+      <div class="machine-meta"><span class="chip">${item.sets}</span><span class="chip">留 2–4 次余力</span><span class="chip">回程 2–3 秒</span></div>
+      <dl class="howto">
+        <div><dt>怎么认</dt><dd>${item.identify}</dd></div>
+        <div><dt>怎么调</dt><dd>${item.adjust}</dd></div>
+        <div><dt>怎么做</dt><dd>${item.do}</dd></div>
+        <div><dt>别这样</dt><dd>${item.error}</dd></div>
+      </dl>
+      <p class="cue"><strong>只记一句：</strong>${item.cue}</p>
+      <div class="machine-actions"><a class="primary-link" href="${links.bilibili}" target="_blank" rel="noopener">B站搜中文示范 ↗</a><a class="secondary-link" href="${links.youtube}" target="_blank" rel="noopener">YouTube 搜索 ↗</a></div>
+    </div>
+  </article>`;
+}
+
+function renderMachines(filter = "all") {
+  const shown = machines.filter(item => filter === "all" || item.session.split(" ").includes(filter));
+  document.querySelector("#machine-grid").innerHTML = shown.map(cardTemplate).join("");
+}
+
+document.querySelectorAll(".session-btn").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".session-btn").forEach(item => { item.classList.remove("active"); item.setAttribute("aria-selected", "false"); });
+    button.classList.add("active");
+    button.setAttribute("aria-selected", "true");
+    renderWorkout(button.dataset.session);
+  });
+});
+
+document.querySelectorAll(".filter").forEach(button => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll(".filter").forEach(item => item.classList.remove("active"));
+    button.classList.add("active");
+    renderMachines(button.dataset.filter);
+  });
+});
+
+document.querySelector("#workout-list").addEventListener("click", event => {
+  const button = event.target.closest(".check-action");
+  if (!button) return;
+  const id = button.closest("li").dataset.workoutItem;
+  const completed = new Set(completedItems(activeSession));
+  completed.has(id) ? completed.delete(id) : completed.add(id);
+  localStorage.setItem(`hy-workout-${activeSession}`, JSON.stringify([...completed]));
+  renderWorkout(activeSession);
+});
+
+document.querySelector("#reset-workout").addEventListener("click", () => {
+  localStorage.removeItem(`hy-workout-${activeSession}`);
+  renderWorkout(activeSession);
+});
+
+renderWorkout("A");
+renderMachines();
+
+</script>
+</body>
+</html>
