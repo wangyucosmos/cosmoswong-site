@@ -9,7 +9,8 @@
   /* ---------- 公共骨架：背景、导航、页脚 ---------- */
   const NAV = [
     ['/', '首页'], ['/portfolio', '作品集'], ['/resume', '简历'],
-    ['/trips', '旅游计划'], ['/tools', '工具箱'], ['/bookmarks', '收藏']
+    ['/trips', '旅游计划'], ['/tools', '工具箱'], ['/bookmarks', '收藏'],
+    ['https://jianshen.cosmoswong.com', '我的健身计划']
   ];
   const here = location.pathname.replace(/\/$/, '') || '/';
   document.body.insertAdjacentHTML('afterbegin', `
