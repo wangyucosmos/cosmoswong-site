@@ -34,9 +34,13 @@ button { font: inherit; }
 .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--navy); background: var(--lime); font-weight: 900; letter-spacing: -.04em; }
 .brand strong, .brand small { display: block; }
 .brand small { margin-top: 4px; color: #a9bec6; font-size: 12px; }
+.topbar-actions { display: flex; align-items: center; gap: 20px; }
 nav { display: flex; gap: 20px; }
 nav a { color: #c9d7dc; text-decoration: none; font-size: 14px; }
 nav a:hover { color: #fff; }
+.home-link { padding: 8px 12px; color: var(--navy); background: var(--lime); border-radius: 10px; text-decoration: none; font-size: 14px; font-weight: 900; white-space: nowrap; }
+.home-link:hover { background: #e4fa8f; }
+.home-link:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .mobile-nav { display: none; }
 
 .intro { display: grid; grid-template-columns: 1fr 280px; gap: 48px; align-items: end; padding-block: 68px 40px; }
@@ -172,7 +176,9 @@ footer p { max-width: 850px; margin: 8px 0 0; }
 
 @media (max-width: 560px) {
   .shell { width: min(100% - 22px, 1120px); }
-  .topbar { padding: 10px 12px; }
+  .topbar { gap: 10px; padding: 10px 12px; }
+  .topbar-actions { gap: 0; }
+  .home-link { padding: 8px 10px; font-size: 13px; }
   .intro { gap: 26px; padding-block: 44px 28px; }
   .section { padding-block: 52px; }
   .section-head { display: block; }
@@ -208,12 +214,15 @@ footer p { max-width: 850px; margin: 8px 0 0; }
       <span class="brand-mark">HY</span>
       <span><strong>宏宇的健身教练</strong><small>8 周新手器械指南</small></span>
     </a>
-    <nav aria-label="页面导航">
-      <a href="#today">今天练什么</a>
-      <a href="#food">饮食恢复</a>
-      <a href="#machines">器械教程</a>
-      <a href="#videos">视频</a>
-    </nav>
+    <div class="topbar-actions">
+      <nav aria-label="页面导航">
+        <a href="#today">今天练什么</a>
+        <a href="#food">饮食恢复</a>
+        <a href="#machines">器械教程</a>
+        <a href="#videos">视频</a>
+      </nav>
+      <a class="home-link" href="https://cosmoswong.com/">← 返回主站</a>
+    </div>
   </header>
 
   <main id="top">
