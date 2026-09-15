@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="工作区与知识库怎么分工、开工与收工协议、并行比稿、子文件夹规范">
+<title>五个 AI 共用一个知识库的规则 · Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css?v=20260913220000">
+<link rel="stylesheet" href="/assets/notes.css?v=20260913220000">
+</head>
+<body data-page="knowledge">
+<main class="wrap">
+  <div class="page-head"><p class="eyebrow"><a href="/knowledge">知识库</a> / 笔记</p><h1>五个 AI 共用一个知识库的规则</h1>
+    <p>工作区与知识库怎么分工、开工与收工协议、并行比稿、子文件夹规范</p></div>
+  <article class="kb">
+<h1>知识库规则（Claude Code / Claude Cowork / Codex / DeepSeek Harness 共同遵守）</h1>
+<blockquote>
+<p>本文件是四个 AI 工具共用的契约。任何工具在任何文件夹里开工，只要任务涉及本库的主题，都按这里执行。
+本库位置：<code>~/Documents/我的知识库/</code>（同时是 Obsidian 库）。</p>
+</blockquote>
+<h2>1. 工作区 与 知识库 是两回事</h2>
+<pre><code>工作区（各工具各干各的）                         知识库（共用一份）
+─────────────────────────────                  ─────────────────────────
+claude code new/卓望/      ← Claude Code 草稿     ┐
+CODEX项目/拓维卓望/        ← Codex 草稿           ├─ 收工写入 ─▶ 我的知识库/
+deepseek harness/          ← DSH 草稿             │                 ├── INDEX.md   ← 路由表
+我的知识库/_草稿-cowork/   ← Cowork 草稿(git忽略) ┘                 ├── 卓望工作相关/
+                                    ▲                              ├── 求职相关/
+                                    └──── 开工先读 ─────────────────┴── …各主题/
+</code></pre>
+<ul>
+<li><strong>工作区</strong>：过程文件、草稿、多版本原型、脚本、临时产物。各工具互不干扰，永远不会互相覆盖。</li>
+<li><strong>知识库</strong>：只放<strong>确认过的结论</strong>——规则、偏好、经验、进度、定稿。四个工具读同一份、写同一份。</li>
+<li>例外：<code>卓望工作相关/卓望/</code> 是历史沿袭，里面既有知识也有产物，保持现状，新内容按本规则来。</li>
+</ul>
+<h2>2. 什么该进知识库（沉淀清单）</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>进</th>
+<th>不进</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户确认过的业务规则、偏好、边界</td>
+<td>未确认的猜测、讨论过程</td>
+</tr>
+<tr>
+<td>项目总结、复盘、踩坑经验</td>
+<td>中间版草稿、比稿的落选版</td>
+</tr>
+<tr>
+<td>进度到哪一步、下一步是什么</td>
+<td>一次性素材、临时数据</td>
+</tr>
+<tr>
+<td><strong>定稿</strong>交付物（复制一份，文件名带「定稿」）</td>
+<td>脚本、venv、node_modules、二进制工具</td>
+</tr>
+<tr>
+<td>稳定的流程 / SOP / 检查清单</td>
+<td>账号、密码、密钥、Token（<strong>任何情况都不进</strong>）</td>
+</tr>
+</tbody></table></div>
+<h2>3. 开工协议（每个工具、每次任务）</h2>
+<ol>
+<li>读本库 <code>INDEX.md</code>，找到任务对应的主题子文件夹。</li>
+<li>读该主题的 <strong>主档</strong>（<code>主题名.md</code>）和 <strong>进度</strong>（<code>进度.md</code>，如有）。</li>
+<li>主题有自己的 <code>流程/</code>（如卓望），按其 <code>INDEX.md</code> 路由到具体流程文件。</li>
+<li>没有对应主题 → 告诉用户「知识库里没有这个主题的记录」，问是否新建子文件夹。</li>
+<li>读完才能开始产出。不得跳过。</li>
+</ol>
+<h2>4. 收工协议 —— 必须主动提醒用户（用户自己可能判断不了）</h2>
+<p><strong>每次任务结束前，工具必须输出一段「知识库沉淀提醒」</strong>，格式固定：</p>
+<pre><code>📥 知识库沉淀提醒
+本次任务产生了以下可能需要共享的内容：
+1. [结论/规则] ……  → 建议写入 `主题/主档.md` 的「xx」节
+2. [进度]       ……  → 建议更新 `主题/进度.md`
+3. [定稿]       ……  → 建议复制到 `主题/交付物/xxx-定稿.html`
+4. [经验/坑]    ……  → 建议写入 `主题/主档.md` 的「经验」节
+5. [上站]       ……  → 适合放到个人主页 cosmoswong.com 的哪个板块（作品集/工具箱/旅游/健身/收藏）
+（没有的项写「无」）
+要我现在写入吗？（是 / 只写第 N 项 / 都不写）
+</code></pre>
+<p>判断触发的标准（有一条就要提）：</p>
+<ul>
+<li>用户在本次对话里<strong>确认或否定</strong>了某个做法、偏好、规则</li>
+<li>完成了一个阶段性产物（策划案、原型、文档、报告、脚本工具）</li>
+<li>推进了某个项目的进度</li>
+<li>踩了坑、找到了原因、有可复用的解法</li>
+<li>用户说了「以后都这样」「记住」「下次注意」</li>
+<li>产出了适合放到个人主页 cosmoswong.com 展示的东西（判断标准见 <code>个人主页/个人主页.md</code>）</li>
+</ul>
+<p>用户回复后再写入；写入时<strong>修订原条目而非堆叠</strong>，与现有规则冲突则保留最新确认结论并注明替代关系。
+纯问答、闲聊、没有任何新结论的任务：提醒可以简化为一句「本次无需沉淀」。</p>
+<h2>5. 并行比稿规则</h2>
+<p>用户经常让多个工具各做一版来对比。规则：</p>
+<ul>
+<li>比稿产物<strong>留在各自工作区</strong>，文件名带工具后缀（<code>-claude</code> / <code>-codex</code> / <code>-dsh</code> / <code>-cowork</code>）。</li>
+<li><strong>比稿阶段任何工具都不写知识库</strong>（不动主档、不动进度）。</li>
+<li>用户选定后，由<strong>被选中的那个工具</strong>执行收工协议，把定稿和结论沉淀进去。</li>
+</ul>
+<h2>6. 子文件夹规范（防乱）</h2>
+<p>每个主题一个子文件夹，结构统一：</p>
+<pre><code>主题名/
+├── 主题名.md     ← 主档：稳定知识、规则、偏好、经验（必有）
+├── 进度.md       ← 做到哪了、下一步（有进行中的项目才建）
+├── 流程/         ← 该主题专属 SOP（需要时才建，入口 INDEX.md）
+└── 交付物/       ← 定稿成品（需要时才建）
+</code></pre>
+<ul>
+<li>新建子文件夹后，<strong>必须在根 <code>INDEX.md</code> 登记</strong>一行（做什么的 + 主档路径）。</li>
+<li>文件名用中文可读名，不用 <code>新建文件夹</code>、<code>未命名</code>、<code>(1)</code>。</li>
+<li>不得创建 <code>xxx-最新版.md</code>、<code>xxx(1).md</code> 这类平行版本；只有一个主档。</li>
+</ul>
+<h2>7. Git 与备份</h2>
+<ul>
+<li>整个 <code>我的知识库/</code> 是一个 git 仓库（私有 GitHub <code>wangyucosmos/my-knowledge-base</code>），用于备份和历史。</li>
+<li><code>卓望工作相关/卓望/</code> 有<strong>自己的</strong>仓库（<code>wangyucosmos/zhuowang-workspace</code>），在外层 <code>.gitignore</code> 里排除；它的提交推送规则见其 <code>AGENTS.md</code>。</li>
+<li>收工写入知识库后：<code>git add -A &amp;&amp; git commit -m &quot;docs: ...&quot;</code>，能联网的工具再 <code>git push</code>。</li>
+<li>Claude Cowork 连不上 GitHub：只本地 commit，由 Claude Code / Codex 或用户之后 push。</li>
+<li>同一时间只让一个工具改同一个主题的主档/进度（并行比稿见第 5 条）。</li>
+</ul>
+<h2>8. 冲突优先级</h2>
+<p>用户当前明确指令 &gt; 本库主档 &gt; 任何工具自己的记忆 / 历史材料 / 其他副本。</p>
+<h2>9. ChatGPT 网页版（通过 GitHub 插件读仓库）</h2>
+<p>ChatGPT 没有文件系统，读不到本地；但 <strong>GitHub 插件已连接</strong>（2026-09-15 验证能读私有仓库 <code>my-knowledge-base</code>），所以它读的是 GitHub 上<strong>最后一次 push</strong> 的版本，不再需要手动上传快照。</p>
+<ul>
+<li>Project「我的知识库」：指令写明先用插件读 <code>my-knowledge-base</code> 的 <code>知识库规则.md</code> + <code>INDEX.md</code>，按 INDEX 路由；卓望任务再转 <code>zhuowang-workspace</code>；DSH 问题先读运维手册合并版。</li>
+<li>Project「卓望」：指令写明每次开工读公开仓库 <code>zhuowang-workspace</code> 的 4 个 raw 直链（原文见 <code>~/Desktop/ChatGPT上传-我的知识库/1-粘贴到卓望Project指令.txt</code>）。两个 Project 都能碰到两个仓库，只是入口不同。</li>
+<li>ChatGPT 资料库里的旧 <code>卓望.md</code> / <code>AGENTS.md</code> 已删除；Project 里的 md 快照也已删除。<strong>不得再上传知识文件到资料库或 Project</strong>——只走仓库。「库访问权限」该账号关不掉，靠不放旧文件 + 指令声明兜底。</li>
+<li>因此「收工必 push」对 ChatGPT 尤其重要：本地改了没 push，ChatGPT 就看不到。</li>
+<li>ChatGPT 写不了仓库：它给出的「沉淀提醒」由用户转交 Claude Code / Codex 执行。</li>
+<li>GitHub 插件权限建议设为「写入前询问」，只让它读。</li>
+</ul>
+
+  </article>
+</main>
+<script src="/assets/data.js?v=20260913220000"></script>
+<script src="/assets/app.js?v=20260913220000"></script>
+</body>
+</html>

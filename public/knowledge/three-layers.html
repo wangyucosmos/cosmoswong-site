@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="为什么流程要放进仓库而不是各工具的本地技能，以及各工具的接入方式">
+<title>知识 / 进度 / 流程：三层分工 · Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css?v=20260913220000">
+<link rel="stylesheet" href="/assets/notes.css?v=20260913220000">
+</head>
+<body data-page="knowledge">
+<main class="wrap">
+  <div class="page-head"><p class="eyebrow"><a href="/knowledge">知识库</a> / 笔记</p><h1>知识 / 进度 / 流程：三层分工</h1>
+    <p>为什么流程要放进仓库而不是各工具的本地技能，以及各工具的接入方式</p></div>
+  <article class="kb">
+<blockquote>
+<p>本目录存<strong>怎么做</strong>（步骤、顺序、验收清单）；<code>卓望.md</code> 存<strong>是什么</strong>（业务规则、省份线索、样本、规范）。
+两者不重复：流程文件只写步骤并<strong>引用</strong> <code>卓望.md</code> 的章节名，不复述其中的知识内容。
+知识变了只改 <code>卓望.md</code>，流程文件通常不用动。</p>
+</blockquote>
+<hr>
+<h2>为什么流程放在仓库里</h2>
+<p>Claude、Codex／ChatGPT、DeepSeek 三方各有自己的本地技能机制（<code>.claude/skills</code>、<code>~/.codex/skills</code>、<code>.dsh/skills</code>），
+但<strong>本地技能一旦写入业务知识就会各自漂移</strong>——2026-08-25 已实测到 DeepSeek 本地技能仍写「三个重点省份」「原型默认高保真」，
+与当时的 <code>卓望.md</code> 不一致。</p>
+<p>因此约定<strong>三层分工</strong>：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>层</th>
+<th>放哪</th>
+<th>内容</th>
+<th>更新方式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>知识层</td>
+<td>仓库 <code>卓望.md</code></td>
+<td>业务规则、省份线索、样本、规范</td>
+<td>收工沉淀，git 提交</td>
+</tr>
+<tr>
+<td>流程层</td>
+<td>仓库 <code>流程/*.md</code>（本目录）</td>
+<td>步骤、顺序、验收清单</td>
+<td>发现更优流程时提交</td>
+</tr>
+<tr>
+<td>触发层</td>
+<td>各工具本地技能目录</td>
+<td>只写「何时触发 + 先 pull + 去读哪个流程文件」</td>
+<td>极少改动</td>
+</tr>
+</tbody></table></div>
+<p><strong>触发层不得包含任何业务知识。</strong> 本地技能里出现省份名单、奖励额度、视觉默认值、版式参数都属于违规，
+因为那些一定会过期。</p>
+<hr>
+<h2>流程清单</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>文件</th>
+<th>何时用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>开工检查.md</td>
+<td><strong>每次卓望任务开工，无条件先跑</strong></td>
+</tr>
+<tr>
+<td>活动策划.md</td>
+<td>用户给出「省份 + 主题 + 一句话需求」，要出策划案</td>
+</tr>
+<tr>
+<td>长H5原型.md</td>
+<td>要出活动页原型（HTML 长页 / 效果图 / Figma）</td>
+</tr>
+<tr>
+<td>Word交付.md</td>
+<td>产出正式 Word（策划案、活动规则、客服文档）</td>
+</tr>
+<tr>
+<td>省份规则更新.md</td>
+<td>用旧规则 Word + 最新页面截图，更新某省规则或客服文档</td>
+</tr>
+<tr>
+<td>交付前检查.md</td>
+<td><strong>交付任何成品前，无条件先跑</strong></td>
+</tr>
+<tr>
+<td>收工沉淀.md</td>
+<td><strong>每次收工前，无条件跑</strong></td>
+</tr>
+<tr>
+<td><a href="/knowledge/parallel-drafts">并行比稿.md</a></td>
+<td>用户让多个工具各做一版来对比时；比稿期间不写仓库</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>三方接入方式</h2>
+<p><strong>2026-09-15 起本仓库只有一份实体</strong>：<code>~/Documents/我的知识库/卓望工作相关/卓望/</code>。
+Claude Code（<code>claude code new/卓望/卓望知识库/zhuowang-workspace</code>）、Codex（<code>CODEX项目/拓维卓望/卓望知识库/zhuowang-workspace</code>）、
+DeepSeek Harness（<code>deepseek harness/卓望</code>）三个入口都是软链到它。本地即最新，GitHub 只做备份与历史；
+「开工先 pull」保留为安全检查。个人知识库总规则见上一级的 <code>我的知识库/知识库规则.md</code>。</p>
+<p>四个入口的能力不同，接法也不同：</p>
+<ul>
+<li><strong>Claude Code</strong> —— 项目 <code>.claude/skills/</code> 下的薄触发技能，会话内自动触发</li>
+<li><strong>Codex</strong> —— <code>~/.codex/skills/</code> 下的薄触发技能</li>
+<li><strong>DeepSeek Harness</strong> —— <code>.dsh/skills/</code> 下的薄触发技能</li>
+<li><strong>ChatGPT 网页版／Codex</strong> —— 账号侧 Skill（如「卓望活动运营」）<strong>只能当触发层</strong>。
+Skill 本体存在 OpenAI 账号里、<strong>不在本仓库</strong>，Claude 与 DeepSeek 物理上读不到，也没有版本历史可供验证，
+因此<strong>任何业务知识和执行步骤都不得写进 Skill 正文</strong>，只写「先读仓库」。没有 Skill 机制时，
+在项目自定义指令里写同一句话。</li>
+</ul>
+<p>四方共同认的是<strong>本仓库</strong>，不是某个本地技能文件。本地技能只是「把它们赶去读仓库」的开关。</p>
+<hr>
+<p>最后更新：2026-09-15</p>
+
+  </article>
+</main>
+<script src="/assets/data.js?v=20260913220000"></script>
+<script src="/assets/app.js?v=20260913220000"></script>
+</body>
+</html>

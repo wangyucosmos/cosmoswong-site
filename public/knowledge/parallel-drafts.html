@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="让多个 AI 各做一版来对比时，怎么避免互相覆盖">
+<title>并行比稿规则 · Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css?v=20260913220000">
+<link rel="stylesheet" href="/assets/notes.css?v=20260913220000">
+</head>
+<body data-page="knowledge">
+<main class="wrap">
+  <div class="page-head"><p class="eyebrow"><a href="/knowledge">知识库</a> / 笔记</p><h1>并行比稿规则</h1>
+    <p>让多个 AI 各做一版来对比时，怎么避免互相覆盖</p></div>
+  <article class="kb">
+<blockquote>
+<p>用户让 Claude Code / Codex / DeepSeek Harness / Cowork 中的多个工具各做一版同一个东西来对比时用。</p>
+</blockquote>
+<h2>背景</h2>
+<p>2026-09-15 起，三个工具的 <code>zhuowang-workspace</code> 入口都是软链，指向<strong>同一份实体</strong>
+（<code>我的知识库/卓望工作相关/卓望/</code>）。本地即最新，不再靠 GitHub 互传。
+代价：两个工具往<strong>同一个文件路径</strong>写，后写的会盖掉先写的，git 拦不住。</p>
+<h2>规则</h2>
+<ol>
+<li><strong>比稿产物留在各自工作区</strong>（<code>claude code new/卓望/</code>、<code>CODEX项目/拓维卓望/</code>、<code>deepseek harness/</code>、Cowork 用 <code>我的知识库/_草稿-cowork/</code>），
+不放进本仓库。</li>
+<li>文件名带工具后缀：<code>xxx-claude.html</code> / <code>xxx-codex.html</code> / <code>xxx-dsh.html</code> / <code>xxx-cowork.html</code>。</li>
+<li><strong>比稿阶段任何工具都不动 <code>卓望.md</code>、<code>进度.md</code>、<code>流程/</code></strong>。开工检查照跑（只读），收工沉淀跳过，
+收工时只说一句「比稿阶段，未写入仓库，等用户选定」。</li>
+<li>用户选定某一版后，<strong>由被选中的那个工具</strong>跑 <code>收工沉淀.md</code>：<ul>
+<li>定稿复制进本仓库对应项目目录，文件名去掉工具后缀、加「定稿」或版本号</li>
+<li>更新 <code>进度.md</code></li>
+<li>有稳定结论再更新 <code>卓望.md</code></li>
+<li>提交推送</li>
+</ul>
+</li>
+<li>落选版本不进仓库，留在各自工作区即可。</li>
+</ol>
+<h2>验收</h2>
+<ul>
+<li><input disabled="" type="checkbox"> 仓库里没有出现带 <code>-claude/-codex/-dsh/-cowork</code> 后缀的文件</li>
+<li><input disabled="" type="checkbox"> 比稿期间 <code>git -C &lt;仓库&gt; status --short</code> 为空</li>
+<li><input disabled="" type="checkbox"> 选定后只有一个工具做了沉淀，<code>进度.md</code> 只有一条对应更新</li>
+</ul>
+
+  </article>
+</main>
+<script src="/assets/data.js?v=20260913220000"></script>
+<script src="/assets/app.js?v=20260913220000"></script>
+</body>
+</html>

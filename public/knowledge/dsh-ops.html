@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="升级 SOP、排错顺序、症状速查、回退方案（无密钥版）">
+<title>DeepSeek Harness 运维与故障修复手册 · Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css?v=20260913220000">
+<link rel="stylesheet" href="/assets/notes.css?v=20260913220000">
+</head>
+<body data-page="knowledge">
+<main class="wrap">
+  <div class="page-head"><p class="eyebrow"><a href="/knowledge">知识库</a> / 笔记</p><h1>DeepSeek Harness 运维与故障修复手册</h1>
+    <p>升级 SOP、排错顺序、症状速查、回退方案（无密钥版）</p></div>
+  <article class="kb">
+<h1>DeepSeek Harness 运行维护与故障修复手册（合并定稿版）</h1>
+<blockquote>
+<p><strong>本文无密钥、无 token、无 cookie，可直接外发。</strong>
+本文件合并了「DSH 自身实测取证版」与「ChatGPT + Codex 联合经验版」两份手册，冲突之处已逐条核查并给出结论。</p>
+</blockquote>
+<h2>0. 怎么用这份文档（最高优先级规则）</h2>
+<ol>
+<li><strong>先读 Harness 自己生成的最新维护文档</strong>（本文件即其中之一）；</li>
+<li><strong>再核验本机真实状态</strong>（版本 / DSH_HOME / PID / launchd / 端口 / 日志）；</li>
+<li><strong>只有核验通过后才允许修改</strong>；</li>
+<li>优先级：<strong>当前机器真实状态 &gt; 本文件 &gt; 旧聊天记录与旧手册</strong>。</li>
+</ol>
+<p>本文件每条内容都带标签，请按标签决定信任程度：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>标签</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>【长期规则】</td>
+<td>与版本无关的稳定结论，可直接照做</td>
+</tr>
+<tr>
+<td>【已验证】</td>
+<td>2026-09-12 在本机实测/取证过，附证据文件</td>
+</tr>
+<tr>
+<td>【历史快照】</td>
+<td>当时的状态记录，<strong>使用前必须重新核验</strong></td>
+</tr>
+<tr>
+<td>【待复核】</td>
+<td>证据不足或与其它记载冲突，需现场确认</td>
+</tr>
+</tbody></table></div>
+<blockquote>
+<p>任何 PID、版本号、插件状态、端口、路径都可能在将来变化——<strong>不要把历史快照当永久事实</strong>。</p>
+</blockquote>
+<hr>
+<h2>1. 使用导航</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>你的处境</th>
+<th>跳转</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>页面打不开 / 白屏 / 一直转圈</td>
+<td>§5 → §14（回退 RC8）</td>
+</tr>
+<tr>
+<td><strong>Chrome 无限弹新标签页</strong></td>
+<td><strong>§4（含完整根因，能省几小时）</strong></td>
+</tr>
+<tr>
+<td>侧边栏工作区是空的 / 历史会话不见了</td>
+<td>§11（数据完整性三层模型）</td>
+</tr>
+<tr>
+<td>要升级到新版本</td>
+<td>§13（升级 SOP + 预检 + 红线）</td>
+</tr>
+<tr>
+<td>要删旧环境 / 回收磁盘</td>
+<td>§15（删除 Guard + 退役计划）</td>
+</tr>
+<tr>
+<td>给别的 AI 交代任务</td>
+<td>§18（接管提示词模板）</td>
+</tr>
+<tr>
+<td>想快速定位症状</td>
+<td>§17（症状→病因速查表）</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>2. 环境快照【历史快照·2026-09-12 实测】</h2>
+<h3>2.1 生产设施</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>生产版本</td>
+<td><strong>0.1.5-rc.2</strong>（代号 RC9；上一个是 0.1.0-rc.8 = RC8）</td>
+</tr>
+<tr>
+<td>生产 <code>DSH_HOME</code></td>
+<td><code>~/.dsh-rc9-clean</code></td>
+</tr>
+<tr>
+<td>CLI 安装（隔离）</td>
+<td><code>~/.local/lib/dsh-versions/0.1.5-rc.2/</code>（<strong>故意不覆盖全局安装</strong>）</td>
+</tr>
+<tr>
+<td>全局旧 CLI（回退用）</td>
+<td><code>~/.local/lib/node_modules/@deepseek-ai/dsh</code>（0.1.0-rc.8）</td>
+</tr>
+<tr>
+<td>用户入口</td>
+<td><code>~/.local/bin/dsh</code>（包装器，绑定 <code>DSH_HOME</code>，防止回落到旧 <code>~/.dsh</code>）</td>
+</tr>
+<tr>
+<td>服务</td>
+<td><code>http://127.0.0.1:3080</code>，PID 记于 <code>~/Library/Logs/DeepSeek Harness/rc9-server.pid</code></td>
+</tr>
+<tr>
+<td>Node</td>
+<td><code>~/.hermes/node/bin/node</code></td>
+</tr>
+<tr>
+<td>LaunchAgent</td>
+<td><code>~/Library/LaunchAgents/ai.deepseek.harness.server.plist</code>，<code>RunAtLoad=false</code> + <code>KeepAlive=false</code></td>
+</tr>
+<tr>
+<td>默认模型</td>
+<td><code>deepseek-official / deepseek-v4-flash-vision-exp</code>（原生多模态）</td>
+</tr>
+</tbody></table></div>
+<h3>2.2 三个启动/回退脚本（<strong>使用前先读它们的当前内容</strong>）</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>脚本</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.local/bin/dsh-rc9-serve</code></td>
+<td>真正的启动命令：固定 rc9 CLI + 正式 DSH_HOME + 视觉配置路径；<strong>强制 <code>--no-open</code></strong>；端口被占则拒绝启动；PATH 已前置 <code>~/.hermes/node/bin</code></td>
+</tr>
+<tr>
+<td><code>~/.local/bin/dsh-rc9-start [--open]</code></td>
+<td>按需启动：停/复用判定 + PID 与命令行双重校验 + 认证 readiness（token GET=200）+ 只在 <code>--open</code> 时打开一次页面</td>
+</tr>
+<tr>
+<td><code>~/.local/bin/dsh-rc8-start [--open]</code> + <code>dsh-rc8-serve</code></td>
+<td><strong>回退到 RC8</strong> 的对应实现（本次新增，配套手动步骤见 §14）</td>
+</tr>
+</tbody></table></div>
+<p>两者都内置一条守卫【已验证】：启动前若发现 <strong>旧的 <code>ai.deepseek.harness.switch</code> job 仍在加载</strong>，会直接拒绝启动——这个守卫是为 §4 的事故专门加的。</p>
+<h3>2.3 桌面 App【已验证】</h3>
+<ul>
+<li><code>~/Applications/DeepSeek Harness.app</code>：<strong>原生 Swift/AppKit + WKWebView 壳</strong>（Mach-O arm64，bundle id <code>ai.deepseek.harness.rc9.native</code>，图标 <code>AppIcon.icns</code>）。</li>
+<li>行为：调用 <code>~/.local/bin/dsh-rc9-start</code>（<strong>不传 <code>--open</code></strong>）→ 从 <code>~/Library/Logs/DeepSeek Harness/rc9-server.log</code> 里用正则取最新 <code>http://127.0.0.1:3080/?token=...</code> → 在独立窗口里加载。<strong>App 退出不杀服务。</strong></li>
+<li>历史版本备份：<code>DeepSeek Harness.app.backup-20260912-184837</code>（376K）、<code>.backup-before-native-20260912-190814</code>（780K，是更早的 <strong>AppleScript applet</strong>）。</li>
+<li>图标异常（白卷纸）：检查 <code>Contents/Resources/AppIcon.icns</code>、<code>Info.plist/CFBundleIconFile</code>、bundle id、codesign，以及 LaunchServices/Dock 缓存；<strong>不要另生成一套不一致的图标</strong>。</li>
+</ul>
+<h3>2.4 插件与 profile【已验证】</h3>
+<p><code>~/.dsh-rc9-clean/profiles/web/package.json</code> 的 <code>dsh.profile.bundles</code>：
+<code>@deepseek-ai/dsh-base</code>、<code>@deepseek-ai/dsh-web-app</code>、<code>dsh-memory</code>、<code>dsh-design-skills</code>、<code>dsh-free-vision</code>、<code>dshmarket</code>、<code>@linxin666/dsh-skins</code>、<code>@linxin666/dsh-client-ui-task-board</code>、<code>dsh-cost-meter</code></p>
+<p>依赖版本：task-board 0.3.20、skins 0.2.9、cost-meter 1.7.20、market 1.45.1、free-vision 1.0.8（<strong>保持 disabled</strong>）、memory/design-skills 走 <code>file:</code> 指向 <strong>rc9 自己的 vendor</strong>：</p>
+<pre><code>file:/Users/…/.dsh-rc9-clean/vendor/dsh-memory
+file:/Users/…/.dsh-rc9-clean/vendor/dsh-design-skills
+</code></pre>
+<p>【已验证】vendor 已自包含（不再引用待删的旧 <code>~/.dsh</code>），lockfile 里的 <code>file:</code> 全指向 rc9 自身。</p>
+<p>已移除的（0.1.5 不兼容）：<code>@lmmzss/dsh-plugin-balance</code>、<code>@linxin666/dsh-client-ui-aionui-panel</code>；替代品 = <code>dsh-cost-meter</code>。</p>
+<h3>2.5 工作区【已验证】</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>工作区</th>
+<th>会话</th>
+<th>路径</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>deepseek harness</td>
+<td>19</td>
+<td><code>~/Documents/deepseek harness</code></td>
+</tr>
+<tr>
+<td>卓望</td>
+<td>4</td>
+<td><code>~/Documents/我的知识库/卓望工作相关/卓望</code>（旧位置有符号链接指过来）</td>
+</tr>
+<tr>
+<td>求职</td>
+<td>4</td>
+<td><code>~/Documents/我的知识库/求职相关/求职</code>（同上）</td>
+</tr>
+<tr>
+<td>我的知识库</td>
+<td>2</td>
+<td><code>~/Documents/我的知识库</code></td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>3. 排错总顺序【长期规则】</h2>
+<p>出任何问题，按这个顺序查，<strong>不要从底层数据开始乱修</strong>：</p>
+<pre><code>A. 当前真实版本与 CLI 路径（command -v dsh / cat ~/.local/bin/dsh / dsh --version）
+↓
+B. DSH_HOME（echo $DSH_HOME，实际进程用的是哪个）
+↓
+C. 所有 Harness 相关 launchd job（不止 server！见 §5）
+↓
+D. PID / PPID / PGID / 监听端口 / 启动时间
+↓
+E. 日志与信号（rc9-server.log、server.log、exit code、SIGTERM）
+↓
+F. credentials / config schema（按**当前版本源码**校验）
+↓
+G. 核心 profile 与 bundles
+↓
+H. 插件（逐个兼容审计）
+↓
+I. MCP（真实调用，而非只看进程）
+↓
+J. UI / 索引 / 缓存
+↓
+K. 数据完整性（最后才碰数据）
+</code></pre>
+<p><strong>永远不要&quot;重装碰运气&quot;。</strong> 先定位根因，再做最小修复。</p>
+<p><strong>判断「Host 是否真的重启过」，只认三样</strong>：<code>lsof -nP -iTCP:3080 -sTCP:LISTEN -t</code> 的 PID、<code>~/Library/Logs/DeepSeek Harness/rc9-server.pid</code>、以及<strong>投递脚本自己的日志文件是否存在</strong>。不要只信自己回显的「已投递／已执行」——2026-09-15 连续两次翻车都栽在这上面（§5.4）。</p>
+<hr>
+<h2>4. 「Chrome 无限弹新标签页」的完整根因【已验证·三方证据合流】</h2>
+<h3>4.1 现象</h3>
+<p>rc8 → rc9 升级过程中，Chrome 不断自动打开新的 Harness 页面，人工抢救数小时。</p>
+<h3>4.2 三层机制（缺任何一层都不会失控）</h3>
+<pre><code>【第一层｜反复被杀/反复退出】——两个驱动源，当时同时存在
+  a) 旧的 launchd job `ai.deepseek.harness.switch` 托管着 switch-to-rc9.sh 循环执行；
+     该脚本第 13 行是 `pkill -f &quot;dsh-versions/0.1.5-rc.2&quot;` → 每轮都把 rc9 杀掉。
+     rc9 把 SIGTERM 正常映射为 exit 0，所以日志里&quot;正常退出&quot;是假象。
+  b) 插件树启动崩溃：0.1.5 的 @deepseek-ai/dsh-settings 不再导出 installSettingsSection，
+     rc8 带过来的 @linxin666/* 0.2.5（由 dsh-skins 引入的 skin-center）import 失败
+     → `dsh: plugin tree failed to load` → 进程直接退出。
+        ↓
+【第二层｜自动重启】server plist 当时是 KeepAlive=true + RunAtLoad=true
+  → 进程一退出就立刻被拉起，形成死循环。
+        ↓
+【第三层｜每次启动都开浏览器】当时的启动命令是 `dsh web --port 3080`（缺 --no-open）
+  → 每次拉起都&quot;打开默认浏览器&quot; → 每循环一次 = 一个 Chrome 标签页。
+</code></pre>
+<h3>4.3 决定性证据</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>证据文件</th>
+<th>证明什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.dsh-rc9-clean/switch-to-rc9.sh</code> 第 3、13、26–28 行</td>
+<td>switch 脚本由 launchd 托管、含 <code>pkill -f dsh-versions/0.1.5-rc.2</code>、每轮 bootout/bootstrap server job</td>
+</tr>
+<tr>
+<td>34 个 <code>~/Library/LaunchAgents/ai.deepseek.harness.server.plist.before-switch-*</code></td>
+<td>该脚本<strong>至少运行了 34 次</strong>（每轮生成一个备份）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/.full-start.log</code></td>
+<td>插件树崩溃的完整堆栈（<code>installSettingsSection</code> 缺失）</td>
+</tr>
+<tr>
+<td>旧 <code>server.log</code>：28 次 <code>dsh web: http://…</code> + 28 次 <code>opening the default browser</code></td>
+<td>28 次启动 = 28 个自动弹出的标签页</td>
+</tr>
+<tr>
+<td><code>plist.before-0.1.5-rc.2</code> / <code>plist.before-lifecycle-fix-20260912-123047</code></td>
+<td>旧 plist 确实是 <code>KeepAlive=true</code>+<code>RunAtLoad=true</code>+无 <code>--no-open</code></td>
+</tr>
+<tr>
+<td><code>launchctl print gui/501/ai.deepseek.harness.switch</code> → 现已 &quot;Could not find service&quot;</td>
+<td>该 job 现在已不存在（事故后已清理）</td>
+</tr>
+</tbody></table></div>
+<h3>4.4 两份文档的分歧与结论</h3>
+<ul>
+<li>Codex 侧重 <strong>launchd 的 <code>switch</code> job 循环 pkill</strong>；</li>
+<li>DSH 自查侧重 <strong>插件树崩溃 + server plist KeepAlive + 缺 <code>--no-open</code></strong>；</li>
+<li><strong>结论：两者都对，且是同一个事故的不同层次。</strong> switch job 提供了&quot;反复杀/反复重启&quot;的驱动，插件崩溃提供了&quot;进程自己也会退&quot;的驱动，server plist 的 KeepAlive 把任何退出都放大成循环，<code>--no-open</code> 的缺失则把每次循环变成一个新标签页。</li>
+<li><strong>因此修复必须三处同时做</strong>，只修一处仍会复现：</li>
+</ul>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>修复项</th>
+<th>现状</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 清掉/不加载旧的 <code>switch</code> job；禁止重跑旧 switch 脚本</td>
+<td>【已验证】已不存在；启动脚本内置守卫</td>
+</tr>
+<tr>
+<td>2. 插件升到兼容版本（0.2.5 → 0.3.20），踢掉不兼容插件</td>
+<td>【已验证】见 §2.4</td>
+</tr>
+<tr>
+<td>3. plist 改 <code>RunAtLoad=false</code>+<code>KeepAlive=false</code>；启动命令带 <code>--no-open</code>；开页面仅由显式 <code>--open</code> 触发</td>
+<td>【已验证】见 §2.2</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>5. launchd 长期规则【长期规则】</h2>
+<h3>5.1 排查时必须枚举所有 Harness 相关 label</h3>
+<pre><code class="language-bash">launchctl list 2&gt;/dev/null | grep -i -E &quot;harness|deepseek|dsh&quot;
+launchctl print &quot;gui/$(id -u)/ai.deepseek.harness.server&quot;    # 单个 label 的详情
+ls -la ~/Library/LaunchAgents/ | grep -i harness
+</code></pre>
+<p>重点排查 label 名里含：<strong>switch / watcher / monitor / updater / legacy</strong>。本次事故的真凶就是 <code>ai.deepseek.harness.switch</code>，而不是 <code>server</code>。</p>
+<h3>5.2 不要盲目 KeepAlive</h3>
+<p><code>KeepAlive=true</code> + 自动开浏览器 + 启动异常 = 无限循环。生产入口改为<strong>显式启动脚本 + 按需拉起</strong>。</p>
+<h3>5.3 <code>Bootstrap failed: 5: Input/output error</code> 不要立刻 sudo</h3>
+<p>先检查：plist 语法（<code>plutil -lint</code>）、owner/permissions、xattr（<code>xattr -l</code>）、label 是否已存在、service 是否被 disable、真实 executable 是否存在。
+<strong>不要</strong>立刻 <code>sudo</code> / 删 plist / 重建全部配置。（本次该报错最终是良性重试即可。）</p>
+<h3>5.4 投递「一次性延迟任务」：不要用 <code>launchctl submit</code>【2026-09-15 实测翻车】</h3>
+<p>场景：想做到&quot;回答先送达、再重启 Host&quot;。两种投递方式都真实踩过坑：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>投递方式</th>
+<th>现象</th>
+<th>原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>setsid nohup … &amp;</code></td>
+<td>静默失败，脚本<strong>根本没跑</strong>，只剩&quot;已投递&quot;的错觉</td>
+<td><strong>macOS 没有 <code>setsid</code></strong>（Linux 才有）；重定向到 <code>/dev/null</code> 把报错吞了</td>
+</tr>
+<tr>
+<td><code>launchctl submit -l &lt;label&gt;</code></td>
+<td>第一遍正常，紧接着<strong>自动跑第二遍</strong> → 杀 Host → 起新的 → 再杀，反复弹标签页（§4 同机制）</td>
+<td>submit 的作业退出后<strong>会被 launchd 自动重拉</strong></td>
+</tr>
+</tbody></table></div>
+<p>正确做法：</p>
+<ol>
+<li>用 <code>launchctl submit</code> 之后<strong>必须</strong>在结束时 <code>launchctl remove &lt;label&gt;</code>；排查时先确认没有残留作业。</li>
+<li>更稳的路径：<code>kill &quot;$(cat ~/Library/Logs/DeepSeek\ Harness/rc9-server.pid)&quot;</code> → 等 3080 释放 → <code>~/.local/bin/dsh-rc9-start --open</code>（§6），且这个动作<strong>要脱离被杀的会话</strong>执行（杀宿主会连带杀掉该会话的 shell）。</li>
+<li>无论哪种，<strong>只认三样</strong>判断&quot;是否真重启&quot;：监听 PID、<code>rc9-server.pid</code>、投递脚本自己的日志（§3）。</li>
+</ol>
+<blockquote>
+<p>2026-09-15 实例：旧 PID 50412 → 新 PID 78177（10:46:44 起）；第二遍循环在 30 秒延迟期内被 <code>launchctl remove</code> + <code>pkill</code> 拦下，宿主未被二次杀。</p>
+</blockquote>
+<hr>
+<h2>6. 认证与健康检查【长期规则】</h2>
+<p>带认证的入口，正常流程是：</p>
+<pre><code>未认证 GET /            → 401
+带启动 token GET /?token=… → 设置 cookie → 跳转 /
+带有效 cookie GET /     → 200
+</code></pre>
+<p>所以：</p>
+<pre><code class="language-bash">curl -sI --noproxy &#39;*&#39; http://127.0.0.1:3080/        # 401 可能是健康的
+</code></pre>
+<p><strong>401 ≠ 服务挂了。</strong> 本机装过代理，<code>curl</code> 不加 <code>--noproxy &#39;*&#39;</code> 可能得到误导性的 502。</p>
+<p>完整健康验收（四件套，缺一不可）：</p>
+<pre><code class="language-bash">lsof -nP -iTCP:3080 -sTCP:LISTEN -t                 # 1) 端口在听
+cat ~/Library/Logs/DeepSeek\ Harness/rc9-server.pid # 2) PID 与之一致
+grep -o &#39;http://127.0.0.1:3080/?token=[A-Za-z0-9_-]*&#39; \
+  ~/Library/Logs/DeepSeek\ Harness/rc9-server.log | tail -1   # 3) 拿新 token
+# 4) 打开页面确认可用（或 ~/.local/bin/dsh-rc9-start --open）
+</code></pre>
+<p><strong>token 每次启动都不同</strong>，重启后必须用新链接（App 会自动从日志里取最新一条）。</p>
+<hr>
+<h2>7. credentials 修复规则【长期规则】</h2>
+<p>本次踩过：<code>version must be a string</code> / <code>refs must be a string</code>。</p>
+<p>当前（0.1.5-rc.2）<code>.credentials.yaml</code> 顶层形态：</p>
+<pre><code class="language-yaml">version: 1          # 数字，不是字符串 &quot;1&quot;
+refs:               # mapping，不是字符串
+  …: …
+records:
+  …:
+</code></pre>
+<p>当时真正的修改只有两处：顶层 <code>version: &quot;1&quot; → 1</code>；<code>records[&quot;client-connection/browser-session&quot;].payload.version: &quot;1&quot; → 1</code>。其余（refs 结构、records 结构、API Key、secret）<strong>一律不动</strong>。</p>
+<p>规则：</p>
+<ol>
+<li>先备份原文件；</li>
+<li><strong>先确认当前真正运行的 CLI 源码</strong>（不是记忆里的版本）；</li>
+<li>读完整 parser，再读具体消费者的 schema；</li>
+<li>不按第一条报错逐字段猜改；</li>
+<li>不打印完整 API Key / cookie / token；</li>
+<li>不把 <code>refs</code>/<code>records</code> 整体转成字符串；</li>
+<li>改完做完整结构比对，确认只有必要字段变化；</li>
+<li>parser 通过后再启动服务。</li>
+</ol>
+<hr>
+<h2>8. 插件：兼容审计与恢复优先级【长期规则】</h2>
+<h3>8.1 判定方法（0.1.5 的坑最多）</h3>
+<ol>
+<li>0.1.5 <strong>删除了三个前端模块</strong>，引用它们的插件必崩：<code>@deepseek-ai/dsh-client-runtime</code>、<code>@deepseek-ai/dsh-client-ui-slots</code>、<code>@deepseek-ai/dsh-client-ui-primitives</code>。</li>
+<li>同族坑：<code>@deepseek-ai/dsh-settings</code> <strong>不再导出 <code>installSettingsSection</code></strong>（本次事故根因之一）。</li>
+<li><strong>&quot;发布时间新&quot; ≠ 兼容</strong>：实测有&quot;刚发布&quot;的插件照样 inject 已删模块。</li>
+<li>判据顺序：① 包元数据 <code>dsh.compatibility.dshReleases</code> 兼容矩阵 → ② <code>dsh.engines.dsh &gt;= 0.1.5-rc.1</code> 且 <strong>client 无 inject 声明</strong> → ③ <code>--dump-config</code> + 真启动看日志。</li>
+<li>权威可用清单：<code>~/.dsh-rc9-clean/profiles/node_modules/@deepseek-ai/</code>。</li>
+<li><strong>warning ≠ fatal</strong>：例如 <code>session/list: no active Remote method exports this endpoint</code> 只是降级发现；先证明因果，再考虑禁用。</li>
+<li>**<code>npm/pnpm 能装 ≠ 兼容**；</code>plugin add<code>退出码 1 也可能是**既有插件**（free-vision / sharp）引发的</code>ERR_PNPM_IGNORED_BUILDS<code>，不一定是新插件失败——先看 </code>dependencies<code>/</code>bundles<code>/</code>dump-config`。</li>
+</ol>
+<h3>8.2 恢复优先级</h3>
+<pre><code>P0 核心数据   credentials / sessions / workspace
+P1 能力       memory / design-skills / vision
+P2 工具       market / cost-meter
+P3 MCP        Playwright / Figma / 其它
+P4 UI         skins / task board / panel
+P5 高风险     老旧主题 / aqua / 未更新插件
+</code></pre>
+<p><strong>不要拿 rc8 的插件清单当 rc9 的必恢复清单。</strong></p>
+<h3>8.3 老环境 <code>file:</code> 依赖必须 vendor 自包含</h3>
+<p>历史上的坑：<code>package.json</code> 仍写 <code>file:/Users/…/.dsh/plugins-source/…</code>，一旦 <code>pnpm install</code> 就会重新依赖待删的旧 <code>~/.dsh</code>。
+正确做法：把运行实体放到 <code>NEW_DSH_HOME/vendor/</code>，让 <code>package.json</code>/lockfile 指向新位置。<strong>【已验证】rc9 现在已指向自己的 vendor。</strong></p>
+<hr>
+<h2>9. MCP【长期规则】</h2>
+<ul>
+<li>逐个恢复，<strong>必须做真实调用</strong>，不能只看进程存在；</li>
+<li><strong>Playwright</strong>：<code>browser_navigate</code> 打开 <code>https://example.com</code> 读到 <code>Example Domain</code> = 通过；</li>
+<li><strong>Figma</strong>：必须同时看 <code>figma_status</code> 的 <code>pluginConnected</code> / <code>sessions</code>。
+【已验证】本机现状：<code>pluginConnected=false</code>、<code>sessions=[]</code>、bridge 端口在跑 → 即 <strong>MCP server 正常，但 Figma 桌面端 Bridge 未连接</strong>；要在 Figma Desktop → Plugins → Development → <strong>Figma UI MCP Bridge → Run</strong>。<strong>这种情况不能写成&quot;Figma 全部通过&quot;。</strong></li>
+<li><strong>Open Design / 其它第三方 MCP</strong>：动态端口、token 来源、IPC、workspace 注入、cwd、生命周期都未证明前，<strong>保持暂停迁移</strong>（旧 <code>OD_DAEMON_URL=http://127.0.0.1:56060</code> 已不可靠）。</li>
+</ul>
+<hr>
+<h2>10. 视觉能力：原生 Vision 与 free-vision 必须区分【已验证】</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>当前生效</td>
+<td><strong>原生 <code>deepseek-v4-flash-vision-exp</code></strong>（<code>settings.yaml</code> 里 <code>inputModalities: [text, image]</code>）</td>
+</tr>
+<tr>
+<td>free-vision</td>
+<td>已 <strong>disabled</strong>（<code>profiles/web/cordis.patch.yml</code> 里 <code>- id: free-vision / disabled: true</code>），<strong>不要因为 rc8 经验擅自恢复</strong></td>
+</tr>
+<tr>
+<td>实测</td>
+<td>拖入图片识图成功（红圆 / 蓝方 / 绿三角）</td>
+</tr>
+</tbody></table></div>
+<p><strong>排查&quot;能拖入图片但提示模型不支持&quot;要分层</strong>：附件已进输入框 ✅ → 发送前 capability guard ❌。要查：当前会话模型 capability、附件路由、原生 vision、free-vision、第三方 provider。<strong>不要第一反应重装 free-vision。</strong></p>
+<h3>10.1 分辨率常识【已验证】</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>RC8（0.1.0-rc.8）</th>
+<th>RC9（0.1.5-rc.2）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单边硬上限</td>
+<td><strong>2000px</strong>（超出报错）</td>
+<td><strong>8192px</strong></td>
+</tr>
+<tr>
+<td>总像素</td>
+<td>40M</td>
+<td>64M</td>
+</tr>
+<tr>
+<td>单图 / 单条消息</td>
+<td>—</td>
+<td>20MB / 20 张 / 200MB</td>
+</tr>
+<tr>
+<td>送给模型</td>
+<td>原图 base64</td>
+<td><strong>先按面积预算压缩</strong>：默认 <strong>640,000 像素</strong>（<code>imagePixelBudget</code>，可设数字或 <code>&quot;low&quot;</code>=512×512），单张 ≤1MB</td>
+</tr>
+</tbody></table></div>
+<p>证据：本机 <code>attachments/v1/request-images/</code> 里那张请求图是 1170×546 = <strong>638,820 px</strong>，正好卡在 64 万预算之下。
+<strong>想更清晰</strong>：调 <code>settings.yaml</code> → <code>llm-deepseek.models[].imagePixelBudget</code>。</p>
+<hr>
+<h2>11. 历史会话与工作区：数据完整性三层模型【已验证】</h2>
+<p><strong>&quot;UI 看不到&quot; ≠ &quot;数据丢了&quot;。</strong> 必须分三层查：</p>
+<pre><code>第 1 层：真实 session 文件（磁盘）        ← 唯一的事实来源
+第 2 层：workspace.json 的归属记录        ← 只是索引
+第 3 层：UI 的显示（折叠/排序/过滤/草稿） ← 只是表现
+</code></pre>
+<h3>11.1 session 文件是 Zstandard 多帧，不要只解第一帧</h3>
+<p>rc9 的 <code>session.v3.jsonl.zstd</code> 可以包含<strong>多个独立 Zstd frame</strong>。只解第一帧只会看到 header，从而误判&quot;聊天内容丢了&quot;。正确做法：扫描完整 frame 边界 → 逐帧解压 → 拼接 JSONL → 分析事件（title / user / assistant / system event / runtime append / session-end-seed）。</p>
+<h3>11.2 文件 hash 变了 ≠ 历史被覆盖</h3>
+<p>正常运行会追加 <code>session/end-seed</code>、runtime event、新消息，导致整文件 hash 改变。<strong>&quot;发生追加&quot;与&quot;原历史被覆盖&quot;是两件事</strong>（可用 frame 边界分析 + 原始前缀字节 hash 比对确认原始数据仍作为完整前缀存在）。</p>
+<h3>11.3 工作区↔会话的归属规则（<strong>最容易误判的一条</strong>）</h3>
+<p>DSH 判定会话属于哪个工作区的规则是：<strong>把会话 header 的 <code>cwd</code> 与工作区记录的 <code>path</code> 都做 <code>fs.realpath</code> 规范化，再字符串相等才归属</strong>（<code>dsh-workspace/lib/index.js:117</code> + <code>realpathNormalize</code>）。</p>
+<p>三条推论【已验证】：</p>
+<ol>
+<li><strong>目录一旦被删除，该目录下的会话会全部掉进侧边栏「未分组」</strong>——即使 <code>workspace.json</code> 的 <code>sessionIds</code> 还记着它们。本次实例：<code>…/deepseek harness/卓望</code>（4 会话）与 <code>…/deepseek harness/求职</code>（4 会话）删除后全部失联（当时「未分组」里有 29 个会话）。</li>
+<li><strong>只改 <code>workspace.json</code> 的 path 没用</strong>：会话 cwd 是历史事实，改记录改不了会话；必须让<strong>旧 cwd 那个路径能被 <code>realpath</code> 解析</strong>。</li>
+<li><strong>归属索引在 Host 启动时建立</strong>（<code>replaceHeaderIndex</code> + <code>bootstrap</code>）→ <strong>改完必须重启 Host，刷新浏览器页面无效</strong>（已实测）。</li>
+</ol>
+<p><strong>本次采用的正确修复（两步都要 + 重启）</strong>：</p>
+<pre><code class="language-bash"># ① 工作区记录指向知识库真实目录
+# ② 在旧位置建符号链接指向真实目录（不复制数据，读写同一份）
+ln -s &quot;~/Documents/我的知识库/卓望工作相关/卓望&quot; \
+      &quot;~/Documents/deepseek harness/卓望&quot;
+ln -s &quot;~/Documents/我的知识库/求职相关/求职&quot; \
+      &quot;~/Documents/deepseek harness/求职&quot;
+# ③ 重启 Host
+~/.local/bin/dsh-rc9-start --open
+</code></pre>
+<p>【已验证】结果：侧边栏「卓望」「求职」各恢复 4 个会话，内容读写落在知识库那一份。</p>
+<h3>11.4 反例记录（曾经的错误猜测）</h3>
+<p>&quot;卓望是空的，是因为建知识库时把聊天搬走了&quot;——<strong>证据不支持这个结论</strong>。当时的真相是：目录被删 → 归属索引失配 → 会话落到「未分组」；session 文件本身完好（<code>session/list</code> 能返回全部四条，rc8 与 rc9 成员一致）。</p>
+<hr>
+<h2>12. 配置与存储语义【已验证·长期规则】</h2>
+<h3>12.1 <code>workspace.json</code> 是「单文件 unit」，改它必须停 Host</h3>
+<p><code>~/.dsh-rc9-clean/storages/workspace.json</code>：Host 启动时把内容读进<strong>内存</strong>，此后每次工作区变更都用内存快照<strong>整体重写</strong>该文件，<strong>没有文件监视器</strong>。所以：</p>
+<ul>
+<li>运行时手改 → ① 不重启不生效；② 可能被下一次写入覆盖。</li>
+<li>正确姿势：<strong>停 Host → 改文件 → 重启</strong>（已封装为 <code>~/Documents/deepseek harness/dsh-rc9-repoint-workspaces.sh</code>，幂等）。</li>
+</ul>
+<p>另：DSH 的 workspace <strong>只支持 create / rename / delete，path 创建后不可改</strong>（域层只有 <code>setTitle</code>）。要&quot;重指路径&quot;只能停机手改文件，或删掉旧记录重新添加。</p>
+<h3>12.2 记忆文件 <code>DD.md</code> 的迁移陷阱</h3>
+<p>迁移时点之后写入的条目只会在<strong>旧家目录</strong>里。本次：rc9 目录 17:41 复制，而新条目 18:36 才写进 rc8 → rc9 &quot;失忆&quot;两条。
+<strong>规则：迁移完成后必须 <code>diff ~/.dsh-旧/DD.md ~/.dsh-新/DD.md</code> 并在新家目录里补齐。</strong></p>
+<h3>12.3 附件存储</h3>
+<p><code>~/.dsh-rc9-clean/attachments/v1/{objects,request-images,files,file-objects}/</code>；对话里的图片/文件本体在这里，删掉原始临时文件不影响对话。</p>
+<h3>12.4 全局记忆注入：顺序 + <code>maxChars</code> 上限（<strong>重启修不好的一类 bug</strong>）【已验证·2026-09-15】</h3>
+<p><code>dsh-memory</code> 插件把 <code>&lt;DSH_HOME&gt;/DD.md</code> 与 <code>&lt;DSH_HOME&gt;/memory/*.md</code> 拼成一段「全局记忆」，注入<strong>每个会话</strong>的 system prompt。实现：<code>~/.dsh-rc9-clean/vendor/dsh-memory/src/index.js</code>（与 <code>profiles/web/node_modules/dsh-memory/</code> 是<strong>硬链接</strong>）。</p>
+<ul>
+<li><strong>上限</strong>：<code>config.maxChars</code>（默认 <strong>12000 字符</strong>）会截断拼接结果——超出就只留前 N 字符 + 一行「[全局记忆已截断…]」。DD.md 只增不减，实测 16979 + <code>memory/知识库规则.md</code> 396 = 17393 &gt; 12000 → <strong>规则文件被整段截掉，等于没写</strong>。</li>
+<li><strong>反直觉点</strong>：截断发生在<strong>每次拼 prompt 时</strong>（注入文本是个每轮求值的函数），所以<strong>单纯重启 Host 不会让被截掉的文件出现</strong>；反过来，改 <code>memory/</code> 里文件的内容<strong>连重启都不需要</strong>（改 <code>maxChars</code> 或插件代码才需要重启）。</li>
+<li><strong>修法（两条都做，互为保险）</strong>：<ol>
+<li>把 <code>memory/*.md</code> 的循环移到 <strong>DD.md 之前</strong> → 规则文件永远落在截断线内，DD.md 再涨也不怕；</li>
+<li>给插件行加 <code>config.maxChars: 24000</code>（在 <code>vendor/dsh-memory/cordis.patch.yml</code> 的 <code>- insert:</code> 行内加 <code>config:</code>）→ 现有 17393 字符全量注入。</li>
+</ol>
+</li>
+<li><strong>改完必须</strong>：<code>cp</code> 同步 vendor 与 profile 两份（<code>edit</code>/<code>write</code> 工具是<strong>替换式写入</strong>、会换 inode 从而断开硬链接）→ 校验两份 <code>md5</code> 一致 + <code>node --check</code> → 重启 Host → 在新会话里确认能看到 <code>--- 知识库规则.md ---</code> 段。</li>
+<li><strong>代价</strong>：每请求注入从 12000 升到约 17400 字符（约 +3~4K tokens）。嫌重就把 DD.md 里的老条目归档进 <code>memory/</code>。</li>
+<li>备份：<code>~/.dsh-rc9-clean/backups/dsh-memory-20260915/</code>。</li>
+</ul>
+<hr>
+<h2>13. 升级 SOP【长期规则·最高价值章节】</h2>
+<h3>13.1 标准流程</h3>
+<pre><code>生产基线报告 → 完整备份 → 新版本装到独立目录 → 新建 NEW_DSH_HOME（复制而非移动）
+→ 用新端口纯净启动（前台、--no-open、不用 launchd 托管）
+→ 核心数据迁移 → 插件逐个兼容审计 → MCP 逐个恢复 → 独立验证
+→ 正式切换（新 plist：RunAtLoad=false / KeepAlive=false / serve 脚本含 --no-open）
+→ 生产回归验收 → 观察数日 → 旧环境 Guard → 清理旧版本
+</code></pre>
+<p>命名约定：<code>~/.dsh-rc8-clean</code> → <code>~/.dsh-rc9-clean</code> → <code>~/.dsh-rc10-clean</code>；<strong>永远不要反复覆盖同一个 <code>~/.dsh</code></strong>。</p>
+<h3>13.2 升级前必做</h3>
+<ol>
+<li><strong>备份</strong>：<code>DD.md</code>、<code>settings.yaml</code>、<code>.credentials.yaml</code>、<code>profiles/web/{package.json,cordis.patch.yml}</code>、<code>storages/</code>、<code>sessions/</code>、当前 plist；</li>
+<li><strong>基线记录</strong>：真实 CLI 路径、版本、DSH_HOME、Node、launchd labels、PID、端口、bundles、plugins、MCP、session 数、workspace 数、vendor、patch、环境变量 → 存成「升级前生产基线报告」；</li>
+<li>读本文件 §4、§8、§13.3；</li>
+<li>纯净环境先证<strong>新 CLI 自己能起来</strong>：纯净环境都起不来 → <strong>先解决新版本本身，禁止迁移旧数据</strong>。</li>
+</ol>
+<h3>13.3 红线（绝对不要做）</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>红线</th>
+<th>后果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>npm i -g</code> 覆盖全局 CLI</td>
+<td>&quot;新二进制 + 旧数据&quot;，旧实例下次重启即崩</td>
+</tr>
+<tr>
+<td>原地升级正在使用的 DSH_HOME</td>
+<td>数据被新版写过，回退不再干净</td>
+</tr>
+<tr>
+<td>整包复制旧 <code>profiles/</code>、<code>node_modules</code>、旧 <code>cordis.patch</code>、旧 bundle tree</td>
+<td>插件 API 已变，必然崩</td>
+</tr>
+<tr>
+<td>用 launchd <code>KeepAlive=true</code> 托管<strong>未验证</strong>的新版本</td>
+<td>崩溃→重启→崩溃；若缺 <code>--no-open</code> 还会无限弹标签页</td>
+</tr>
+<tr>
+<td>生产启动用裸 <code>dsh web</code></td>
+<td>可能跑在 <code>~/.dsh</code>（空环境，看起来&quot;历史全没了&quot;），且每次启动弹标签页</td>
+</tr>
+<tr>
+<td>一口气恢复全部插件</td>
+<td>分不清是谁把树搞崩的</td>
+</tr>
+<tr>
+<td>看到 warning 就卸插件</td>
+<td>把降级当致命</td>
+</tr>
+<tr>
+<td>盲目 <code>pnpm install</code> / approve build scripts</td>
+<td><code>ERR_PNPM_IGNORED_BUILDS</code>、旧 <code>file:</code> 复活</td>
+</tr>
+<tr>
+<td>运行未知 self-repair</td>
+<td>不可预测地改基础设施</td>
+</tr>
+<tr>
+<td>重新执行旧 <code>switch-to-rc9.sh</code></td>
+<td>内含 <code>pkill -f dsh-versions/0.1.5-rc.2</code>（§4 真凶之一）</td>
+</tr>
+<tr>
+<td>使用宽泛 <code>pkill</code></td>
+<td>误杀正在运行的生产</td>
+</tr>
+<tr>
+<td>只停 <code>server</code> job，不查其它 launchd label</td>
+<td>漏掉 switch/watcher</td>
+</tr>
+<tr>
+<td>未经 Guard 删除旧环境</td>
+<td>无法回退</td>
+</tr>
+<tr>
+<td>把 API Key / cookie / token 打进日志或文档</td>
+<td>泄密</td>
+</tr>
+<tr>
+<td>为了 UI/索引异常直接改或复制 <code>sessions/</code></td>
+<td>破坏唯一事实来源</td>
+</tr>
+<tr>
+<td>用 <code>launchctl submit</code> 投递一次性任务后不 <code>remove</code></td>
+<td>作业被自动重拉 → 反复杀/启 Host、反复弹标签页（§5.4）</td>
+</tr>
+<tr>
+<td>在 macOS 上用 <code>setsid</code> 投递后台任务</td>
+<td>该命令不存在，静默失败；任务根本没跑却以为已投递（§5.4）</td>
+</tr>
+<tr>
+<td>改完 <code>memory/*.md</code> 或 <code>maxChars</code> 后「重启一下」就宣称已生效</td>
+<td>截断发生在每轮拼 prompt，上限不够时重启也没用（§12.4）</td>
+</tr>
+</tbody></table></div>
+<h3>13.4 迁移顺序</h3>
+<pre><code>1. credentials → 2. storages → 3. sessions → 4. settings → 5. workspace/index
+</code></pre>
+<p><strong>不要</strong>整包复制 <code>profiles/</code>、<code>node_modules/</code>、<code>plugins-source/</code>。</p>
+<h3>13.5 生产回归验收清单</h3>
+<p>Launch/进程、正确 PID、正确 DSH_HOME、端口、认证、主页、历史工作区、<strong>历史会话正文</strong>、新建会话、真实对话、原生 Vision、memory、skills、market、cost-meter、skins、Task Board、Playwright、Figma、其它关键 MCP。
+<strong>任何一项没验证 → 标&quot;未验证&quot;，不要写&quot;通过&quot;。</strong></p>
+<hr>
+<h2>14. 回退到 RC8【已验证】</h2>
+<h3>14.1 一行回退</h3>
+<pre><code class="language-bash">~/.local/bin/dsh-rc8-start --open
+</code></pre>
+<p>自动流程：停掉 3080 上的 RC9 实例（只杀&quot;记录在案且命令行匹配 dsh&quot;的进程）→ 用 RC8 的 home + CLI 在 3080 起一个 <code>--no-open</code> 实例 → 校验认证 200 → 打开新页面。</p>
+<p>回 RC9：</p>
+<pre><code class="language-bash">kill &quot;$(cat ~/Library/Logs/DeepSeek\ Harness/rc8-server.pid)&quot;
+~/.local/bin/dsh-rc9-start --open
+</code></pre>
+<h3>14.2 手动回退（脚本坏了也能做）</h3>
+<pre><code class="language-bash">kill &quot;$(cat ~/Library/Logs/DeepSeek\ Harness/rc9-server.pid)&quot; ; sleep 2
+ls -d ~/.local/lib/node_modules/@deepseek-ai/dsh   # rc8 全局 CLI
+ls -d ~/.dsh-rc8-clean                             # rc8 的 DSH_HOME
+DSH_HOME=&quot;$HOME/.dsh-rc8-clean&quot; \
+DSH_FREE_VISION_CONFIG_PATH=&quot;$HOME/.dsh-rc8-clean/free-vision.json&quot; \
+&quot;$HOME/.hermes/node/bin/node&quot; \
+&quot;$HOME/.local/lib/node_modules/@deepseek-ai/dsh/lib/bin.js&quot; web --port 3080 --no-open
+</code></pre>
+<h3>14.3 回退时不要做</h3>
+<ul>
+<li>❌ <strong>不要直接恢复旧 plist</strong> <code>ai.deepseek.harness.server.plist.before-0.1.5-rc.2</code>：它带 <code>KeepAlive=true</code> 且缺 <code>--no-open</code>，会把 §4 的事故请回来；</li>
+<li>❌ 不要重跑 <code>恢复-全局dsh到rc8.sh.BROKEN.bak</code>（残留文本，会刷报错；正确做法见上）；</li>
+<li>❌ 不要把新 CLI 覆盖安装到全局目录。</li>
+</ul>
+<hr>
+<h2>15. 旧环境删除 Guard 与退役计划【长期规则】</h2>
+<h3>15.1 删除前必须全部确认</h3>
+<pre><code>1. 当前生产 DSH_HOME 指向新环境
+2. 当前 PID 没有旧环境 open files
+3. package.json 无旧 file:
+4. lockfile 无旧路径
+5. node_modules 无旧 hardlink
+6. symlink 无旧路径
+7. cordis 配置无旧路径
+8. MCP 无旧路径
+9. vendor 已自包含
+10. 新环境稳定运行（观察数日）
+</code></pre>
+<h3>15.2 本机 RC8 资源与时间表【历史快照】</h3>
+<p>四份合计约 <strong>1.0 GB</strong>：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>体积</th>
+<th>定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.dsh-rc8-clean/</code></td>
+<td>229M（46 会话）</td>
+<td>RC8 数据家目录，<strong>回退必需</strong></td>
+</tr>
+<tr>
+<td><code>~/.dsh-before-0.1.5-rc.2-20260911-173658/</code></td>
+<td>509M</td>
+<td>升级前总备份（含 rc8 home 副本、rc8 CLI、旧 plist、35 个归档 plist）</td>
+</tr>
+<tr>
+<td><code>~/.local/lib/node_modules/@deepseek-ai/dsh</code></td>
+<td>279M</td>
+<td>RC8 全局 CLI 0.1.0-rc.8，<strong>回退必需</strong></td>
+</tr>
+<tr>
+<td><code>~/.dsh</code>（更早遗留）</td>
+<td>148K</td>
+<td><strong>永久保留，别动</strong></td>
+</tr>
+</tbody></table></div>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>时间</th>
+<th>动作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>09-12 → 09-19</td>
+<td>全留</td>
+</tr>
+<tr>
+<td><strong>2026-09-19（机主要求的提醒日）</strong></td>
+<td>复核 rc9 稳定后，删<strong>冗余副本</strong> <code>~/.dsh-before-…/dsh-rc8-clean/</code>（与 <code>~/.dsh-rc8-clean</code> 重复）</td>
+</tr>
+<tr>
+<td>2026-10 之后</td>
+<td>确定不再回退时：<strong>先冷备移动硬盘</strong>，再删 <code>~/.dsh-rc8-clean</code> 与全局 rc8 CLI</td>
+</tr>
+<tr>
+<td>任何时候</td>
+<td>删除前先确认 <code>dsh-rc9-start --open</code> 能正常起来</td>
+</tr>
+</tbody></table></div>
+<blockquote>
+<p>DSH 没有跨会话定时推送能力，本日期同时写在全局记忆 <code>DD.md</code> 里，<strong>到期需机主或下一次会话的 AI 主动提起</strong>。</p>
+</blockquote>
+<hr>
+<h2>16. 其它长期规则与历史教训</h2>
+<ul>
+<li><strong>Task Board 单实例锁</strong>：同一数据目录不能同时跑两个实例（<code>task-board ledger is already owned by process …</code>）。测试要用独立 DSH_HOME，或先停生产。</li>
+<li><strong><code>session/list</code> warning 不致命</strong>（§8.1 第 6 条）。</li>
+<li><strong>不要把 <code>~/.dsh</code> 当成生产</strong>：裸跑 <code>dsh web</code> 可能回落到它，表现为&quot;历史会话全没了&quot;。生产入口只用 §2.2 的脚本。</li>
+<li><strong>打开页面与服务生命周期必须分离</strong>：后台永远 <code>--no-open</code>；开页面只由用户的显式动作触发（<code>--open</code> 或桌面 App）。</li>
+<li><strong>LaunchAgent / KeepAlive 属于生产基础设施</strong>，不应让插件或自修复脚本随意修改。</li>
+<li><strong>三层区分</strong>：UI 展示 / workspace 归属 / 真实 session 文件（§11）。</li>
+<li><strong>不要用错误版本的源码解释当前版本的报错</strong>（credentials 误判的来源，§7）。</li>
+</ul>
+<hr>
+<h2>17. 症状 → 病因 速查表</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>症状</th>
+<th>优先怀疑</th>
+<th>处置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Chrome 无限弹新标签页</td>
+<td><code>switch</code> job 循环 pkill / 插件树崩溃 / KeepAlive / 缺 <code>--no-open</code></td>
+<td>§4，四处一起查</td>
+</tr>
+<tr>
+<td>启动即退出，exit 0</td>
+<td>外部 SIGTERM（switch/pkill/watchdog）或正常 shutdown 路径</td>
+<td>查 launchd labels + PID/PPID + 信号；§5</td>
+</tr>
+<tr>
+<td>启动即崩，堆栈里有 import 报错</td>
+<td>插件引用 0.1.5 已删导出</td>
+<td>§8.1</td>
+</tr>
+<tr>
+<td>页面白屏</td>
+<td>前端插件 inject 已删模块（ui-slots 等）</td>
+<td>§8.1</td>
+</tr>
+<tr>
+<td>侧边栏工作区是空的</td>
+<td>目录被删 → realpath 失败 → 会话进「未分组」</td>
+<td>§11.3</td>
+</tr>
+<tr>
+<td>历史会话&quot;消失&quot;</td>
+<td>多半是 UI/归属层，不是数据层</td>
+<td>§11.1–11.4</td>
+</tr>
+<tr>
+<td>打开页面要 token / 401</td>
+<td>正常</td>
+<td>§6 取新 token</td>
+</tr>
+<tr>
+<td>credentials 报 schema 错</td>
+<td>用错版本源码猜改</td>
+<td>§7</td>
+</tr>
+<tr>
+<td>装插件后起不来</td>
+<td>兼容性 / <code>ERR_PNPM_IGNORED_BUILDS</code></td>
+<td>§8.1 第 7 条</td>
+</tr>
+<tr>
+<td>识图说&quot;模型不支持&quot;</td>
+<td>capability guard / provider 混淆</td>
+<td>§10</td>
+</tr>
+<tr>
+<td>Figma 工具失败</td>
+<td>桌面端 Bridge 未连接</td>
+<td>§9</td>
+</tr>
+<tr>
+<td>bootstrap 报 5: I/O error</td>
+<td>plist 语法/权限/xattr/已存在</td>
+<td>§5.3</td>
+</tr>
+<tr>
+<td>图标变白卷纸</td>
+<td>图标/codesign/缓存</td>
+<td>§2.3</td>
+</tr>
+<tr>
+<td>写进 <code>memory/*.md</code> 的规则/记忆不生效</td>
+<td>注入被 <code>maxChars</code> 截断（DD.md 太长）</td>
+<td>§12.4；先看上下文末尾有无「[全局记忆已截断]」</td>
+</tr>
+<tr>
+<td>说好的「延迟重启」没发生</td>
+<td>macOS 无 <code>setsid</code>，投递脚本没跑起来</td>
+<td>§5.4；只认 PID／pid 文件／脚本日志三样</td>
+</tr>
+<tr>
+<td>重启被反复触发、又弹标签页</td>
+<td><code>launchctl submit</code> 作业退出后被自动重拉</td>
+<td>§5.4；<code>launchctl remove &lt;label&gt;</code> 立即止住</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2>18. 交接与接管提示词</h2>
+<h3>18.1 给 Codex / 其它能直接操作本机的 AI</h3>
+<pre><code>请先完整阅读（按顺序）：
+1. DeepSeek Harness 最新自维护文档；
+2. 《DeepSeek Harness 运行维护与故障修复手册（合并定稿版）》
+   ~/Documents/我的知识库/个人学习ai 相关/DSH-运维与故障修复手册-合并版.md
+   （工作区同一份：~/Documents/deepseek harness/DSH-运维与故障修复手册-合并版.md）
+
+要求：
+- 不根据旧 PID / 旧版本 / 旧插件状态直接操作；先重新核验 command -v dsh、真实 CLI 路径、
+  dsh --version、DSH_HOME、3080 PID、所有 Harness 相关 launchd jobs；
+- 改任何文件前先做时间戳备份；
+- 不输出 API Key / cookie / token / secret；
+- 不删改 sessions、workspace、storages；
+- 不运行旧 switch 脚本；不用宽泛 pkill；不盲目 pnpm install；不运行 self-repair；
+- 不因为 warning 就卸插件；
+- 先定位根因，再做最小修复。
+
+按手册 §3 的顺序排查。最终必须输出：根因 / 改动文件 / 备份路径 / 实际修复 /
+稳定性验证 / 历史数据验证 / 核心功能回归 / 插件与 MCP 状态 / 剩余风险 / 后续建议。
+未验证的项必须标&quot;未验证&quot;。
+</code></pre>
+<h3>18.2 给 ChatGPT（当用户只做&quot;复核者&quot;时）</h3>
+<p>优先检查报告是否闭环：有没有把 warning 当 fatal、有没有遗漏真实执行路径、有没有误碰 sessions、<strong>有没有查外部 launchd / switch job</strong>、是否正确理解 401、是否区分原生 Vision 与 free-vision、&quot;插件 enabled&quot;是否真的做过真实调用。
+用户抄命令困难时 → 优先把任务交给能直接操作本机的 AI。</p>
+<h3>18.3 给 DSH 自己</h3>
+<p>启动即读全局记忆 <code>DD.md</code>；本机相关条目里的硬规则优先于猜测。涉及工作区归属、附件/识图、升级，先 <code>grep</code> 本文件。</p>
+<hr>
+<h2>19. 一句话总原则</h2>
+<blockquote>
+<p><strong>不要&quot;重装碰运气&quot;。先确认真正运行的是哪套版本、哪个 DSH_HOME、哪些 launchd job、哪个 PID，再做最小修复。升级永远隔离迁移，修复永远先备份；UI 看不到不等于数据丢失，exit 0 不等于没有外部终止，401 不等于服务失败。</strong></p>
+</blockquote>
+<hr>
+<h2>20. 文档维护规则</h2>
+<p>出现以下情况必须更新本文件：大版本升级 / 重大修复 / 启动机制调整 / credentials schema 改动 / 插件大规模变化 / MCP 变化 / session 存储变化 / 桌面 App 重做。</p>
+<p>更新时：保留长期规则 → 刷新&quot;环境快照&quot; → 新增事故案例 → 标记已废弃经验 → <strong>不要删除仍有参考价值的历史教训</strong>。建议用 Git 管理版本。</p>
+<hr>
+<h2>附录 A：关键文件与证据索引【已验证】</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>路径</th>
+<th>作用 / 证明什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>~/.local/bin/dsh</code></td>
+<td>CLI 包装器（绑定 DSH_HOME，防回落旧 <code>~/.dsh</code>）</td>
+</tr>
+<tr>
+<td><code>~/.local/bin/dsh-rc9-serve</code> / <code>dsh-rc9-start</code></td>
+<td>生产启动与按需拉起（含 switch job 守卫）</td>
+</tr>
+<tr>
+<td><code>~/.local/bin/dsh-rc8-serve</code> / <code>dsh-rc8-start</code></td>
+<td>RC8 回退</td>
+</tr>
+<tr>
+<td><code>~/Library/LaunchAgents/ai.deepseek.harness.server.plist</code></td>
+<td>现役 LaunchAgent（不自动启动、不自动重启）</td>
+</tr>
+<tr>
+<td><code>~/Library/Logs/DeepSeek Harness/rc9-server.log</code></td>
+<td>当前服务日志（排错第一现场，含 token 链接）</td>
+</tr>
+<tr>
+<td><code>~/Library/Logs/DeepSeek Harness/rc9-server.pid</code></td>
+<td>当前 PID</td>
+</tr>
+<tr>
+<td><code>~/Library/Logs/DeepSeek Harness/server.log</code></td>
+<td>历史日志：<strong>28 次自动开浏览器的直接证据</strong></td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/switch-to-rc9.sh</code></td>
+<td><strong>含 <code>pkill -f dsh-versions/0.1.5-rc.2</code>（事故真凶之一）</strong></td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/.full-start.log</code></td>
+<td>插件树崩溃堆栈（<code>installSettingsSection</code>）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/settings.yaml</code></td>
+<td>模型 / <code>imagePixelBudget</code> / 皮肤</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/profiles/web/package.json</code></td>
+<td><code>dsh.profile.bundles</code> 与插件版本</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/profiles/web/cordis.patch.yml</code></td>
+<td>free-vision 禁用、MCP 插入</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/storages/workspace.json</code></td>
+<td>侧边栏工作区记录（改动要停 Host）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/DD.md</code></td>
+<td>全局记忆（跨会话硬规则）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/memory/*.md</code></td>
+<td>全局记忆的<strong>分文件</strong>部分；<strong>先于 DD.md 注入</strong>，故不会被截断（§12.4）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/vendor/dsh-memory/src/index.js</code></td>
+<td>记忆注入实现：注入顺序 + <code>maxChars</code> 截断（§12.4）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/backups/dsh-memory-20260915/</code></td>
+<td>记忆注入改动前的两份原件备份（可整体回滚）</td>
+</tr>
+<tr>
+<td><code>~/.dsh-rc9-clean/vendor/</code></td>
+<td>自包含的 file: 插件实体</td>
+</tr>
+<tr>
+<td><code>~/.dsh-before-0.1.5-rc.2-20260911-173658/</code></td>
+<td>升级前总备份（rc8 home 副本 + rc8 CLI + 旧 plist + 归档 plist + 回退说明）</td>
+</tr>
+<tr>
+<td><code>~/Documents/deepseek harness/dsh-rc9-repoint-workspaces.sh</code></td>
+<td>工作区重指（停→改→重启，幂等）</td>
+</tr>
+<tr>
+<td><code>~/Applications/DeepSeek Harness.app</code></td>
+<td>原生 WKWebView 壳（自动取最新 token）</td>
+</tr>
+</tbody></table></div>
+<h2>附录 B：改动台账</h2>
+<h3>2026-09-12（合并定稿轮）</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>改动</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>补齐 rc9 缺失的两条全局记忆（<code>DD.md</code> 13425 → 15841 字节）</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>workspace.json</code> 重指（卓望/求职 → 知识库真实目录）+ 备份</td>
+</tr>
+<tr>
+<td>1</td>
+<td>归档 35 个备份 plist 到 <code>…/launchagents-stale-plists-20260912/</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td>新增 <code>dsh-rc9-repoint-workspaces.sh</code>；新增 <code>dsh-rc8-serve</code> / <code>dsh-rc8-start</code>；隔离坏脚本为 <code>.BROKEN.bak</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>dsh-rc9-serve</code> 的 PATH 前置 <code>~/.hermes/node/bin</code>（消除 <code>env: node: No such file</code>）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>记忆新增：RC9 事故根因 + 手册指引 + 09-19 退役提醒</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>建立符号链接让旧 cwd 可 realpath 解析</strong> → 侧边栏 8 个会话回归【已验证】</td>
+</tr>
+<tr>
+<td>3</td>
+<td>记忆新增：工作区↔会话 realpath 归属规则</td>
+</tr>
+<tr>
+<td>4</td>
+<td>清理 <code>/private/tmp</code> 下 17 项抢救期遗留物</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>本文：两份手册合并定稿</strong>；旧手册标注&quot;已被取代，保留作事故取证&quot;</td>
+</tr>
+</tbody></table></div>
+<h3>2026-09-15（记忆注入修复 + 重启投递翻车）</h3>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>改动</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>记忆注入顺序调整</td>
+<td><code>memory/*.md</code> 提到 <code>DD.md</code> 之前（§12.4）</td>
+</tr>
+<tr>
+<td><code>maxChars: 12000 → 24000</code></td>
+<td>让 17393 字符全量注入，规则文件不再被截掉（§12.4）</td>
+</tr>
+<tr>
+<td>定位「<code>memory/知识库规则.md</code> 进不了上下文」</td>
+<td>结论：截断发生在每轮拼 prompt，单独重启无效</td>
+</tr>
+<tr>
+<td>新增 §3 校验规则、§5.4、§12.4、§13.3 三条红线、§17 三行症状</td>
+<td>全部来自本次两次真实翻车</td>
+</tr>
+<tr>
+<td>Host 重启</td>
+<td>旧 PID 50412 → 新 PID 78177（10:46:44 起）；第二遍循环在延迟期内被拦下</td>
+</tr>
+</tbody></table></div>
+<hr>
+<p><em>本手册由 DSH 于 2026-09-12 在机器实测、源码取证与三方记录交叉核对基础上整理。所有&quot;已验证&quot;结论都可按附录 A 的证据文件复核。若与本机现状冲突，<strong>以本机现状为准</strong>。（2026-09-15 补充：§3 重启校验、§5.4 一次性任务投递、§12.4 全局记忆注入；附录 A/B 已同步。）</em></p>
+
+  </article>
+</main>
+<script src="/assets/data.js?v=20260913220000"></script>
+<script src="/assets/app.js?v=20260913220000"></script>
+</body>
+</html>
