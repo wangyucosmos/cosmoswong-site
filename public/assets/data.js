@@ -69,7 +69,7 @@ window.SITE = {
       featured: false, cover: '',
       tags: ['知识管理', 'AI 工作流', '流程设计'],
       body: '问题：同一份工作在不同 AI 工具之间切换时，每次都要重新解释背景。\n\n做法：把"知识（是什么）/ 进度（做到哪）/ 流程（怎么做）"拆成三层放进一个 Git 仓库，三个工具各自 clone，开工先 pull、收工必更新进度。本地工具只保留触发指针，不内嵌业务知识。\n\n效果：任何一个工具接手都是分钟级，而且交付物的规范（Word 排版禁忌、原型精度、版权红线）不会因为换工具而漂移。',
-      links: [{ label: 'GitHub', url: 'https://github.com/wangyucosmos/zhuowang-workspace' }],
+      links: [{ label: '架构说明', url: '/knowledge' }, { label: 'GitHub', url: 'https://github.com/wangyucosmos/zhuowang-workspace' }],
       images: []
     },
     {

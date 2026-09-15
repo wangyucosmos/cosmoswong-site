@@ -9,7 +9,7 @@
   /* ---------- 公共骨架：背景、导航、页脚 ---------- */
   const NAV = [
     ['/', '首页'], ['/portfolio', '作品集'], ['/resume', '简历'],
-    ['/trips', '旅游计划'], ['/tools', '工具箱'], ['/bookmarks', '收藏'],
+    ['/trips', '旅游计划'], ['/tools', '工具箱'], ['/knowledge', '知识库'], ['/bookmarks', '收藏'],
     ['https://jianshen.cosmoswong.com', '我的健身计划']
   ];
   const here = location.pathname.replace(/\/$/, '') || '/';
@@ -151,7 +151,8 @@
         ? `<a class="row" href="${esc(b.url)}" target="_blank" rel="noreferrer"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span><span class="arrow">↗</span></a>`
         : `<div class="row"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span></div>`).join('')}</div>` : '<div class="empty">这个分类还是空的</div>'}</section>`).join('')}`;
 
-  $('main').innerHTML = (R[page] || R.home)();
+  // 静态内页（如 /knowledge）自带内容，不走 R 渲染
+  if (page === 'home' || R[page]) $('main').innerHTML = (R[page] || R.home)();
 
   /* ---------- 作品集：筛选 + 详情弹窗 ---------- */
   if (page === 'portfolio') {
