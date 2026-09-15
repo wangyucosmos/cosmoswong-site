@@ -13,7 +13,7 @@ window.SITE = {
     name: 'Cosmos Wong',                     // 首页标题、导航、页脚
     fullName: 'Cosmos Wong · 王宏宇',        // 只在简历页标题显示
     title: '运营十年 · 游戏 / 活动 / 社群 / 内容',
-    tagline: '把活动做起来，把用户留下来，把复杂的事做清楚。',
+    tagline: '',                              // 留空则首页不显示 slogan
     email: 'wangyuwangxinxin@gmail.com',     // 公开邮箱；留空则不显示
     location: '上海',
     links: [
@@ -153,7 +153,7 @@ window.SITE = {
       category: '东南亚',
       items: [
         { title: '印尼 · 科莫多 / 巴厘岛 / 布罗莫', dates: '2026.10.01 — 10.09', status: '进行中',
-          summary: '国庆 9 天，三个人。Padar 山海、罗威纳海豚、布罗莫日出。协作行程站，搭子一起编辑。',
+          summary: 'Padar 山海、罗威纳海豚、布罗莫日出。协作行程站，搭子一起编辑。',
           url: 'https://indonesia.cosmoswong.com' }
       ]
     }

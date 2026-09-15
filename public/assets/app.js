@@ -91,7 +91,7 @@
     return `
     <section class="hero">
       <h1 class="up"><span class="pre">Hello, I'm</span><span>${esc(S.me.name)}.</span></h1>
-      <p class="sub up d1"><b>${esc(S.me.title)}</b><br>${esc(S.me.tagline)}</p>
+      <p class="sub up d1"><b>${esc(S.me.title)}</b>${S.me.tagline ? `<br>${esc(S.me.tagline)}` : ''}</p>
       <div class="cta up d2"><a class="btn solid" href="/portfolio">看作品集 →</a>
         ${S.resume.pdf ? `<a class="btn glass" href="${esc(S.resume.pdf)}" download>下载简历</a>` : `<a class="btn glass" href="/resume">看简历</a>`}</div>
     </section>
