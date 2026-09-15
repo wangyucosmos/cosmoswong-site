@@ -63,7 +63,7 @@
     <ol>
       <li><strong>1 份实体</strong>：所有知识只存在 <code>~/Documents/我的知识库/</code> 这一个文件夹里。改，就是改它。</li>
       <li><strong>2 个 GitHub 仓库</strong>：只是这个文件夹的云端备份和修改历史，平时不用从它们拉东西。</li>
-      <li><strong>5 个 AI 工具</strong>：Claude Code、Codex、DeepSeek Harness、Claude Cowork 四个直接读写那份实体；ChatGPT 读不到本地，靠你手动喂。</li>
+      <li><strong>5 个 AI 工具</strong>：Claude Code、Codex、DeepSeek Harness、Claude Cowork 四个直接读写那份实体；ChatGPT 读不到本地，但通过 GitHub 插件读两个仓库——看到的是最后一次 push 的版本。</li>
     </ol>
   </div>
 
@@ -80,7 +80,7 @@
   <h2>二、全景图</h2>
   <figure>
     <div class="frame">
-    <svg viewBox="0 0 1000 560" role="img" aria-label="五个 AI 工具、本地知识库文件夹和两个 GitHub 仓库之间的读写与备份关系">
+    <svg viewBox="0 0 1000 585" role="img" aria-label="五个 AI 工具、本地知识库文件夹和两个 GitHub 仓库之间的读写与备份关系">
       <defs>
         <marker id="a-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
         <marker id="a-local" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--local)"/></marker>
@@ -108,7 +108,7 @@
           <text x="130" y="327">Claude Cowork</text>
           <text x="130" y="465">ChatGPT</text>
         </g>
-        <text x="130" y="484" text-anchor="middle" font-size="11" fill="var(--warn)">读不到本地文件</text>
+        <text x="130" y="484" text-anchor="middle" font-size="11" fill="var(--warn)">只读 GitHub，不碰本地</text>
 
         <!-- local vault -->
         <rect x="360" y="60" width="320" height="440" rx="6" fill="var(--local-soft)" stroke="var(--local)" stroke-width="2"/>
@@ -152,13 +152,12 @@
         <!-- cowork -->
         <path d="M220,322 C300,322 300,262 360,262" stroke="var(--local)" stroke-width="1.6" fill="none" marker-end="url(#a-local)"/>
         <text x="290" y="305" text-anchor="middle" font-size="11" fill="var(--local)">开会话时选中此文件夹</text>
-        <!-- chatgpt: manual upload from vault -->
-        <path d="M360,200 C300,200 300,455 220,455" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
-        <text x="290" y="405" text-anchor="middle" font-size="11" fill="var(--warn)">你手动上传快照</text>
-        <text x="290" y="420" text-anchor="middle" font-size="11" fill="var(--warn)">（会过时）</text>
+        <!-- chatgpt: GitHub plugin reads private repo -->
+        <path d="M780,175 L740,175 L740,520 L300,520 L300,470 L222,470" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
+        <text x="520" y="512" text-anchor="middle" font-size="11" fill="var(--warn)">GitHub 插件读私有仓库（求职 / DSH / 规则）</text>
         <!-- chatgpt: public raw link from github -->
-        <path d="M780,400 C700,400 700,540 300,540 C240,540 200,530 200,500" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
-        <text x="520" y="532" text-anchor="middle" font-size="11" fill="var(--warn)">卓望走公开仓库直链，永远最新</text>
+        <path d="M780,395 L720,395 L720,548 L280,548 L280,490 L222,490" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
+        <text x="520" y="566" text-anchor="middle" font-size="11" fill="var(--warn)">卓望走公开仓库 raw 直链</text>
 
         <!-- push arrows -->
         <path d="M680,155 L780,155" stroke="var(--remote)" stroke-width="1.6" fill="none" marker-end="url(#a-remote)"/>
@@ -168,8 +167,8 @@
       </g>
     </svg>
     </div>
-    <div class="legend"><span class="l-local">本地读写（实线）</span><span class="l-remote">推送备份（单向）</span><span class="l-warn">ChatGPT 的两条例外通道（虚线）</span><span class="l-tool">AI 工具</span></div>
-    <figcaption>四个工具的箭头都指向同一个文件夹；GitHub 只被 push，不被读；ChatGPT 是唯一走虚线的。</figcaption>
+    <div class="legend"><span class="l-local">本地读写（实线）</span><span class="l-remote">推送备份（单向）</span><span class="l-warn">ChatGPT 读仓库的两条通道（虚线）</span><span class="l-tool">AI 工具</span></div>
+    <figcaption>四个工具的箭头都指向同一个文件夹；GitHub 被它们 push、被 ChatGPT 读；ChatGPT 是唯一不碰本地的。</figcaption>
   </figure>
 
   <h3>为什么是两个 GitHub 仓库，不是一个</h3>
@@ -182,7 +181,7 @@
     <tr><td>Codex</td><td>全局指令 <code>~/.codex/AGENTS.md</code></td><td><code>CODEX项目/拓维卓望/</code></td><td>能</td></tr>
     <tr><td>DeepSeek Harness</td><td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code>，每次请求自动注入</td><td><code>deepseek harness/</code></td><td>能</td></tr>
     <tr><td>Claude Cowork</td><td>开会话时<strong>你选中</strong> <code>我的知识库</code> 文件夹，它读根目录 <code>CLAUDE.md</code></td><td>库内 <code>_草稿-cowork/</code>（git 忽略）</td><td><span class="tag tag-warn">不能</span> 只本地 commit，别人代 push</td></tr>
-    <tr><td>ChatGPT</td><td>「我的知识库」Project 里你上传的快照；「卓望」Project 读公开仓库直链</td><td>没有文件系统</td><td><span class="tag tag-warn">不能</span> 也写不了本地，只能给建议</td></tr>
+    <tr><td>ChatGPT</td><td>GitHub 插件读两个仓库（私有的也能读），每次开工拉最新一次 push 的版本；「卓望」Project 另走公开仓库 raw 直链</td><td>没有文件系统</td><td><span class="tag tag-warn">不能</span> 只读，沉淀提醒转交别的工具写</td></tr>
   </table></div>
   <p>前三个工具的卓望入口（<code>…/卓望知识库/zhuowang-workspace</code>、<code>deepseek harness/卓望</code>）都是<strong>软链</strong>——看起来像各自有一份，其实都是同一个文件夹。以前是三份独立拷贝靠「开工先 pull」对齐，今天合并的时候发现 Codex 那份已经落后 3 个提交，GitHub 上还躺着一个谁都没拉下来的提交。合并后这种事不会再发生。</p>
 
@@ -255,14 +254,14 @@
   </figure>
 
   <h2>六、ChatGPT 为什么特殊</h2>
-  <p>ChatGPT 没有文件系统，既读不到你的本地文件夹，也读不到私有仓库。所以它是唯一不能直接看那份实体的工具，只能通过两条虚线通道：</p>
+  <p>ChatGPT 没有文件系统，读不到你的本地文件夹。它靠 <strong>GitHub 插件</strong>读两个仓库（2026-09-15 验证私有仓库也能读），所以它看到的永远是<strong>最后一次 push</strong> 的版本——本地改了没 push，它就不知道。它是唯一不碰那份实体的工具：</p>
   <figure>
     <div class="frame">
     <svg viewBox="0 0 1000 260" role="img" aria-label="ChatGPT 现状是两个 Project 各看知识库的一部分；可选合并成一个 Project 同时用两条通道">
       <defs><marker id="a-gpt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker></defs>
       <g style="color: var(--ink)" fill="currentColor" font-size="12">
-        <text x="250" y="28" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink-3)">现状：两个 Project，各看一半</text>
-        <text x="750" y="28" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink-3)">可选：合成一个 Project，两条通道都接</text>
+        <text x="250" y="28" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink-3)">两个 Project 各有入口，但都能碰到两个仓库</text>
+        <text x="750" y="28" text-anchor="middle" font-size="13" font-weight="500" fill="var(--ink-3)">「我的知识库」Project 实际已覆盖全部</text>
         <!-- left -->
         <g stroke="var(--warn)" stroke-width="1.2" fill="var(--surface)"><rect x="40" y="60" width="190" height="56" rx="4"/><rect x="40" y="170" width="190" height="56" rx="4"/></g>
         <text x="135" y="83" text-anchor="middle" font-weight="500" font-size="13">Project「我的知识库」</text>
@@ -270,23 +269,23 @@
         <text x="135" y="193" text-anchor="middle" font-weight="500" font-size="13">Project「卓望」</text>
         <text x="135" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">只做卓望任务</text>
         <g stroke="var(--line-strong)" stroke-width="1.2" fill="var(--surface)"><rect x="330" y="60" width="140" height="56" rx="4" stroke-dasharray="4 3"/><rect x="330" y="170" width="140" height="56" rx="4" stroke-dasharray="4 3"/></g>
-        <text x="400" y="83" text-anchor="middle" font-size="12">上传的 md 快照</text><text x="400" y="102" text-anchor="middle" font-size="11" fill="var(--ink-2)">改了要重传</text>
-        <text x="400" y="193" text-anchor="middle" font-size="12">公开仓库直链</text><text x="400" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">永远最新</text>
+        <text x="400" y="83" text-anchor="middle" font-size="12">插件读私有仓库</text><text x="400" y="102" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
+        <text x="400" y="193" text-anchor="middle" font-size="12">公开仓库直链</text><text x="400" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
         <g stroke="var(--warn)" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-gpt)"><line x1="330" y1="88" x2="232" y2="88"/><line x1="330" y1="198" x2="232" y2="198"/></g>
-        <text x="250" y="150" text-anchor="middle" font-size="11" fill="var(--ink-2)">两个 Project 互相看不到对方的文件</text>
+        <text x="250" y="150" text-anchor="middle" font-size="11" fill="var(--ink-2)">插件是账号级的，两个 Project 都能用</text>
         <!-- right -->
         <rect x="560" y="100" width="190" height="70" rx="4" fill="var(--surface)" stroke="var(--warn)" stroke-width="1.2"/>
         <text x="655" y="128" text-anchor="middle" font-weight="500" font-size="13">Project「我的知识库」</text>
-        <text x="655" y="148" text-anchor="middle" font-size="11" fill="var(--ink-2)">指令里写清：卓望走直链，其余读快照</text>
+        <text x="655" y="148" text-anchor="middle" font-size="11" fill="var(--ink-2)">先读规则 + INDEX，卓望任务再转卓望仓库</text>
         <g stroke="var(--line-strong)" stroke-width="1.2" fill="var(--surface)"><rect x="830" y="60" width="140" height="56" rx="4" stroke-dasharray="4 3"/><rect x="830" y="170" width="140" height="56" rx="4" stroke-dasharray="4 3"/></g>
-        <text x="900" y="83" text-anchor="middle" font-size="12">上传的 md 快照</text><text x="900" y="193" text-anchor="middle" font-size="12">公开仓库直链</text>
+        <text x="900" y="83" text-anchor="middle" font-size="12">插件读私有仓库</text><text x="900" y="193" text-anchor="middle" font-size="12">公开仓库直链</text>
         <g stroke="var(--warn)" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-gpt)"><path d="M830,88 C790,88 790,120 752,120"/><path d="M830,198 C790,198 790,150 752,150"/></g>
       </g>
     </svg>
     </div>
-    <figcaption>ChatGPT 说「两个 Project 不共享文件」是对的——但那是 ChatGPT 的限制，本地那份实体没有分裂。</figcaption>
+    <figcaption>「卓望」Project 留着是为了把卓望的聊天记录集中在一起；两个都用没问题，读到的内容一样。</figcaption>
   </figure>
-  <p>其他四个工具没有这个问题：它们读的是同一个文件夹，卓望和求职天然在一起。</p>
+  <p>其他四个工具更直接：它们读的是本地那个文件夹，不经过 GitHub。</p>
 
   <h3>两个仓库各管哪一半</h3>
   <pre class="tree">~/Documents/我的知识库/                    ← 本地实体（全部）
@@ -298,24 +297,18 @@
   <ul>
     <li><code>zhuowang-workspace</code> ≠ <code>my-knowledge-base</code>，内容<strong>不重叠</strong>：前者只有卓望那个子目录，后者是除卓望之外的所有东西。</li>
     <li><code>zhuowang-workspace</code> = 本地 <code>卓望工作相关/卓望/</code>，只要收工时 push 了，两边就一样。所以 ChatGPT「卓望」Project 拉直链拿到的<strong>就是最新的卓望内容</strong>——这一块已经是同步的。</li>
-    <li><strong>会落后的只有另一半</strong>：求职、DSH、Claude 搭建这些在 <code>my-knowledge-base</code>，它是私有的，ChatGPT 读不到直链，只能靠手动上传快照。</li>
+    <li>求职、DSH、Claude 搭建这些在 <code>my-knowledge-base</code>（私有）。ChatGPT 通过 GitHub 插件读它，同样以上一次 push 为准。</li>
   </ul>
 
-  <h3>想让 ChatGPT 这一半也自动同步，有三条路</h3>
-  <div class="tablewrap"><table>
-    <tr><th>方案</th><th>做法</th><th>代价</th></tr>
-    <tr><td>A. ChatGPT 的 GitHub 连接器</td><td>ChatGPT 设置 → Connectors → 连接 GitHub 账号 → 授权它读 <code>my-knowledge-base</code></td><td>最干净，私有仓库也能读。但要看套餐/地区有没有这个功能，得去设置里看一眼</td></tr>
-    <tr><td>B. 再建一个公开的「精简仓库」</td><td>加个脚本，收工时把 <code>知识库规则.md</code>、<code>INDEX.md</code>、DSH 手册这类<strong>不含个人信息</strong>的文件自动复制推到一个公开仓库，ChatGPT 走直链</td><td>多一个仓库要维护；简历这类永远进不去</td></tr>
-    <tr><td>C. 保持现状</td><td>快照手动传，AI 收工时提醒重传</td><td>零成本，就是偶尔要拖一次文件</td></tr>
-  </table></div>
-  <p>建议<strong>先试 A</strong>：去 ChatGPT 设置里找「Connectors / 连接器」，看列表里有没有 GitHub。有 → 连上，把「我的知识库」Project 的指令改成读仓库；没有 → 看求职/DSH 这些在 ChatGPT 里用得多不多，多就上 B，不多就 C。</p>
+  <h3>曾经的三条路，最终走了 A</h3>
+  <p>私有仓库 ChatGPT 本来读不到直链，当时摆过三条路：A 用 ChatGPT 的 GitHub 插件读私有仓库；B 另建一个只放非个人信息文件的公开仓库；C 手动上传快照。2026-09-15 验证 A 可行（插件能读出私有仓库里当天刚改的内容），于是 Project 里的快照全部删除，B、C 作废。</p>
 
   <h2>七、常见疑问</h2>
   <dl class="faq">
     <dt>以后开工还要读 GitHub 吗？</dt>
     <dd>不用。本地那份就是最新的，谁改了都在同一个文件夹里。开工时的 <code>git pull</code> 只是安全检查，99% 的时候什么都不做。</dd>
     <dt>那 GitHub 到底干什么用？</dt>
-    <dd>三件事：电脑坏了能取回；改错了能回退到任何一次提交；ChatGPT 靠公开那个仓库的直链读卓望。</dd>
+    <dd>三件事：电脑坏了能取回；改错了能回退到任何一次提交；ChatGPT 靠 GitHub 插件读两个仓库。</dd>
     <dt>本地只有一份，误删了怎么办？</dt>
     <dd>从 GitHub <code>git clone</code> 回来就是。前提是收工时有 push——这就是为什么「收工必 push」这条规矩要守住。</dd>
     <dt>什么该进知识库，什么不该？</dt>
@@ -333,7 +326,7 @@
     <div><b>卓望备份</b><span class="tag tag-remote">公开</span> <span class="path">wangyucosmos/zhuowang-workspace</span></div>
     <div><b>三个软链入口</b>Claude Code / Codex 的 <span class="path">卓望知识库/zhuowang-workspace</span>，DSH 的 <span class="path">deepseek harness/卓望</span></div>
     <div><b>全局指令</b><span class="path">~/.claude/CLAUDE.md</span> · <span class="path">~/.codex/AGENTS.md</span> · <span class="path">~/.dsh-rc9-clean/memory/知识库规则.md</span></div>
-    <div><b>ChatGPT</b>Project「我的知识库」已上传快照；「卓望」Project 沿用直链</div>
+    <div><b>ChatGPT</b>GitHub 插件已连接，两个 Project 都读仓库最新 push；资料库旧文件已清</div>
   </div>
 
   <div class="note">已验证：Codex 在无关目录新开会话能答出库路径并读出规则第 4 节；DSH 注入机制确认。Claude Code 等你下一次新开会话时问一句「我的个人知识库在哪」即可验证。</div>
