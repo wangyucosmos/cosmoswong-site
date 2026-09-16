@@ -154,7 +154,10 @@ window.SITE = {
       items: [
         { title: '印尼 · 科莫多 / 巴厘岛 / 布罗莫', dates: '2026.10.01 — 10.09', status: '进行中',
           summary: 'Padar 山海、罗威纳海豚、布罗莫日出。协作行程站，搭子一起编辑。',
-          url: 'https://indonesia.cosmoswong.com' }
+          url: 'https://indonesia.cosmoswong.com' },
+        { title: '2026 国庆 · 普吉岛', dates: '2026.10.03 — 10.08', status: '规划中',
+          summary: '单人出发，途中也可约搭子。按天气调整皮皮岛，管理酒店、海况、预算和清单。',
+          url: 'https://phuket.cosmoswong.com' }
       ]
     }
   ],
