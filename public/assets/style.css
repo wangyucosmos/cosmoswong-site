@@ -192,3 +192,40 @@ footer a:hover{color:#fff}
   .hero h1 span{animation:none;background-position:0 0}
   .up,.up.d1,.up.d2,.up.d3{animation:none;opacity:1;transform:none}
 }
+
+/* ---------- 打印（/resume → A4 PDF）----------
+   同样必须放在文件末尾（媒体查询不增加特异度，靠源码顺序压过上面的基础规则）。
+   浅底黑字、单栏、去掉导航/页脚/按钮/背景层；public/resume.pdf 就是用 headless Chrome 打印这一页生成的，
+   改简历内容只改 data.js 再重新导出，不要维护第二份简历。 */
+@media print{
+  @page{size:A4;margin:14mm}
+  :root{--muted:#444;--faint:#666;--line:#ccc;--radius:0}
+  html{scroll-behavior:auto}
+  /* 打印字体：-apple-system / PingFang / Hiragino Sans GB 在 Chrome 导 PDF 时会被拆成 Type3 逐字路径（文件 600KB、文字不可选），
+     Helvetica Neue + Heiti SC 能正常子集嵌入（实测 8 种系统中文字体只有 Heiti/STHeiti/Songti/Yuanti 可以） */
+  body,body.inner{background:#fff;color:#111;min-height:0;font-size:12.5px;line-height:1.55;-webkit-font-smoothing:auto;
+    font-family:"Helvetica Neue",Helvetica,"Heiti SC","STHeiti","Microsoft YaHei",sans-serif}
+  .mesh,header.top,footer,.menu-backdrop,.cta,.btn,.more,.filters{display:none!important}
+  .wrap{max-width:none;padding:0}
+  .page-head{padding:0 0 6px}
+  .page-head h1{font-size:26px;letter-spacing:-1px}
+  .page-head p{font-size:13px;margin-top:4px;max-width:none}
+  .resume{display:block;margin-top:10px}
+  .rbox{padding:0;margin:0 0 14px;background:none;border:0;border-top:1px solid #ccc;padding-top:10px;backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:none;border-radius:0;break-inside:avoid}
+  .rbox h2{color:#111;font-size:11px;letter-spacing:2px;margin-bottom:8px;break-after:avoid}
+  .rbox p{color:#333!important;font-size:12.5px!important}
+  .xp{padding:8px 0;border-top:0;break-inside:avoid}
+  .xp h3{font-size:13.5px;break-after:avoid}
+  .xp .role{color:#333;font-size:12px}
+  .xp .period{color:#666;font-size:11.5px}
+  .xp ul{font-size:12px;color:#333;margin-top:5px}
+  .xp li{margin:2px 0}
+  .skills .g{margin-bottom:8px}
+  .skills .g b{color:#111;font-size:12px}
+  .pills{gap:4px;margin-top:4px}
+  .pill{background:none;color:#222;border:1px solid #bbb;font-size:10.5px;padding:2px 7px;border-radius:10px}
+  .contact{color:#333;font-size:12px;line-height:1.9}
+  .contact a{color:#111}
+  .contact a:not([href^="mailto:"])::after{content:" (" attr(href) ")";color:#666;font-size:11px}   /* 邮箱本身已是文本，不重复 */
+  a{color:inherit}
+}
