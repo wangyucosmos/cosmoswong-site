@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="工作区与知识库怎么分工、开工与收工协议、并行比稿、子文件夹规范">
 <title>五个 AI 共用一个知识库的规则 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20260915122610">
-<link rel="stylesheet" href="/assets/notes.css?v=20260915122610">
+<link rel="stylesheet" href="/assets/style.css?v=20260921115341">
+<link rel="stylesheet" href="/assets/notes.css?v=20260921115341">
 
 <!--head:auto-->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -141,6 +141,12 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 <li>新建子文件夹后，<strong>必须在根 <code>INDEX.md</code> 登记</strong>一行（做什么的 + 主档路径）。</li>
 <li>文件名用中文可读名，不用 <code>新建文件夹</code>、<code>未命名</code>、<code>(1)</code>。</li>
 <li>不得创建 <code>xxx-最新版.md</code>、<code>xxx(1).md</code> 这类平行版本；只有一个主档。</li>
+<li><strong>不要把「会变的内容」写进本索引</strong>：文件/条目<strong>数量</strong>、省份名单、当前选中的节点或版本号、日期区间这类东西一定会过期。INDEX 一行只写「这份文件是干什么的 + 权威来源在哪」，具体内容留在文件本体里。<ul>
+<li>正例：负责省份清单写在 <code>卓望工作相关/卓望/卓望.md</code>「基本信息」那一行；INDEX 只写「见那里」，<strong>不复制名单、不写数量</strong>。</li>
+<li>反例（2026-09-20 已修）：INDEX 里写过「剪藏 6 篇」，当天就变成 7 篇。</li>
+<li>通用原则：<strong>会变的东西只维护一处，别处一律引用</strong>（与第 8 条冲突优先级配合）。</li>
+</ul>
+</li>
 </ul>
 <h2>7. Git 与备份</h2>
 <ul>
@@ -156,11 +162,125 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 <p>ChatGPT 没有文件系统，读不到本地；但 <strong>GitHub 插件已连接</strong>（2026-09-15 验证能读私有仓库 <code>my-knowledge-base</code>），所以它读的是 GitHub 上<strong>最后一次 push</strong> 的版本，不再需要手动上传快照。</p>
 <ul>
 <li>Project「我的知识库」：指令写明先用插件读 <code>my-knowledge-base</code> 的 <code>知识库规则.md</code> + <code>INDEX.md</code>，按 INDEX 路由；卓望任务再转 <code>zhuowang-workspace</code>；DSH 问题先读运维手册合并版。</li>
-<li>Project「卓望」：指令写明每次开工读公开仓库 <code>zhuowang-workspace</code> 的 4 个 raw 直链（原文见 <code>~/Desktop/ChatGPT上传-我的知识库/1-粘贴到卓望Project指令.txt</code>）。两个 Project 都能碰到两个仓库，只是入口不同。</li>
+<li>Project「卓望」：指令写明每次开工读公开仓库 <code>zhuowang-workspace</code> 的 4 个 raw 直链（<strong>原文见本库 <code>给ChatGPT的Project指令.md</code></strong>；旧位置 <code>~/Desktop/ChatGPT上传-我的知识库/</code> 已不存在，2026-09-19 起以本库文件为准）。两个 Project 都能碰到两个仓库，只是入口不同。</li>
 <li>ChatGPT 资料库里的旧 <code>卓望.md</code> / <code>AGENTS.md</code> 已删除；Project 里的 md 快照也已删除。<strong>不得再上传知识文件到资料库或 Project</strong>——只走仓库。「库访问权限」该账号关不掉，靠不放旧文件 + 指令声明兜底。</li>
 <li>因此「收工必 push」对 ChatGPT 尤其重要：本地改了没 push，ChatGPT 就看不到。</li>
 <li>ChatGPT 写不了仓库：它给出的「沉淀提醒」由用户转交 Claude Code / Codex 执行。</li>
 <li>GitHub 插件权限建议设为「写入前询问」，只让它读。</li>
+</ul>
+<p><strong>✅ 2026-09-20 已核实（本条取代上面的疑问）</strong>：ChatGPT 的 GitHub 连接器<strong>可用</strong>，读的是仓库<strong>最新版</strong>。实测两处：① 「我的知识库」Project 答出 INDEX 的 <strong>7 个主题</strong>（含当天新建的「网络内容收藏」）；② 「卓望」Project 直接引用<strong>当天</strong>提交 <code>a66d0d3</code>。因此：新版指令（见 <code>给ChatGPT的Project指令.md</code> §二/§三）<strong>已生效</strong>，旧的「手动上传快照」指令<strong>已停用</strong>；Project「文件 / Files」里的旧快照应清理，避免两份并存；「收工必 push」依然是 ChatGPT 能看到新内容的<strong>唯一</strong>前提。</p>
+<h2>10. 四工具是怎么「自动知道」本库存在的（同步自查）</h2>
+<p>各工具能自动遵守本库规则，靠的是写在<strong>全局入口文件</strong>里的几行话，不是靠记忆。改动这些文件前先看本表：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>全局入口（自动读，不在本库内）</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DeepSeek Harness</td>
+<td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code></td>
+<td>全局记忆，每次会话开头自动注入</td>
+</tr>
+<tr>
+<td>Claude Code / Claude Cowork</td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td>用户级规则，Claude 启动自动读</td>
+</tr>
+<tr>
+<td>Codex</td>
+<td><code>~/.codex/AGENTS.md</code> 中的「个人知识库（四工具共用）」段</td>
+<td>Codex 自己的全局规则文件，该段与上面两份同源</td>
+</tr>
+<tr>
+<td>ChatGPT 网页版</td>
+<td>无本地入口，只读 GitHub</td>
+<td>只能看到<strong>最后一次 push</strong> 的版本，且写不了仓库</td>
+</tr>
+</tbody></table></div>
+<p>铁律：</p>
+<ul>
+<li><code>~/.dsh-rc9-clean/memory/知识库规则.md</code> 与 <code>~/.claude/CLAUDE.md</code> <strong>必须保持一致</strong>（当前是压缩版：位置 + 开工必读 + 收工必经沉淀提醒）。只改一份 → 两个工具行为不一致。</li>
+<li>本库根目录的 <code>AGENTS.md</code> / <code>CLAUDE.md</code> 是给<strong>已经进到本目录</strong>的工具看的；上表那几份全局文件是给<strong>还在别的目录开工</strong>的工具看的。职责不同，不要合并。</li>
+<li>没有 push 就等于其他工具（尤其 ChatGPT / Claude 网页版）看不到。<strong>收工必 push。</strong></li>
+</ul>
+<h3>同步自查（只读，随时可跑）</h3>
+<pre><code class="language-bash">for d in &quot;$HOME/Documents/我的知识库&quot; &quot;$HOME/Documents/我的知识库/卓望工作相关/卓望&quot;; do
+  echo &quot;--- $d&quot;
+  git -C &quot;$d&quot; status -sb | head -1
+  echo &quot;未提交文件数: $(git -C &quot;$d&quot; status --porcelain | wc -l | tr -d &#39; &#39;)&quot;
+  l=$(git -C &quot;$d&quot; rev-parse HEAD); r=$(git -C &quot;$d&quot; ls-remote origin main 2&gt;/dev/null | cut -f1)
+  [ &quot;$l&quot; = &quot;$r&quot; ] &amp;&amp; echo &quot;与 GitHub 一致: $l&quot; || echo &quot;⚠️ 不一致 本地=$l 远程=$r&quot;
+done
+diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.claude/CLAUDE.md&quot; \
+  &amp;&amp; echo &quot;两份全局规则一致&quot; || echo &quot;⚠️ 两份全局规则不一致&quot;
+</code></pre>
+<p>判断标准：两个库都显示「与 GitHub 一致」+「未提交文件数: 0」，且两份全局规则一致 → 四个工具看到的是同一份最新内容；任何一条不满足，先修它再开工/收工。</p>
+<h2>11. 状态一致性：谁做完谁回写（跨 AI 看板自愈）</h2>
+<p><strong>要解决的问题（真实发生过）</strong>：某个工具（如 Claude）把一件事做完并交付了，但它没有回写 <code>进度.md</code>；于是另外几个工具（Codex／DSH／ChatGPT）下次开工还看到「进行中」或「断的」，重复劳动、或基于过时前提推进。</p>
+<p><strong>规则：</strong></p>
+<ol>
+<li><strong>完成即回写，不要等「收工」</strong>：任务一旦完成、交付、或被用户确认，就由<strong>实际完成它的那个工具</strong>立刻更新对应 <code>进度.md</code> 的那一条（状态／下一步／最近经手／更新日期），然后 commit + push。</li>
+<li><strong>本地 commit ≠ 别人知道</strong>：连不上 GitHub 的工具（如 Cowork）必须明确写出「本机已 commit、待 push」，交由 Claude Code / Codex / 用户执行 push。</li>
+<li><strong>只写状态，不写流水账</strong>：看板写「现在什么状态 + 下一步可执行动作」；过程、草稿留在各自工作区。</li>
+<li><strong>发现不一致，任何工具都可当场更正</strong>：同一份文件前后矛盾时（例：前面写「已选定某方案」，后面还写「待对比选一版」），以<strong>时间较新的结论</strong>为准；更正时在差异处注明「谁在何时更正」，不必等原作者。</li>
+<li><strong>同一时刻只由一方写入</strong>（配合第 5 条并行比稿规则），避免互相覆盖；有未提交改动或冲突时先停下报用户。</li>
+<li><strong>判断标准（与卓望看板一致）</strong>：「如果另一个工具明天开工不知道这件事，会不会做错？」会 → 必须回写。</li>
+</ol>
+<p><strong>闭环范例（2026-09-20 实跑通过）</strong>：ChatGPT 读公开仓库 → 发现 4 处看板与事实不符（旧口径未更新、已完成未回写、已交付未归位、上线状态过期）→ 报给用户 → 用户拍板 → DSH 单独写入并 push → 下一轮 ChatGPT 读到修正版。
+职责分工：<strong>读的人负责发现，干活的人负责回写，用户负责拍板。</strong></p>
+<p><strong>用户可复用的一句话（直接触发回写）</strong>：</p>
+<blockquote>
+<p>「这件事已经完成／我已经交付了，请把进展回写到知识库对应的 <code>进度.md</code>，并 push。」</p>
+</blockquote>
+<p><strong>⭐ 最简触发词（用户不用保存、不用背长句）</strong>：用户对任何工具说「<strong>同步一下</strong>」／「<strong>回写进度</strong>」／「<strong>这事做完了</strong>」／「<strong>我已经交付了</strong>」中任意一句，即等于下达「回写」指令 → 立刻执行上文流程（写 <code>进度.md</code> + commit + push），<strong>不得只口头答应</strong>。</p>
+<p><strong>补充</strong>：各工具的会话日志在本机可读（方法见 <code>个人学习ai 相关/进度.md</code>），可用来核对「对方到底做到哪了」；但<strong>日志只是过程，权威状态仍以 <code>进度.md</code> 为准</strong>。</p>
+<h2>12. 各工具的「全局启动规则」正文（可复制，防丢失）</h2>
+<p>本库能做到&quot;AI 一开工就知道有知识库&quot;，靠的是每个工具安装目录里的<strong>一份全局规则文件</strong>（位置见第 10 条）。这份文件<strong>不在 git 里</strong>（属于各工具本机配置），因此把正文抄在这里存档：<strong>换电脑、装新工具、或某份被改坏时，照下面整段复制即可恢复。</strong></p>
+<p>三处内容必须<strong>完全一致</strong>（2026-09-20 起为下列 4 条）：</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>安装位置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude Code / Claude Cowork</td>
+<td><code>~/.claude/CLAUDE.md</code></td>
+</tr>
+<tr>
+<td>DeepSeek Harness</td>
+<td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code></td>
+</tr>
+<tr>
+<td>Codex</td>
+<td><code>~/.codex/AGENTS.md</code> 里的「个人知识库（四工具共用）」那一段</td>
+</tr>
+</tbody></table></div>
+<pre><code class="language-markdown"># 个人知识库（四工具共用）
+
+- 位置：`~/Documents/我的知识库/`
+- 任务涉及知识库里的任何主题（卓望/咪咕/福利中心、求职/简历、Claude 搭建、DSH/AI 工具，或用户提到&quot;知识库&quot;&quot;之前做过&quot;）时：
+  1. **开工先读** `知识库规则.md` → `INDEX.md` → 对应主题主档与 `进度.md`，读完再动手。
+  2. **收工前必须输出「📥 知识库沉淀提醒」**（格式见 `知识库规则.md` 第 4 节），列出本次可沉淀的结论/进度/定稿/经验，问用户是否写入。用户自己判断不了什么该共享，这一步不能省。
+  3. 草稿、比稿版本留在当前工作区；只把用户确认的结论和定稿写进知识库。
+  4. **做完／交付就要回写，不要等收工**：本次推进了某个项目，就立刻把状态写进对应 `进度.md` 并 push —— 否则其他工具看到的还是旧状态、还以为这事没做完。**谁做完谁回写**（见 `知识库规则.md` 第 11 节）。
+  5. **听到这些词就直接执行回写**：用户说「**同步一下**」「**回写进度**」「**这事做完了**」「**我已经交付了**」中任意一句时，立刻执行第 4 条（把当前进展回写到对应 `进度.md` + commit + push），不要追问、不要只口头答应。
+- 知识库里没有对应主题 → 告诉用户并问是否新建子文件夹（按规则第 6 节结构），新建后登记 `INDEX.md`。
+</code></pre>
+<blockquote>
+<p>改动任一处后，用 <code>diff</code> 核对三处是否一致（第 10 条的自查命令已含 Claude↔DSH 这一对）。</p>
+</blockquote>
+<h2>13. 上传内容的标题与说明语言</h2>
+<p>本规则适用于 <strong>ChatGPT、Claude Cowork、Claude Code、Codex、DeepSeek Harness</strong>，以及后续接入本知识库的其他 AI 工具。</p>
+<ul>
+<li>上传文件、图片、文档、素材或其他产物时，如果需要填写<strong>标题和说明</strong>，不得全部使用英文。</li>
+<li>标题和说明可以使用<strong>全中文</strong>，也可以使用<strong>中文为主、附英文对照</strong>的中英文组合；无论采用哪种形式，都必须让中文用户无需翻译即可看懂。</li>
+<li>Figma、GitHub、HTML、PDF、AI 等必要的产品名、技术名词和缩写可以保留英文，但其余内容仍须使用中文或提供中文解释。</li>
+<li>不得因为平台默认文案、模板字段或源文件使用英文，就直接提交全英文标题或全英文说明；上传前必须补充中文。</li>
 </ul>
 
   </article>
@@ -172,7 +292,7 @@ deepseek harness/          ← DSH 草稿             │                 ├─
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20260915122610"></script>
-<script src="/assets/render.js?v=20260915122610"></script><script src="/assets/app.js?v=20260915122610"></script>
+<script src="/assets/data.js?v=20260921115341"></script>
+<script src="/assets/render.js?v=20260921115341"></script><script src="/assets/app.js?v=20260921115341"></script>
 </body>
 </html>

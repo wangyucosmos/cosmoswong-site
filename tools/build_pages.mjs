@@ -38,7 +38,8 @@ const DYNAMIC = [
 const STATIC = [
   { path: null, file: '404.html' },
   ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).sort().map(f => ({
-    path: f === 'index.html' ? '/knowledge' : `/knowledge/${f.replace(/\.html$/, '')}`,
+    // 子目录的 index.html 在 auto-trailing-slash 下实际 URL 是 /knowledge/（/knowledge 会 307 过去），canonical 要跟实际一致
+    path: f === 'index.html' ? '/knowledge/' : `/knowledge/${f.replace(/\.html$/, '')}`,
     file: join('knowledge', f)
   }))
 ];
