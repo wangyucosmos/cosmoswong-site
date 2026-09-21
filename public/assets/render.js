@@ -6,17 +6,21 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
   /* ---------- 公共骨架：背景、导航、页脚 ---------- */
-  const NAV = [
+  // 导航按数据过滤：数据为空的板块不给入口（页面本身保留，直链仍可访问）
+  const navItems = S => [
     ['/', '首页'], ['/portfolio', '作品集'], ['/resume', '简历'],
-    ['/trips', '旅游计划'], ['/tools', '工具箱'], ['/knowledge', '知识库'], ['/bookmarks', '收藏'],
+    ['/trips', '旅游计划', S.trips.some(c => c.items.length)],
+    ['/tools', '工具箱', S.tools.length > 0],
+    ['/knowledge', '知识库'],
+    ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)],
     ['https://jianshen.cosmoswong.com', '我的健身计划']
-  ];
+  ].filter(([, , show]) => show !== false);
   // here：当前路径（无尾斜杠，首页为 '/'）
   const renderHeader = (S, here) => `
     <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
     <header class="top"><div class="wrap"><nav class="nav">
       <a class="logo" href="/">${esc(S.me.name).toUpperCase()}</a>
-      <ul id="menu">${NAV.map(([h, t]) => `<li><a href="${h}" class="${(h === '/' ? here === '/' : here.startsWith(h)) ? 'on' : ''}">${t}</a></li>`).join('')}</ul>
+      <ul id="menu">${navItems(S).map(([h, t]) => `<li><a href="${h}" class="${(h === '/' ? here === '/' : here.startsWith(h)) ? 'on' : ''}">${t}</a></li>`).join('')}</ul>
       <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
     </nav></div></header>`;
   // year 由调用方传入：浏览器传 new Date().getFullYear()，构建脚本传构建时年份
@@ -52,7 +56,11 @@
 
   R.home = S => {
     const featured = S.portfolio.filter(w => w.featured).slice(0, 3);
-    const trips = S.trips.flatMap(c => c.items.map(t => ({ ...t, category: c.category })));
+    // 首页去重：精选作品已经链到的地址（如印尼行程站），Trips / Tools 里不再重复出现；/trips /tools 页照常全量
+    const norm = u => (u || '').replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+    const shown = new Set(featured.flatMap(w => (w.links || []).map(l => norm(l.url))));
+    const trips = S.trips.flatMap(c => c.items.map(t => ({ ...t, category: c.category }))).filter(t => !shown.has(norm(t.url)));
+    const tools = S.tools.filter(t => !shown.has(norm(t.url)));
     return `
     <section class="hero">
       <h1 class="up"><span class="pre">Hello, I'm</span><span>${esc(S.me.name)}.</span></h1>
@@ -62,10 +70,10 @@
     </section>
     <section class="sec"><div class="sec-head"><div><p class="eyebrow">Selected work</p><h2>精选作品</h2></div><a class="more" href="/portfolio">全部作品 →</a></div>
       ${featured.length ? `<div class="grid">${featured.map(workCard).join('')}</div>` : '<div class="empty">还没有作品，去 data.js 里加。</div>'}</section>
-    <section class="sec"><div class="sec-head"><div><p class="eyebrow">Trips</p><h2>旅游计划</h2></div><a class="more" href="/trips">全部 →</a></div>
-      <div class="grid wide">${trips.slice(0, 3).map((t, i) => tripCard(t, i === 0)).join('')}</div></section>
-    <section class="sec"><div class="sec-head"><div><p class="eyebrow">Tools</p><h2>工具箱</h2></div><a class="more" href="/tools">全部 →</a></div>
-      <div class="rows">${S.tools.slice(0, 3).map(toolRow).join('')}</div></section>`;
+    ${trips.length ? `<section class="sec"><div class="sec-head"><div><p class="eyebrow">Trips</p><h2>旅游计划</h2></div><a class="more" href="/trips">全部 →</a></div>
+      <div class="grid wide">${trips.slice(0, 3).map((t, i) => tripCard(t, i === 0)).join('')}</div></section>` : ''}
+    ${tools.length ? `<section class="sec"><div class="sec-head"><div><p class="eyebrow">Tools</p><h2>工具箱</h2></div><a class="more" href="/tools">全部 →</a></div>
+      <div class="rows">${tools.slice(0, 3).map(toolRow).join('')}</div></section>` : ''}`;
   };
 
   R.portfolio = S => {
@@ -125,5 +133,5 @@
         ${w.links?.length ? `<div class="cta" style="margin-top:14px">${w.links.map(l => `<a class="btn glass sm" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}</div>` : ''}`;
 
   // 同时兼容浏览器和 Node（build_pages.mjs 用 vm 跑这个文件，window 由它注入）
-  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, NAV, renderHeader, renderFooter, workCard, tripCard, toolRow, workModal, pages: R };
+  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, workCard, tripCard, toolRow, workModal, pages: R };
 })();
