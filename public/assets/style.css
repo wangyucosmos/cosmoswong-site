@@ -39,12 +39,6 @@ img{max-width:100%;display:block}
     radial-gradient(50% 40% at 50% 40%,rgba(236,72,153,.4),transparent 70%)}
   .mesh i{display:none}
 }
-/* 减少动态效果：背景、扫光、入场动画全部关掉。.up 初始 opacity:0，关动画必须同时补 opacity/transform，否则整页空白 */
-@media(prefers-reduced-motion:reduce){
-  .mesh i:nth-child(n){animation:none;will-change:auto}   /* 要压过 .mesh i:nth-child(1/2/3) 的特异度 */
-  .hero h1 span{animation:none;background-position:0 0}
-  .up,.up.d1,.up.d2,.up.d3{animation:none;opacity:1;transform:none}
-}
 /* 内页背景压暗一点，让正文更好读 */
 body.inner .mesh{opacity:.55}
 
@@ -189,3 +183,12 @@ dialog::backdrop{background:rgba(8,4,18,.7);backdrop-filter:blur(8px)}
 footer{margin-top:80px;padding:30px 0 40px;border-top:1px solid var(--line);color:var(--faint);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 footer a:hover{color:#fff}
 .empty{padding:50px 20px;text-align:center;color:var(--faint);border:1px dashed var(--line);border-radius:var(--radius)}
+
+/* ---------- 减少动态效果 ----------
+   必须放在文件末尾：媒体查询不增加特异度，这里的规则要靠源码顺序压过上面 .hero h1 span / .up 的基础动画。
+   背景、扫光、入场动画全部关掉。.up 初始 opacity:0，关动画必须同时补 opacity/transform，否则整页空白 */
+@media(prefers-reduced-motion:reduce){
+  .mesh i:nth-child(n){animation:none;will-change:auto}   /* 要压过 .mesh i:nth-child(1/2/3) 的特异度 */
+  .hero h1 span{animation:none;background-position:0 0}
+  .up,.up.d1,.up.d2,.up.d3{animation:none;opacity:1;transform:none}
+}
