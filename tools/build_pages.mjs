@@ -1,7 +1,8 @@
 // 构建期预渲染 + <head> 元信息注入
 // 用 render.js（和浏览器同一份模板）把导航 / 页脚 / 正文直接写进 public/*.html，
 // 让微信、飞书、百度、Bing 这些不跑 JS 的抓取器也能拿到完整页面；同时给每页补
-// favicon、canonical、og / twitter 分享卡片、theme-color。
+// favicon、canonical、og / twitter 分享卡片、theme-color；首页额外注入 Person JSON-LD（其 sha256 自动写进
+// public/_headers 的 CSP script-src）；最后生成 public/sitemap.xml。
 // 内容仍然只来自 public/assets/data.js —— 改 data.js 后重新部署即更新，不要手改 html。
 // 幂等：所有注入段都包在标记注释里，重复构建整段替换而不是叠加。
 // 用法：node tools/build_pages.mjs   （deploy.sh 在 build_notes.mjs 之后自动调用，顺序不能反）
@@ -9,6 +10,8 @@ import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUB = join(ROOT, 'public');
@@ -23,6 +26,24 @@ for (const f of ['data.js', 'render.js']) vm.runInContext(readFileSync(join(PUB,
 const { SITE, RENDER } = window;
 if (!SITE || !RENDER) { console.error('data.js / render.js 没有导出 SITE / RENDER'); process.exit(1); }
 const esc = RENDER.esc;
+
+/* ---------- 首页 JSON-LD（Person）：数据全部来自 SITE.me ---------- */
+// 存成一个字符串，注入 <script> 和算 CSP hash 用的是同一份字节
+const JSONLD = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: SITE.me.name,
+  // fullName 形如 "Cosmos Wong · 王宏宇"，取 · 后面的中文名
+  alternateName: (SITE.me.fullName || '').split('·').pop().trim() || undefined,
+  jobTitle: SITE.me.jobTitle,
+  url: ORIGIN + '/',
+  image: ORIGIN + '/og.png',
+  email: SITE.me.email ? 'mailto:' + SITE.me.email : undefined,
+  address: SITE.me.location ? { '@type': 'PostalAddress', addressLocality: SITE.me.location, addressCountry: 'CN' } : undefined,
+  sameAs: SITE.me.links.map(l => l.url),
+  knowsAbout: SITE.me.knowsAbout
+}).replace(/</g, '\\u003c');   // 防止内容里出现 </script> 提前闭合
+const JSONLD_HASH = "'sha256-" + createHash('sha256').update(JSONLD, 'utf8').digest('base64') + "'";
 
 /* ---------- 页面清单 ---------- */
 // 动态页：正文由 RENDER.pages[page](SITE) 生成
@@ -88,6 +109,8 @@ function headMeta(p, html) {
       `<meta name="twitter:image" content="${ORIGIN}/og.png">`
     );
   }
+  // 只有首页放 JSON-LD；标签之间就是 JSONLD 本身，前后不能有换行或缩进，否则 CSP hash 对不上
+  if (p.page === 'home') lines.push(`<script type="application/ld+json">${JSONLD}</script>`);
   return '\n' + lines.join('\n') + '\n';
 }
 
@@ -124,3 +147,38 @@ function build(p) {
 
 for (const p of [...DYNAMIC, ...STATIC]) build(p);
 console.log(`共 ${DYNAMIC.length + STATIC.length} 页`);
+
+/* ---------- 把 JSON-LD 的 sha256 写进 _headers 的 CSP script-src（幂等） ---------- */
+{
+  const file = join(PUB, '_headers');
+  const before = readFileSync(file, 'utf8');
+  // 只在 Content-Security-Policy 这一行里找 script-src（注释里也提到 script-src，不能全文匹配）
+  const after = before.replace(/^(\s*Content-Security-Policy:.*)$/m, line =>
+    line.replace(/(script-src[^;]*?)(\s*;)/, (m, head, tail) => {
+      // 去掉已有的所有 sha256 token，再补上当前这一个；没有 token 时就接在 cloudflareinsights 后面
+      const base = head.replace(/\s+'sha256-[A-Za-z0-9+/=]+'/g, '');
+      return `${base} ${JSONLD_HASH}${tail}`;
+    }));
+  if (!after.includes(JSONLD_HASH)) throw new Error('_headers 里没找到 script-src，CSP hash 没写进去');
+  if (after !== before) writeFileSync(file, after);
+  console.log(`CSP script-src ${JSONLD_HASH}${after !== before ? '（已更新 _headers）' : '（未变）'}`);
+}
+
+/* ---------- sitemap.xml ---------- */
+// lastmod 用 git 最后一次提交日期：动态页看 data.js，静态页看 html 自身；拿不到就整条省略（不用 mtime——deploy.sh 会 sed 所有 html）
+const gitDate = f => {
+  try { return execFileSync('git', ['log', '-1', '--format=%cs', '--', f], { cwd: ROOT, encoding: 'utf8' }).trim() || null; }
+  catch { return null; }
+};
+const dataDate = gitDate('public/assets/data.js');
+const urls = [
+  ...DYNAMIC.map(p => ({ loc: ORIGIN + p.path, lastmod: dataDate })),
+  ...STATIC.filter(p => p.path).map(p => ({ loc: ORIGIN + p.path, lastmod: gitDate(join('public', p.file)) }))
+];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map(u => `  <url><loc>${u.loc}</loc>${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ''}</url>`).join('\n')}
+</urlset>
+`;
+writeFileSync(join(PUB, 'sitemap.xml'), sitemap);
+console.log(`sitemap: ${urls.length} 个 URL`);

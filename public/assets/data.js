@@ -16,6 +16,8 @@ window.SITE = {
     tagline: '',                              // 留空则首页不显示 slogan
     email: 'wangyuwangxinxin@gmail.com',     // 公开邮箱；留空则不显示
     location: '上海',
+    jobTitle: '内容运营 / 活动运营',      // JSON-LD 用
+    knowsAbout: ['活动策划', '内容运营', '社群运营', '游戏运营', '原型设计', 'AI 协作'],
     links: [
       { label: 'GitHub', url: 'https://github.com/wangyucosmos' }
     ]

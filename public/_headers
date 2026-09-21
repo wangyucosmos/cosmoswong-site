@@ -3,7 +3,8 @@
 # 多条规则同时命中时头会叠加（同名头用逗号拼起来），所以先写 /* 通用规则，
 # 再在具体路径里用「! Cache-Control」摘掉通用值后重设。
 # CSP：唯一外部脚本是 Cloudflare 自动注入的 Insights beacon；style-src 保留 'unsafe-inline'
-# 是因为 render.js 里还有 style="…" 内联属性。首页 JSON-LD 上线时（批次 2）要把它的 sha256 加进 script-src。
+# 是因为 render.js 里还有 style="…" 内联属性。script-src 里的 'sha256-…' 是首页 JSON-LD 的哈希，
+# 由 tools/build_pages.mjs 每次构建自动维护（改 data.js 的 me.* 后会变），不要手改。
 
 /*
   Cache-Control: public, max-age=0, must-revalidate
@@ -11,7 +12,7 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(), camera=(), microphone=()
-  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com 'sha256-oZoMV+TnI0QswRujt1IiegYeqnBRGJca0BZowPrS9y8='; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
 /assets/*
   ! Cache-Control
