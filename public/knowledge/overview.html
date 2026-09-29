@@ -125,7 +125,7 @@
         <text x="880" y="166" text-anchor="middle" font-size="11" fill="var(--ink-2)">私有 · 外层整库（不含卓望）</text>
         <rect x="780" y="350" width="200" height="70" rx="4" fill="var(--remote-soft)" stroke="var(--remote)" stroke-width="1.5"/>
         <text x="880" y="376" text-anchor="middle" font-size="13" font-weight="700" fill="var(--remote)">zhuowang-workspace</text>
-        <text x="880" y="396" text-anchor="middle" font-size="11" fill="var(--ink-2)">公开 · 只有卓望那一份</text>
+        <text x="880" y="396" text-anchor="middle" font-size="11" fill="var(--ink-2)">私有 · 只有卓望那一份</text>
 
         <!-- arrows: three tools via symlink -->
         <g stroke="var(--local)" stroke-width="1.6" fill="none" marker-end="url(#a-local)">
@@ -139,10 +139,10 @@
         <text x="290" y="305" text-anchor="middle" font-size="11" fill="var(--local)">开会话时选中此文件夹</text>
         <!-- chatgpt: GitHub plugin reads private repo -->
         <path d="M780,175 L740,175 L740,520 L300,520 L300,470 L222,470" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
-        <text x="520" y="512" text-anchor="middle" font-size="11" fill="var(--warn)">GitHub 插件读私有仓库（求职 / DSH / 规则）</text>
+        <text x="520" y="512" text-anchor="middle" font-size="11" fill="var(--warn)">GitHub 插件读外层仓库（求职 / DSH / 规则）</text>
         <!-- chatgpt: public raw link from github -->
         <path d="M780,395 L720,395 L720,548 L280,548 L280,490 L222,490" stroke="var(--warn)" stroke-width="1.6" fill="none" stroke-dasharray="6 4" marker-end="url(#a-warn)"/>
-        <text x="520" y="566" text-anchor="middle" font-size="11" fill="var(--warn)">卓望走公开仓库 raw 直链</text>
+        <text x="520" y="566" text-anchor="middle" font-size="11" fill="var(--warn)">卓望仓库也走插件（09-29 起私有）</text>
 
         <!-- push arrows -->
         <path d="M680,155 L780,155" stroke="var(--remote)" stroke-width="1.6" fill="none" marker-end="url(#a-remote)"/>
@@ -157,7 +157,7 @@
   </figure>
 
   <h3>为什么是两个 GitHub 仓库，不是一个</h3>
-  <p><code>zhuowang-workspace</code> 早就存在、是<strong>公开</strong>的，ChatGPT 的「卓望」Project 靠它的直链读最新内容，历史提交也都在那。而外层库里有带真实姓名的简历，必须<strong>私有</strong>。两个诉求冲突，所以分开：外层仓库用 <code>.gitignore</code> 把卓望子目录排除掉，两边不重复、不打架。</p>
+  <p><code>zhuowang-workspace</code> 早就存在，历史提交都在那；它装的是<strong>工作资料</strong>，将来可能交接给同事或分享给协作方。外层库里是简历、职业规划这些<strong>个人信息</strong>，不能跟着工作仓库走。所以分开：外层仓库用 <code>.gitignore</code> 把卓望子目录排除掉，两边不重复、不打架。卓望仓库最初设成公开，是为了让 ChatGPT 用直链读；确认插件能读私有仓库后，2026-09-29 也改成了<strong>私有</strong>。</p>
 
   <h2>三、五个工具各自怎么进出</h2>
   <div class="tablewrap"><table>
@@ -166,7 +166,7 @@
     <tr><td>Codex</td><td>全局指令 <code>~/.codex/AGENTS.md</code></td><td><code>CODEX项目/拓维卓望/</code></td><td>能</td></tr>
     <tr><td>DeepSeek Harness</td><td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code>，每次请求自动注入</td><td><code>deepseek harness/</code></td><td>能</td></tr>
     <tr><td>Claude Cowork</td><td>开会话时<strong>你选中</strong> <code>我的知识库</code> 文件夹，它读根目录 <code>CLAUDE.md</code></td><td>库内 <code>_草稿-cowork/</code>（git 忽略）</td><td><span class="tag tag-warn">不能</span> 只本地 commit，别人代 push</td></tr>
-    <tr><td>ChatGPT</td><td>GitHub 插件读两个仓库（私有的也能读），每次开工拉最新一次 push 的版本；「卓望」Project 另走公开仓库 raw 直链</td><td>没有文件系统</td><td><span class="tag tag-warn">不能</span> 只读，沉淀提醒转交别的工具写</td></tr>
+    <tr><td>ChatGPT</td><td>GitHub 插件读两个仓库（私有的也能读），每次开工拉最新一次 push 的版本；「卓望」Project 也一样（卓望仓库 2026-09-29 起改私有，原来的 raw 直链已停用）</td><td>没有文件系统</td><td><span class="tag tag-warn">不能</span> 只读，沉淀提醒转交别的工具写</td></tr>
   </table></div>
   <p>前三个工具的卓望入口（<code>…/卓望知识库/zhuowang-workspace</code>、<code>deepseek harness/卓望</code>）都是<strong>软链</strong>——看起来像各自有一份，其实都是同一个文件夹。以前是三份独立拷贝靠「开工先 pull」对齐，今天合并的时候发现 Codex 那份已经落后 3 个提交，GitHub 上还躺着一个谁都没拉下来的提交。合并后这种事不会再发生。</p>
 
@@ -254,8 +254,8 @@
         <text x="135" y="193" text-anchor="middle" font-weight="500" font-size="13">Project「卓望」</text>
         <text x="135" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">只做卓望任务</text>
         <g stroke="var(--line-strong)" stroke-width="1.2" fill="var(--surface)"><rect x="330" y="60" width="140" height="56" rx="4" stroke-dasharray="4 3"/><rect x="330" y="170" width="140" height="56" rx="4" stroke-dasharray="4 3"/></g>
-        <text x="400" y="83" text-anchor="middle" font-size="12">插件读私有仓库</text><text x="400" y="102" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
-        <text x="400" y="193" text-anchor="middle" font-size="12">公开仓库直链</text><text x="400" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
+        <text x="400" y="83" text-anchor="middle" font-size="12">插件读外层仓库</text><text x="400" y="102" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
+        <text x="400" y="193" text-anchor="middle" font-size="12">插件读卓望仓库</text><text x="400" y="212" text-anchor="middle" font-size="11" fill="var(--ink-2)">到上次 push 为止</text>
         <g stroke="var(--warn)" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-gpt)"><line x1="330" y1="88" x2="232" y2="88"/><line x1="330" y1="198" x2="232" y2="198"/></g>
         <text x="250" y="150" text-anchor="middle" font-size="11" fill="var(--ink-2)">插件是账号级的，两个 Project 都能用</text>
         <!-- right -->
@@ -263,7 +263,7 @@
         <text x="655" y="128" text-anchor="middle" font-weight="500" font-size="13">Project「我的知识库」</text>
         <text x="655" y="148" text-anchor="middle" font-size="11" fill="var(--ink-2)">先读规则 + INDEX，卓望任务再转卓望仓库</text>
         <g stroke="var(--line-strong)" stroke-width="1.2" fill="var(--surface)"><rect x="830" y="60" width="140" height="56" rx="4" stroke-dasharray="4 3"/><rect x="830" y="170" width="140" height="56" rx="4" stroke-dasharray="4 3"/></g>
-        <text x="900" y="83" text-anchor="middle" font-size="12">插件读私有仓库</text><text x="900" y="193" text-anchor="middle" font-size="12">公开仓库直链</text>
+        <text x="900" y="83" text-anchor="middle" font-size="12">插件读外层仓库</text><text x="900" y="193" text-anchor="middle" font-size="12">插件读卓望仓库</text>
         <g stroke="var(--warn)" stroke-width="1.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-gpt)"><path d="M830,88 C790,88 790,120 752,120"/><path d="M830,198 C790,198 790,150 752,150"/></g>
       </g>
     </svg>
@@ -278,15 +278,15 @@
 ├── 求职相关/                            ├── push → my-knowledge-base（私有）
 ├── 个人学习ai 相关/                     │
 ├── Claude 搭建措施相关/                 ┘
-└── 卓望工作相关/卓望/                   ─── push → zhuowang-workspace（公开）</pre>
+└── 卓望工作相关/卓望/                   ─── push → zhuowang-workspace（私有）</pre>
   <ul>
     <li><code>zhuowang-workspace</code> ≠ <code>my-knowledge-base</code>，内容<strong>不重叠</strong>：前者只有卓望那个子目录，后者是除卓望之外的所有东西。</li>
-    <li><code>zhuowang-workspace</code> = 本地 <code>卓望工作相关/卓望/</code>，只要收工时 push 了，两边就一样。所以 ChatGPT「卓望」Project 拉直链拿到的<strong>就是最新的卓望内容</strong>——这一块已经是同步的。</li>
+    <li><code>zhuowang-workspace</code> = 本地 <code>卓望工作相关/卓望/</code>，只要收工时 push 了，两边就一样。所以 ChatGPT「卓望」Project 用插件读到的<strong>就是最新的卓望内容</strong>——这一块已经是同步的。</li>
     <li>求职、DSH、Claude 搭建这些在 <code>my-knowledge-base</code>（私有）。ChatGPT 通过 GitHub 插件读它，同样以上一次 push 为准。</li>
   </ul>
 
   <h3>曾经的三条路，最终走了 A</h3>
-  <p>私有仓库 ChatGPT 本来读不到直链，当时摆过三条路：A 用 ChatGPT 的 GitHub 插件读私有仓库；B 另建一个只放非个人信息文件的公开仓库；C 手动上传快照。2026-09-15 验证 A 可行（插件能读出私有仓库里当天刚改的内容），于是 Project 里的快照全部删除，B、C 作废。</p>
+  <p>私有仓库 ChatGPT 本来读不到直链，当时摆过三条路：A 用 ChatGPT 的 GitHub 插件读私有仓库；B 另建一个只放非个人信息文件的公开仓库；C 手动上传快照。2026-09-15 验证 A 可行（插件能读出私有仓库里当天刚改的内容），于是 Project 里的快照全部删除，B、C 作废。2026-09-29 卓望仓库也改为私有，同样走 A。</p>
 
   <h2>七、常见疑问</h2>
   <dl class="faq">
@@ -308,7 +308,7 @@
   <div class="status">
     <div><b>本地实体</b><span class="path">~/Documents/我的知识库/</span><br>规则在 <span class="path">知识库规则.md</span></div>
     <div><b>外层备份</b><span class="tag tag-remote">私有</span> <span class="path">wangyucosmos/my-knowledge-base</span></div>
-    <div><b>卓望备份</b><span class="tag tag-remote">公开</span> <span class="path">wangyucosmos/zhuowang-workspace</span></div>
+    <div><b>卓望备份</b><span class="tag tag-remote">私有</span> <span class="path">wangyucosmos/zhuowang-workspace</span></div>
     <div><b>三个软链入口</b>Claude Code / Codex 的 <span class="path">卓望知识库/zhuowang-workspace</span>，DSH 的 <span class="path">deepseek harness/卓望</span></div>
     <div><b>全局指令</b><span class="path">~/.claude/CLAUDE.md</span> · <span class="path">~/.codex/AGENTS.md</span> · <span class="path">~/.dsh-rc9-clean/memory/知识库规则.md</span></div>
     <div><b>ChatGPT</b>GitHub 插件已连接，两个 Project 都读仓库最新 push；资料库旧文件已清</div>
