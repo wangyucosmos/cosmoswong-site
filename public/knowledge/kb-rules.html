@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="工作区与知识库怎么分工、开工与收工协议、并行比稿、子文件夹规范">
 <title>五个 AI 共用一个知识库的规则 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20260921153052">
-<link rel="stylesheet" href="/assets/notes.css?v=20260921153052">
+<link rel="stylesheet" href="/assets/style.css?v=20260929164220">
+<link rel="stylesheet" href="/assets/notes.css?v=20260929164220">
 
 <!--head:auto-->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -90,15 +90,34 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 <td>稳定的流程 / SOP / 检查清单</td>
 <td>账号、密码、密钥、Token（<strong>任何情况都不进</strong>）</td>
 </tr>
+<tr>
+<td><strong>说明性配图</strong>：解释某条知识的截图、示意图、预览图</td>
+<td><strong>生产素材</strong>：切图、banner、设计稿、PSD/AI 源文件、活动图集</td>
+</tr>
 </tbody></table></div>
+<h3>图片怎么判断（2026-09-21 确认）</h3>
+<p>分界线只有一条：<strong>这张图是用来「解释某条知识」的，还是「待使用的生产资料」。</strong></p>
+<ul>
+<li><strong>进</strong>：后台操作截图、页面效果示意、原型预览图、被规范条目引用的参考图。
+它们脱离所属文档就没有意义，体积小，属于文档的一部分。</li>
+<li><strong>不进</strong>：切图、banner、设计稿源文件、整套活动图集。
+二进制、量大、git 会持续膨胀且删不掉，Obsidian 也搜不了内容，没有版本对比价值。
+这类只在文档里写一行路径索引，本体留各自工作区。</li>
+</ul>
+<p><strong>存放规范</strong>：配图放所属文档同级的 <code>附件/</code> 子文件夹，文件名用「主题-序号-做什么.png」，
+不要留 Obsidian 默认的哈希文件名——两个月后你点开都不知道它是什么，等于白存。</p>
+<p><strong>注意 Obsidian 默认行为</strong>：未设置附件目录时，粘贴的图片一律落在<strong>库根目录</strong>且以哈希命名。
+建议在 设置 → 文件与链接 → 附件默认位置 改为「当前文件所在文件夹下的子文件夹」，填 <code>附件</code>。</p>
 <h2>3. 开工协议（每个工具、每次任务）</h2>
 <ol>
+<li>读本库 <code>关于我.md</code>：用户是谁、怎么合作、明确说过的工作习惯（2026-09-29 起）。</li>
 <li>读本库 <code>INDEX.md</code>，找到任务对应的主题子文件夹。</li>
 <li>读该主题的 <strong>主档</strong>（<code>主题名.md</code>）和 <strong>进度</strong>（<code>进度.md</code>，如有）。</li>
 <li>主题有自己的 <code>流程/</code>（如卓望），按其 <code>INDEX.md</code> 路由到具体流程文件。</li>
 <li>没有对应主题 → 告诉用户「知识库里没有这个主题的记录」，问是否新建子文件夹。</li>
 <li>读完才能开始产出。不得跳过。</li>
 </ol>
+<p>用户在对话里说了新的长期偏好（「以后都这样」「记住」），收工沉淀提醒里建议写进 <code>关于我.md</code>，用户确认后写入。</p>
 <h2>4. 收工协议 —— 必须主动提醒用户（用户自己可能判断不了）</h2>
 <p><strong>每次任务结束前，工具必须输出一段「知识库沉淀提醒」</strong>，格式固定：</p>
 <pre><code>📥 知识库沉淀提醒
@@ -154,6 +173,11 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 <li><code>卓望工作相关/卓望/</code> 有<strong>自己的</strong>仓库（<code>wangyucosmos/zhuowang-workspace</code>），在外层 <code>.gitignore</code> 里排除；它的提交推送规则见其 <code>AGENTS.md</code>。</li>
 <li>收工写入知识库后：<code>git add -A &amp;&amp; git commit -m &quot;docs: ...&quot;</code>，能联网的工具再 <code>git push</code>。</li>
 <li>Claude Cowork 连不上 GitHub：只本地 commit，由 Claude Code / Codex 或用户之后 push。</li>
+<li><strong>Claude Cowork 连本地 commit 也做不了</strong>（2026-09-21 实测）：它没有删除文件的权限，
+而 git 每次写操作都要清理自己生成的 <code>.git/index.lock</code>，删不掉就卡死，
+且该锁文件会残留、导致后续所有 git 操作失败。申请删除权限会被安全策略拦截。
+<strong>结论</strong>：Cowork 只负责改文件，<strong>不要让它跑任何 git 写命令</strong>；
+它应在收尾时把 <code>rm -f .git/index.lock &amp;&amp; git add ... &amp;&amp; git commit ... &amp;&amp; git push</code> 整条命令交给用户执行。</li>
 <li>同一时间只让一个工具改同一个主题的主档/进度（并行比稿见第 5 条）。</li>
 </ul>
 <h2>8. 冲突优先级</h2>
@@ -161,8 +185,8 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 <h2>9. ChatGPT 网页版（通过 GitHub 插件读仓库）</h2>
 <p>ChatGPT 没有文件系统，读不到本地；但 <strong>GitHub 插件已连接</strong>（2026-09-15 验证能读私有仓库 <code>my-knowledge-base</code>），所以它读的是 GitHub 上<strong>最后一次 push</strong> 的版本，不再需要手动上传快照。</p>
 <ul>
-<li>Project「我的知识库」：指令写明先用插件读 <code>my-knowledge-base</code> 的 <code>知识库规则.md</code> + <code>INDEX.md</code>，按 INDEX 路由；卓望任务再转 <code>zhuowang-workspace</code>；DSH 问题先读运维手册合并版。</li>
-<li>Project「卓望」：指令写明每次开工读公开仓库 <code>zhuowang-workspace</code> 的 4 个 raw 直链（<strong>原文见本库 <code>给ChatGPT的Project指令.md</code></strong>；旧位置 <code>~/Desktop/ChatGPT上传-我的知识库/</code> 已不存在，2026-09-19 起以本库文件为准）。两个 Project 都能碰到两个仓库，只是入口不同。</li>
+<li>Project「我的知识库」：指令写明先用插件读 <code>my-knowledge-base</code> 的 <code>关于我.md</code> + <code>知识库规则.md</code> + <code>INDEX.md</code>，按 INDEX 路由；卓望任务再转 <code>zhuowang-workspace</code>；DSH 问题先读运维手册合并版。</li>
+<li>Project「卓望」：<strong>2026-09-29 起 <code>zhuowang-workspace</code> 改为私有仓库</strong>，指令改为用 GitHub 连接器读 4 个文件，原 raw 直链已失效（<strong>原文见本库 <code>给ChatGPT的Project指令.md</code></strong>）。两个仓库都是私有，ChatGPT 连接器已授权「所有仓库」，两个 Project 都能碰到两个仓库，只是入口不同。</li>
 <li>ChatGPT 资料库里的旧 <code>卓望.md</code> / <code>AGENTS.md</code> 已删除；Project 里的 md 快照也已删除。<strong>不得再上传知识文件到资料库或 Project</strong>——只走仓库。「库访问权限」该账号关不掉，靠不放旧文件 + 指令声明兜底。</li>
 <li>因此「收工必 push」对 ChatGPT 尤其重要：本地改了没 push，ChatGPT 就看不到。</li>
 <li>ChatGPT 写不了仓库：它给出的「沉淀提醒」由用户转交 Claude Code / Codex 执行。</li>
@@ -292,7 +316,7 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20260921153052"></script>
-<script src="/assets/render.js?v=20260921153052"></script><script src="/assets/app.js?v=20260921153052"></script>
+<script src="/assets/data.js?v=20260929164220"></script>
+<script src="/assets/render.js?v=20260929164220"></script><script src="/assets/app.js?v=20260929164220"></script>
 </body>
 </html>
