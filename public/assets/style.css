@@ -184,6 +184,63 @@ footer{margin-top:80px;padding:30px 0 40px;border-top:1px solid var(--line);colo
 footer a:hover{color:#fff}
 .empty{padding:50px 20px;text-align:center;color:var(--faint);border:1px dashed var(--line);border-radius:var(--radius)}
 
+/* ---------- /subs 订阅倒计时（密码页） ---------- */
+.subs{--hot:#fca5a5;--hot-bg:rgba(248,113,113,.16);--warm:#fcd34d;--warm-bg:rgba(251,191,36,.14)}
+.subs-lede{color:var(--muted);margin-top:8px}
+.subs-lock{max-width:420px;display:flex;flex-direction:column;gap:12px;padding:26px;border:1px solid var(--line);border-radius:var(--radius);background:var(--glass)}
+.subs-lock label{font-weight:600}
+.subs [hidden]{display:none!important}   /* .btn 的 display:inline-flex 会盖掉 hidden 属性 */
+.subs-lock-row{display:flex;gap:10px}
+.subs-lock-row .btn,.subs-actions .btn,.subs .ops .btn{flex:none;white-space:nowrap}
+.subs input,.subs select,.subs textarea{width:100%;min-width:0;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:12px;padding:10px 12px;color:#fff;font:inherit;font-size:15px}
+.subs select option{color:#111}
+.subs input:focus-visible,.subs select:focus-visible,.subs textarea:focus-visible{outline:2px solid #67e8f9;outline-offset:1px}
+.subs-msg{min-height:1.4em;color:var(--warm);font-size:14px}
+.subs-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.subs-summary .stat{padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:var(--glass);display:flex;flex-direction:column;gap:4px;min-width:0}
+.subs-summary .stat span{font-size:12.5px;color:var(--faint);letter-spacing:1px}
+.subs-summary .stat b{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.subs-summary .stat em{font-style:normal;font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.subs-summary .stat.hot{border-color:rgba(248,113,113,.45);background:var(--hot-bg)}
+.subs-summary .stat.warm{border-color:rgba(251,191,36,.4);background:var(--warm-bg)}
+.subs-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.subs-filter{display:flex;gap:8px;flex-wrap:wrap}
+.subs .chip{padding:7px 14px;border-radius:20px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:13.5px}
+.subs .chip.on{background:#fff;color:#1a0f2e;border-color:#fff}
+.subs-list{list-style:none;display:flex;flex-direction:column;gap:12px;padding:0;margin:0}
+.subs .sub{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:18px;align-items:center;padding:18px 20px;border:1px solid var(--line);border-radius:18px;background:var(--glass)}
+.subs .sub.off{opacity:.55}
+.subs .count{text-align:center;padding:10px 6px;border-radius:14px;background:rgba(255,255,255,.06)}
+.subs .count b{display:block;font-size:30px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.subs .count span{font-size:12px;color:var(--faint)}
+.subs .count.hot{background:var(--hot-bg);color:var(--hot)}
+.subs .count.warm{background:var(--warm-bg);color:var(--warm)}
+.subs .count.none b{color:var(--faint)}
+.subs .info{min-width:0}
+.subs .info .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.subs .info h3{font-size:18px;font-weight:700}
+.subs .purpose{color:var(--muted);margin-top:4px}
+.subs .meta{color:var(--faint);font-size:13.5px;margin-top:4px;overflow-wrap:anywhere}
+.subs .note{color:var(--muted);font-size:13.5px;margin-top:6px;white-space:pre-line}
+.subs .ops{display:flex;flex-direction:column;gap:8px}
+.subs-foot{color:var(--faint);font-size:13px;margin-top:14px}
+.subs-form h2{font-size:24px;margin:0 0 16px}
+.subs-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.subs-grid label{display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--muted)}
+.subs-grid label.wide{grid-column:1/-1}
+.subs-grid label.check{flex-direction:row;align-items:center;gap:8px;align-self:end;padding-bottom:10px}
+.subs-grid label.check input{width:auto}
+.subs-actions{display:flex;gap:10px;align-items:center;margin-top:8px}
+.subs-actions .grow{flex:1}
+.subs .btn.danger{color:var(--hot);border-color:rgba(248,113,113,.4)}
+@media(max-width:820px){
+  .subs-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .subs .sub{grid-template-columns:76px minmax(0,1fr);gap:14px;padding:16px}
+  .subs .count b{font-size:24px}
+  .subs .ops{grid-column:1/-1;flex-direction:row}
+  .subs-grid{grid-template-columns:1fr}
+}
+
 /* ---------- 减少动态效果 ----------
    必须放在文件末尾：媒体查询不增加特异度，这里的规则要靠源码顺序压过上面 .hero h1 span / .up 的基础动画。
    背景、扫光、入场动画全部关掉。.up 初始 opacity:0，关动画必须同时补 opacity/transform，否则整页空白 */

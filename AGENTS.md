@@ -3,7 +3,16 @@
 给 agent 看的硬约束。违反任何一条都会在下次部署时被覆盖、或让线上出错。
 
 ## 架构
-- 纯静态站，Cloudflare Workers 静态资源托管（`wrangler.toml` 的 `[assets]`），**没有后端**。
+- 静态站为主，Cloudflare Workers 静态资源托管（`wrangler.toml` 的 `[assets]`）。
+- **唯一的服务端代码是 `src/worker.js`，只接 `/api/*`**（`run_worker_first`），其余请求直接走静态资源，不经过它。
+  目前只服务 `/subs` 订阅倒计时页（2026-09-29 起）：
+  - 页面 `public/subs.html` + `public/assets/subs.js` 是公开的壳，**不含任何订阅数据**；数据只经 `/api/subs` 读写
+  - 数据存在 KV（binding `SUBS`，key `list`），**不进仓库**（仓库是公开的）
+  - 密码与 cookie 签名 key 是 Worker secret：`SUBS_PASSWORD`、`SUBS_COOKIE_KEY`，**不进仓库**；换密码：
+    `printf '%s' '新密码' | HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put SUBS_PASSWORD`（旧登录全部失效）
+  - 同一 IP 15 分钟输错 10 次锁定；登录 cookie 30 天、HttpOnly、只发给 `/api/subs`
+  - 本地测试：`.dev.vars` 放测试密码（已 gitignore，不要放真实密码），`npx wrangler@4 dev --port 8788`
+  - 导航里有「订阅」入口（用户要求入口公开、内容加密）；页面 noindex，不进 sitemap
 - **零外部请求**：不引 CDN、Web Font、图标库、任何前端依赖。唯一外部脚本是 Cloudflare 自动注入的 Insights beacon。`public/_headers` 里的 CSP 就是按这个前提写的，引任何外部资源都会被拦。
 
 ## 内容与生成物

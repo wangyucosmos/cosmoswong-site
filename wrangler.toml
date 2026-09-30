@@ -1,13 +1,22 @@
-# cosmoswong.com 个人主页 —— 纯静态站，Cloudflare Worker 静态资源托管，没有后端。
-# 部署：cd cosmoswong-site && npx wrangler deploy
+# cosmoswong.com 个人主页 —— 静态站为主，Cloudflare Worker 静态资源托管。
+# 唯一的服务端代码是 src/worker.js，只接 /api/*（目前只有 /subs 订阅页的密码门与数据），其余请求直接走静态资源。
+# 部署：cd cosmoswong-site && ./deploy.sh
 
 name = "cosmoswong-site"
+main = "src/worker.js"
 compatibility_date = "2026-05-22"
 
 [assets]
 directory = "./public"
+binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+# /subs 订阅数据（不进仓库）。密码与 cookie 签名 key 是 Worker secret：SUBS_PASSWORD、SUBS_COOKIE_KEY
+[[kv_namespaces]]
+binding = "SUBS"
+id = "64f0dda28ccc4067834dbc4b7645ae23"
 
 # 主域名 + www 都指到这里；`wrangler deploy` 会自动建域名绑定和 DNS 记录
 [[routes]]

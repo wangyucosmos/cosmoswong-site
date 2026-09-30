@@ -8,7 +8,7 @@ node tools/build_notes.mjs
 node tools/build_pages.mjs
 V=$(date +%Y%m%d%H%M%S)
 for f in public/*.html public/knowledge/*.html; do
-  sed -i '' -E "s#(/assets/style\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/data\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/app\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/render\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/notes\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#" "$f"
+  sed -i '' -E "s#(/assets/style\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/data\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/app\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/render\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/notes\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/subs\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#" "$f"
 done
 echo "资源版本 $V"
 npx --yes wrangler@4 deploy

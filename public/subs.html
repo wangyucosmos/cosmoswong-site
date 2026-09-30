@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="付费软件与服务的续费倒计时，需要密码。">
+<meta name="robots" content="noindex, nofollow">
+<title>订阅倒计时 — Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css">
+
+<!--head:auto-->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0e0a1a">
+<link rel="canonical" href="https://cosmoswong.com/subs">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cosmos Wong">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:url" content="https://cosmoswong.com/subs">
+<meta property="og:title" content="订阅倒计时 — Cosmos Wong">
+<meta property="og:description" content="付费软件与服务的续费倒计时，需要密码。">
+<meta property="og:image" content="https://cosmoswong.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cosmos Wong · 运营十年 · 游戏 / 活动 / 社群 / 内容">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="订阅倒计时 — Cosmos Wong">
+<meta name="twitter:description" content="付费软件与服务的续费倒计时，需要密码。">
+<meta name="twitter:image" content="https://cosmoswong.com/og.png">
+<!--/head:auto-->
+</head>
+<body class="inner" data-page="subs">
+<!--chrome-top:auto-->
+    <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="top"><div class="wrap"><nav class="nav">
+      <a class="logo" href="/">COSMOS WONG</a>
+      <ul id="menu"><li><a href="/" class="">首页</a></li><li><a href="/portfolio" class="">作品集</a></li><li><a href="/resume" class="">简历</a></li><li><a href="/trips" class="">旅游计划</a></li><li><a href="/tools" class="">工具箱</a></li><li><a href="/knowledge" class="">知识库</a></li><li><a href="/subs" class="on">订阅</a></li><li><a href="https://jianshen.cosmoswong.com" class="">我的健身计划</a></li></ul>
+      <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
+    </nav></div></header><!--/chrome-top:auto-->
+<main class="wrap">
+  <section class="sec subs">
+    <div class="sec-head">
+      <div>
+        <h2>订阅倒计时</h2>
+        <p class="subs-lede">付费软件与服务：下次扣款还有几天，要不要继续订。</p>
+      </div>
+      <button id="subs-logout" class="btn glass sm" type="button" hidden>退出</button>
+    </div>
+
+    <form id="subs-lock" class="subs-lock" novalidate>
+      <label for="subs-pw">这一页需要密码</label>
+      <div class="subs-lock-row">
+        <input id="subs-pw" name="password" type="password" autocomplete="current-password" required>
+        <button class="btn solid sm" type="submit">进入</button>
+      </div>
+      <p id="subs-msg" class="subs-msg" role="status"></p>
+      <noscript><p class="subs-msg">这一页需要开启 JavaScript。</p></noscript>
+    </form>
+
+    <div id="subs-app" hidden>
+      <div id="subs-summary" class="subs-summary"></div>
+      <div class="subs-toolbar">
+        <div id="subs-filter" class="subs-filter" role="group" aria-label="按决定筛选"></div>
+        <button id="subs-add" class="btn solid sm" type="button">＋ 新增</button>
+      </div>
+      <ul id="subs-list" class="subs-list"></ul>
+      <p id="subs-updated" class="subs-foot"></p>
+    </div>
+
+    <dialog id="subs-edit" aria-labelledby="subs-edit-title">
+      <form id="subs-form" class="modal subs-form" novalidate>
+        <h2 id="subs-edit-title">编辑订阅</h2>
+        <div class="subs-grid">
+          <label class="wide">名称<input id="f-name" name="name" required maxlength="60"></label>
+          <label class="wide">用途<input id="f-purpose" name="purpose" maxlength="120" placeholder="例：让 Claude 走固定美国 IP"></label>
+          <label>价格<input id="f-price" name="price" type="number" step="0.01" min="0" inputmode="decimal"></label>
+          <label>币种<select id="f-currency" name="currency"><option value="CNY">人民币 ¥</option><option value="USD">美元 US$</option></select></label>
+          <label>周期<select id="f-cycle" name="cycle"><option>月</option><option>季</option><option>半年</option><option>年</option><option>一次性</option></select></label>
+          <label>下次扣款<input id="f-next" name="next" type="date"></label>
+          <label>决定<select id="f-verdict" name="verdict"><option>续订</option><option>待定</option><option>停掉</option></select></label>
+          <label class="check"><input id="f-auto" name="auto" type="checkbox"> 自动续费</label>
+          <label class="wide">取消入口<input id="f-cancel" name="cancel" maxlength="200" placeholder="例：Billing 页 Cancel Subscription"></label>
+          <label class="wide">备注<textarea id="f-note" name="note" rows="3" maxlength="300"></textarea></label>
+        </div>
+        <p id="subs-form-msg" class="subs-msg" role="status"></p>
+        <div class="subs-actions">
+          <button id="subs-delete" class="btn glass sm danger" type="button">删除</button>
+          <span class="grow"></span>
+          <button id="subs-cancel" class="btn glass sm" type="button">取消</button>
+          <button class="btn solid sm" type="submit">保存</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+</main>
+
+
+<!--chrome-bottom:auto-->
+    <div class="wrap"><footer>
+      <span>© 2026 Cosmos Wong</span>
+      <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
+    </footer></div>
+    <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
+<script src="/assets/data.js"></script><script src="/assets/render.js"></script><script src="/assets/app.js"></script><script src="/assets/subs.js"></script>
+</body></html>

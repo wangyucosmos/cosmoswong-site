@@ -13,6 +13,7 @@
     ['/tools', '工具箱', S.tools.length > 0],
     ['/knowledge', '知识库'],
     ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)],
+    ['/subs', '订阅'],   // 入口公开，页面内容要密码（src/worker.js）
     ['https://jianshen.cosmoswong.com', '我的健身计划']
   ].filter(([, , show]) => show !== false);
   // here：当前路径（无尾斜杠，首页为 '/'）

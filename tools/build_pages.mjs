@@ -58,6 +58,7 @@ const DYNAMIC = [
 // 静态页：正文自带（knowledge 由 build_notes.mjs 生成，404 手写），只注入骨架和 head
 const STATIC = [
   { path: null, file: '404.html' },
+  { path: '/subs', file: 'subs.html', nosite: true },   // 密码页：不进 sitemap，页面自带 noindex
   ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).sort().map(f => ({
     // 子目录的 index.html 在 auto-trailing-slash 下实际 URL 是 /knowledge/（/knowledge 会 307 过去），canonical 要跟实际一致
     path: f === 'index.html' ? '/knowledge/' : `/knowledge/${f.replace(/\.html$/, '')}`,
@@ -173,7 +174,7 @@ const gitDate = f => {
 const dataDate = gitDate('public/assets/data.js');
 const urls = [
   ...DYNAMIC.map(p => ({ loc: ORIGIN + p.path, lastmod: dataDate })),
-  ...STATIC.filter(p => p.path).map(p => ({ loc: ORIGIN + p.path, lastmod: gitDate(join('public', p.file)) }))
+  ...STATIC.filter(p => p.path && !p.nosite).map(p => ({ loc: ORIGIN + p.path, lastmod: gitDate(join('public', p.file)) }))
 ];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
