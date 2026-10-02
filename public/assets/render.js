@@ -14,6 +14,7 @@
     ['/knowledge', '知识库'],
     ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)],
     ['/subs', '订阅'],   // 入口公开，页面内容要密码（src/worker.js）
+    ['/kol', 'KOL 工作台'],   // 同上：入口公开（用户 2026-10-03 要求加），数据要密码；页面仍 noindex、不进 sitemap
     ['https://jianshen.cosmoswong.com', '我的健身计划']
   ].filter(([, , show]) => show !== false);
   // here：当前路径（无尾斜杠，首页为 '/'）
