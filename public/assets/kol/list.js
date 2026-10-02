@@ -3,6 +3,7 @@
   const K = window.KOL;
   const { esc } = K;
   K.sel = new Set();          // 勾选的 KOL
+  K.queueable = list => list.filter(k => !k.do_not_contact && (k.status === 'todo' || (k.status === 'contacted' && !K.nextStep(k).giveUp)));
   K.expanded = new Set();     // 展开子任务的 KOL
 
   /* ================= 工具栏 ================= */
@@ -19,6 +20,7 @@
       <div class="filters">${chips}<button type="button" class="tb" data-act="filter-add">＋ 筛选</button>
         ${chips ? '<button type="button" class="tb ghost" data-act="filter-clear">清空筛选</button>' : ''}</div>
       <div class="tools">
+        ${view.followBtn && K.queueable(K.currentList || []).length ? `<button type="button" class="btn sm" data-act="queue" title="按顺序一个接一个写好邮件，发完点「已发送」自动跳到下一个">✉️ 逐个发信（${K.queueable(K.currentList).length}）</button>` : ''}
         ${isList ? `<button type="button" class="tb" data-act="group">分组：${esc(g.label)}</button>
         <button type="button" class="tb" data-act="sort">排序：${esc(s)}</button>
         <button type="button" class="tb" data-act="cols">列</button>` : ''}
@@ -98,6 +100,7 @@
       case 'batch': batch(b, b.dataset.field); return true;
       case 'batch-export': K.io.exportCsv(K.state.kols.filter(k => K.sel.has(k.id)), view, '所选'); return true;
       case 'batch-clear': K.sel.clear(); K.render(); return true;
+      case 'queue': K.mail.queue(K.queueable(list).map(k => k.id)); return true;
     }
     return false;
   };
@@ -169,7 +172,8 @@
     const save = v => { if (JSON.stringify(v ?? null) !== JSON.stringify(k[key] ?? null)) K.updateKol(k.id, { [key]: v }).catch(() => {}); };
     switch (col.edit) {
       case 'pick':
-        return K.pickOption(td, { options: K.optionsFor(key), value: k[key], search: ['country', 'language'].includes(key), allowEmpty: key !== 'status', onPick: save });
+        return K.pickOption(td, { options: K.optionsFor(key), value: k[key], search: ['country', 'language'].includes(key), allowEmpty: key !== 'status',
+          emptyLabel: key === 'priority' ? '自动（按规则建议）' : '清空', onPick: save });
       case 'multi':
         return K.pickOption(td, { options: K.optionsFor(key), value: k[key] || [], multi: true, onPick: save });
       case 'date': return K.datePopover(td, k[key], save);

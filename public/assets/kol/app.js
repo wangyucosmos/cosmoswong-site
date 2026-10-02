@@ -5,7 +5,7 @@
   K.q = '';
   K.current = null;
   const SETTINGS_VIEW = { id: 'settings', kind: 'settings', name: '设置', icon: '⚙️' };
-  const FORM_PAGES = ['finder', 'templates', 'settings'];
+  const FORM_PAGES = ['finder', 'templates', 'settings', 'quality'];
 
   /* ---------- 登录 ---------- */
   function showLogin(msg = '') {
@@ -68,7 +68,9 @@
     const today = K.state.kols.filter(K.BASE.today);
     const overdue = today.filter(k => k.next_followup_at < K.today()).length;
     $('#tabs').innerHTML = `<div class="tab-list" role="tablist">${views.map(v => {
-      const badge = v.id === 'today' && today.length ? `<span class="badge${overdue ? ' red' : ''}" title="${overdue ? `其中 ${overdue} 个已逾期` : ''}">${today.length}</span>` : '';
+      const fix = v.id === 'fix' ? K.qualityCount() : 0;
+      const badge = v.id === 'today' && today.length ? `<span class="badge${overdue ? ' red' : ''}" title="${overdue ? `其中 ${overdue} 个已逾期` : ''}">${today.length}</span>`
+        : fix ? `<span class="badge amber" title="${fix} 个 KOL 资料不完整">${fix}</span>` : '';
       return `<button type="button" role="tab" class="tab${K.current?.id === v.id ? ' on' : ''}" data-id="${esc(v.id)}" aria-selected="${K.current?.id === v.id}"><span class="ti">${esc(v.icon)}</span>${esc(v.name)}${badge}</button>`;
     }).join('')}</div><button type="button" class="tab add" data-newview>＋ 视图</button>`;
   }
@@ -82,7 +84,7 @@
     main.dataset.kind = view.kind;
     ({
       list: K.renderList, board: K.renderBoard, deals: K.renderDeals, finder: K.renderFinder,
-      templates: K.renderTemplates, welcome: K.renderWelcome, settings: K.renderSettings
+      templates: K.renderTemplates, welcome: K.renderWelcome, settings: K.renderSettings, quality: K.renderQuality
     })[view.kind](view, main);
     main.scrollTop = scroll[0];
     if (scroll[1] != null && main.querySelector('.table-wrap')) main.querySelector('.table-wrap').scrollLeft = scroll[1];
@@ -144,7 +146,7 @@
     const getView = () => K.current;
     const main = $('#main');
     K.listEvents(main, getView); K.boardEvents(main, getView); K.templateEvents(main, getView);
-    K.finderEvents(main, getView); K.dealsEvents(main, getView); K.settingsEvents(main, getView);
+    K.finderEvents(main, getView); K.dealsEvents(main, getView); K.settingsEvents(main, getView); K.qualityEvents(main, getView);
     document.addEventListener('click', e => { const g = e.target.closest('[data-goto]'); if (g) { K.drawer.close(); show(g.dataset.goto); } });
 
     $('#tabs').addEventListener('click', e => {

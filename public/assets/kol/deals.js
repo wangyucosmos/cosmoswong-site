@@ -51,7 +51,7 @@
     const base = all.filter(d => (!f.kol || d.kol_id === Number(f.kol)) && (!f.platform || d.platform === f.platform) && (!f.settle || d.settle_status === f.settle));
     const shown = base.filter(d => !f.month || K.dealMonth(d) === f.month);
     const tm = K.thisMonth(), monthDeals = all.filter(d => K.dealMonth(d) === tm);
-    const live = K.state.kols.filter(k => ['sampled', 'published', 'won'].includes(k.status)).length;
+    const live = K.state.kols.filter(k => ['sampled', 'published', 'won', 'partner'].includes(k.status)).length;
 
     const rank = kolIds.map(id => { const l = shown.filter(d => d.kol_id === id); return { id, gmv: sum(l, d => d.gmv_eur), com: sum(l, K.dealCommission), orders: sum(l, d => d.orders) }; })
       .filter(r => r.gmv || r.com).sort((a, b) => b.gmv - a.gmv).slice(0, 10);
@@ -64,7 +64,7 @@
         <div class="stat"><span>本月成交额</span><b>${esc(K.eur(sum(monthDeals, d => d.gmv_eur)))}</b><em>${tm}</em></div>
         <div class="stat"><span>本月分成</span><b>${esc(K.eur(sum(monthDeals, K.dealCommission)))}</b><em>按结算月份统计</em></div>
         <div class="stat"><span>待结算金额</span><b>${esc(K.eur(sum(all.filter(d => d.settle_status !== 'settled'), K.dealCommission)))}</b><em>所有未结算的分成</em></div>
-        <div class="stat"><span>合作中的 KOL</span><b>${live}</b><em>已寄样 / 已发布 / 已成交</em></div>
+        <div class="stat"><span>合作中的 KOL</span><b>${live}</b><em>已寄样 / 已发布 / 已成交 / 长期合作</em></div>
       </div>
       <div class="toolbar"><div class="filters">
         ${sel('month', months.map(m => [m, m]), f.month, '全部月份')}

@@ -7,6 +7,8 @@
   K.COLS = [
     { key: 'name', label: '名称', w: 240, fixed: true },
     { key: 'status', label: '状态', w: 150, edit: 'pick' },
+    { key: 'next_step', label: '下一步', w: 190 },
+    { key: 'touches', label: '已触达', w: 80, edit: 'int', num: true },
     { key: 'platform', label: '平台', w: 120, edit: 'pick' },
     { key: 'handle', label: '账号', w: 140, edit: 'text' },
     { key: 'followers', label: '粉丝量', w: 110, edit: 'int', num: true },
@@ -41,7 +43,9 @@
     switch (key) {
       case 'status': return K.statusChip(v);
       case 'platform': return K.platformChip(v);
-      case 'priority': return K.priorityChip(v);
+      case 'priority': return K.prioChip(k);
+      case 'next_step': { const s = K.nextStep(k); return `<span class="step ${s.cls || ''}">${K.esc(s.text)}</span>`; }
+      case 'touches': return v ? K.esc(v + ' 次') : '';
       case 'country': return K.countryLabel(v);
       case 'language': return K.esc(K.langName(v));
       case 'category': case 'tags': return (v || []).map(x => `<span class="tag">${K.esc(x)}</span>`).join('');
@@ -67,7 +71,8 @@
     const v = k[key];
     switch (key) {
       case 'status': return K.statusOf(v).label;
-      case 'priority': return K.priorityOf(v)?.label || '';
+      case 'priority': { const p = K.prio(k); return (K.priorityOf(p.key)?.label || '') + (p.key && p.auto ? '（建议）' : ''); }
+      case 'next_step': return K.nextStep(k).text;
       case 'country': return v ? K.countryName(v) : '';
       case 'language': return v ? K.langName(v) : '';
       case 'category': case 'tags': return (v || []).join('、');
@@ -117,7 +122,7 @@
 
   // 内置视图自带的基础条件（不显示成筛选标签）
   K.BASE = {
-    today: k => k.next_followup_at && k.next_followup_at <= K.today() && !['paused', 'won'].includes(k.status) && !k.do_not_contact,
+    today: k => k.next_followup_at && k.next_followup_at <= K.today() && !['paused', 'won'].includes(k.status) && !k.do_not_contact,   // 长期合作也要按 30 天回访
     stale: k => {
       if (!k.last_contact_at || ['paused', 'won'].includes(k.status) || k.do_not_contact) return false;
       return K.diffDays(K.today(), k.last_contact_at) > Number(K.cfg().overdue_days || 7);
@@ -137,9 +142,10 @@
     return kols.filter(k => {
       if (base && !base(k)) return false;
       if (!K.matchSearch(k, q)) return false;
-      for (const key of ['status', 'platform', 'country', 'language', 'priority']) {
+      for (const key of ['status', 'platform', 'country', 'language']) {
         if (f[key]?.length && !f[key].includes(k[key] ?? '')) return false;
       }
+      if (f.priority?.length && !f.priority.includes(K.prio(k).key ?? '')) return false;   // 没手动设的按自动建议算
       if (f.category?.length && !(k.category || []).some(c => f.category.includes(c))) return false;
       if (f.followers && !followersIn(k.followers, f.followers)) return false;
       if (f.followup) {
@@ -164,8 +170,9 @@
     if (!sort?.key) return list;
     const dir = sort.dir === 'desc' ? -1 : 1, key = sort.key;
     const empty = v => v == null || v === '' || (Array.isArray(v) && !v.length);
+    const val = (k, key) => key === 'priority' ? K.prio(k).key : key === 'next_step' ? K.nextStep(k).text : k[key];
     return [...list].sort((a, b) => {
-      const x = a[key], y = b[key];
+      const x = val(a, key), y = val(b, key);
       if (empty(x) && empty(y)) return a.id - b.id;
       if (empty(x)) return 1;   // 空值永远排最后
       if (empty(y)) return -1;
@@ -185,7 +192,7 @@
     if (!by || by === 'none') return [{ key: '__all', value: null, items: list }];
     const map = new Map();
     for (const k of list) {
-      const v = by === 'category' ? (k.category || [])[0] ?? '' : k[by] ?? '';
+      const v = by === 'category' ? (k.category || [])[0] ?? '' : by === 'priority' ? K.prio(k).key ?? '' : k[by] ?? '';
       if (!map.has(v)) map.set(v, []);
       map.get(v).push(k);
     }
@@ -214,16 +221,18 @@
   K.BUILTIN = [
     { id: 'welcome', kind: 'welcome', name: '欢迎', icon: '👋' },
     { id: 'today', kind: 'list', name: '今日待跟进', icon: '✅', base: 'today', followBtn: true,
-      def: { group: 'none', sort: { key: 'next_followup_at', dir: 'asc' }, cols: ['name', 'status', 'next_followup_at', 'platform', 'followers', 'country', 'language', 'priority', 'last_contact_at'] } },
+      def: { group: 'none', sort: { key: 'next_followup_at', dir: 'asc' }, cols: ['name', 'status', 'next_step', 'next_followup_at', 'touches', 'platform', 'followers', 'country', 'priority'] } },
     { id: 'stale', kind: 'list', name: '超期未联系', icon: '⚠️', base: 'stale', followBtn: true,
       def: { group: 'status', sort: { key: 'last_contact_at', dir: 'asc' }, cols: ['name', 'status', 'last_contact_at', 'next_followup_at', 'platform', 'followers', 'country', 'language', 'priority'] } },
     { id: 'all', kind: 'list', name: '所有 KOL', icon: '👥', def: { group: 'status', sort: { key: 'name', dir: 'asc' } } },
     { id: 'board', kind: 'board', name: 'KOL 看板', icon: '🗂️', def: {} },
+    { id: 'fix', kind: 'quality', name: '待补全', icon: '🧩' },
     { id: 'deals', kind: 'deals', name: '带货与分成', icon: '💶' },
     { id: 'finder', kind: 'finder', name: '找人助手', icon: '🔍' },
     { id: 'templates', kind: 'templates', name: '邮件模板', icon: '✉️' }
   ];
   const cfgCache = {};
+  const CFG_VERSION = 2;   // 内置视图默认列变了就 +1
   K.resetViewCfg = id => { delete cfgCache[id]; };
   const freshCfg = def => ({ filters: {}, group: 'status', sort: null, cols: [...K.DEFAULT_COLS], widths: {}, collapsed: {}, ...(def ? JSON.parse(JSON.stringify(def)) : {}) });
 
@@ -245,6 +254,7 @@
     if (cfgCache[view.id]) return cfgCache[view.id];
     const base = freshCfg(view.def);
     const saved = view.custom ? {} : K.pref.get('view.' + view.id, {});
+    if (!view.custom && saved.cfgv !== CFG_VERSION) { delete saved.cols; delete saved.widths; }
     const cfg = cfgCache[view.id] = { ...base, ...saved };
     if (!cfg.cols?.includes('name')) cfg.cols = ['name', ...(cfg.cols || [])];
     return cfg;
@@ -255,7 +265,7 @@
   }, 600);
   K.saveViewCfg = view => {
     const cfg = cfgCache[view.id];
-    if (view.custom) saveCustom(view, cfg); else K.pref.set('view.' + view.id, cfg);
+    if (view.custom) saveCustom(view, cfg); else K.pref.set('view.' + view.id, { ...cfg, cfgv: CFG_VERSION });
   };
 
   /* ---------- URL hash：#<视图>?country=DE,FR&q=… ---------- */

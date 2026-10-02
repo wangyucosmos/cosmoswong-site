@@ -76,13 +76,17 @@
       <button type="button" class="tb" data-q="next">📅 下次跟进：<b class="due ${r.cls}">${esc(r.text || '未设置')}</b></button>
     </div>
     ${k.do_not_contact ? '<p class="warn">⚠️ 对方要求勿再联系（GDPR）。「今日待跟进」不会再排到他。</p>' : ''}
+    ${(() => { const s = K.nextStep(k); return s.giveUp
+      ? `<p class="warn">${esc(s.text)}。<button type="button" class="link-btn" data-giveup>改成「暂不跟进」</button></p>`
+      : `<p class="hint">👉 下一步：<b>${esc(s.text)}</b>${k.touches ? `（已触达 ${k.touches} 次）` : ''}</p>`; })()}
+    ${(() => { const m = K.missing(k); return m.length ? `<p class="hint miss">🧩 资料还缺：${m.map(x => esc(x.label)).join('、')}　<button type="button" class="link-btn" data-goto="fix">去「待补全」</button></p>` : ''; })()}
     <section class="dsec"><h3>基本信息</h3><div class="fgrid">
       ${F('平台', picker(k, 'platform', K.platformChip(k.platform)))}
       ${F('账号', input(k, 'handle', 'text', 'maxlength="120" placeholder="@账号"'))}
       ${F('主页链接', `<div class="with-btn">${input(k, 'profile_url', 'url', 'placeholder="https://…"')}${K.safeUrl(k.profile_url) ? `<a class="tb" href="${esc(K.safeUrl(k.profile_url))}" target="_blank" rel="noopener noreferrer">打开</a>` : ''}</div>`, 'wide')}
       ${F('国家', picker(k, 'country', K.countryLabel(k.country)))}
       ${F('语言', picker(k, 'language', esc(K.langName(k.language))))}
-      ${F('优先级', picker(k, 'priority', K.priorityChip(k.priority)))}
+      ${F('优先级', picker(k, 'priority', K.prioChip(k)))}
       ${F('初筛评级', picker(k, 'rating', k.rating ? esc(k.rating) : ''))}
       ${F('品类', picker(k, 'category', (k.category || []).map(c => `<span class="tag">${esc(c)}</span>`).join('')), 'wide')}
       ${F('粉丝量', input(k, 'followers', 'number', 'min="0"'))}
@@ -103,6 +107,7 @@
     </div></section>
 
     <section class="dsec"><h3>跟进</h3><div class="fgrid">
+      ${F('已触达次数', input(k, 'touches', 'number', 'min="0" max="99" title="发邮件 / 私信 / 通话每记一次自动 +1"'))}
       ${F('首次联系', input(k, 'first_contact_at', 'date'))}
       ${F('上次联系', input(k, 'last_contact_at', 'date'))}
       ${F('下次跟进', input(k, 'next_followup_at', 'date'))}
@@ -231,7 +236,7 @@
         const key = pick.dataset.pick;
         const multi = key === 'category';
         return K.pickOption(pick, { options: K.optionsFor(key), value: multi ? (k[key] || []) : k[key], multi, search: ['country', 'language'].includes(key),
-          allowEmpty: key !== 'status', onPick: v => { if (JSON.stringify(v ?? null) !== JSON.stringify(k[key] ?? null)) K.updateKol(k.id, { [key]: v }).catch(() => {}); } });
+          allowEmpty: key !== 'status', emptyLabel: key === 'priority' ? '自动（按规则建议）' : '清空', onPick: v => { if (JSON.stringify(v ?? null) !== JSON.stringify(k[key] ?? null)) K.updateKol(k.id, { [key]: v }).catch(() => {}); } });
       }
       const q = t.closest('[data-q]')?.dataset.q;
       if (q === 'mail') return K.mail.compose(k);
@@ -239,6 +244,7 @@
       if (q === 'next') return K.datePopover(t.closest('[data-q]'), k.next_followup_at, v => K.updateKol(k.id, { next_followup_at: v }).catch(() => {}));
       if (q === 'deal') return K.deals.edit(null, k.id);
       if (t.closest('[data-copy-email]')) return K.copy(k.email, '邮箱');
+      if (t.closest('[data-giveup]')) return K.updateKol(k.id, { status: 'paused', next_followup_at: null }).then(() => K.toast('已改成「暂不跟进」')).catch(() => {});
       if (t.closest('[data-del-kol]')) return K.deleteKol(k.id);
       const ld = t.closest('[data-link-del]');
       if (ld) { const links = [...(k.other_links || [])]; links.splice(Number(ld.dataset.linkDel), 1); return K.updateKol(k.id, { other_links: links }).catch(() => {}); }

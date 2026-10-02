@@ -4,8 +4,9 @@
   const { esc } = K;
   const VARS = ['name', 'handle', 'platform', 'channel_url', 'product', 'product_link', 'my_name', 'company', 'quote'];
   const VAR_LABEL = { name: 'KOL 名称', handle: '账号', platform: '平台', channel_url: '主页链接', product: '产品名', product_link: '带货链接', my_name: '我的署名', company: '公司名', quote: '报价' };
-  // 按状态推荐的场景
-  const SCENE_FOR = { todo: 'outreach', contacted: 'follow1', talking: 'sample', sampled: 'publish', published: 'settle', won: 'settle', paused: 'decline' };
+  // 推荐哪封：先看「下一步」（已触达几次：开发信 → 首次跟进 → 最后一封），没有再按状态
+  const SCENE_FOR = { todo: 'outreach', contacted: 'follow1', talking: 'sample', sampled: 'publish', published: 'settle', won: 'settle', partner: 'settle', paused: 'decline' };
+  const sceneFor = k => K.nextStep(k).scene || SCENE_FOR[k.status];
 
   const varsFor = k => {
     const p = K.cfg().profile;
@@ -35,11 +36,11 @@
   const MAILTO_LIMIT = 1800;
 
   /* ================= 写邮件 / 回邮件 弹窗 ================= */
-  let cur = null;   // { k, tab }
+  let cur = null;   // { k, tab, queue?: [id], qi, sent, skipped }
   const dlg = () => K.$('#mail');
 
   function templateOptions(k) {
-    const scene = SCENE_FOR[k.status];
+    const scene = sceneFor(k);
     const lang = k.language || 'en';
     const rank = t => (t.language === lang ? 0 : t.language === 'en' ? 1 : 2) * 10 + (t.scene === scene ? 0 : 1);
     const sorted = [...K.state.templates].sort((a, b) => rank(a) - rank(b) || a.id - b.id);
@@ -51,9 +52,10 @@
     const lang = k.language || 'en';
     return `<div class="mail-grid">
       <label class="lbl">模板
-        <select name="tpl">${sorted.map(t => `<option value="${t.id}" ${t === best ? 'selected' : ''}>${t.language === lang && t.scene === SCENE_FOR[k.status] ? '⭐ ' : ''}${esc(K.sceneOf(t.scene).label)} · ${esc(K.langName(t.language))} · ${esc(t.name)}</option>`).join('')}</select>
+        <select name="tpl">${sorted.map(t => `<option value="${t.id}" ${t === best ? 'selected' : ''}>${t.language === lang && t.scene === sceneFor(k) ? '⭐ ' : ''}${esc(K.sceneOf(t.scene).label)} · ${esc(K.langName(t.language))} · ${esc(t.name)}</option>`).join('')}</select>
       </label>
-      <p class="muted small">已按 TA 的语言（${esc(K.langName(lang) || '未填')}）和当前状态推荐，⭐ 是最合适的。</p>
+      ${K.nextStep(k).giveUp ? `<p class="warn">${esc(K.nextStep(k).text)}。<button type="button" class="link-btn" data-m="giveup">改成「暂不跟进」</button></p>` : ''}
+      <p class="muted small">已按 TA 的语言（${esc(K.langName(lang) || '未填，默认英语')}）和「下一步：${esc(K.nextStep(k).text)}」推荐，⭐ 是最合适的。${k.touches ? `已触达 ${k.touches} 次。` : ''}</p>
       <label class="lbl">收件人<input name="to" type="email" value="${esc(k.email || '')}" placeholder="没有邮箱：可以先填上，或用复制" aria-label="收件人"></label>
       <label class="lbl">主题<input name="subject" maxlength="300"></label>
       <label class="lbl">正文<textarea name="body" rows="14"></textarea></label>
@@ -68,7 +70,7 @@
         <div class="row wrap">
           <label class="lbl inline">状态改为<select name="status">${K.cfg().statuses.map(s => `<option value="${s.key}" ${s.key === (k.status === 'todo' ? 'contacted' : k.status) ? 'selected' : ''}>${esc(s.label)}</option>`).join('')}</select></label>
           <label class="lbl inline">下次跟进<input name="next" type="date"></label>
-          <button type="button" class="btn sm" data-m="sent">✓ 标记已发送</button>
+          <button type="button" class="btn sm" data-m="sent">${cur?.queue ? '✓ 已发送，下一个' : '✓ 标记已发送'}</button>
         </div>
       </div>
     </div>`;
@@ -109,10 +111,11 @@
 
   function draw() {
     const k = cur.k;
-    K.$('#mail-title').textContent = `邮件 · ${k.name}`;
+    K.$('#mail-title').textContent = `${cur.queue ? '逐个发信' : '邮件'} · ${k.name}`;
     K.$$('#mail [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === cur.tab));
-    K.$('#mail-form').innerHTML = cur.tab === 'reply' ? replyHtml(k)
-      : K.state.templates.length ? composeHtml(k) : '<p class="empty-state">还没有模板，先去「邮件模板」里建一个。</p>';
+    const qbar = cur.queue ? `<div class="qbar"><b>第 ${cur.qi + 1} / ${cur.queue.length} 个</b><span class="muted small">已发 ${cur.sent} · 跳过 ${cur.skipped}${k.email ? '' : ' · ⚠️ TA 没有邮箱，可以复制正文去私信'}</span><span class="grow"></span><button type="button" class="btn sm ghost" data-m="q-skip">跳过这个</button><button type="button" class="btn sm ghost" data-m="q-stop">结束</button></div>` : '';
+    K.$('#mail-form').innerHTML = qbar + (cur.tab === 'reply' ? replyHtml(k)
+      : K.state.templates.length ? composeHtml(k) : '<p class="empty-state">还没有模板，先去「邮件模板」里建一个。</p>');
     if (cur.tab === 'compose' && K.state.templates.length) { fillFromTemplate(); setNextDefault(); }
   }
 
@@ -121,8 +124,26 @@
       cur = { k, tab };
       draw();
       if (!dlg().open) dlg().showModal();
+    },
+    // 逐个发信：按顺序一个接一个写好邮件，点「已发送」自动跳到下一个
+    queue(ids) {
+      const list = ids.map(id => K.kol(id)).filter(Boolean);
+      if (!list.length) return K.toast('这里没有要发邮件的 KOL', { error: true });
+      cur = { k: list[0], tab: 'compose', queue: list.map(k => k.id), qi: 0, sent: 0, skipped: 0 };
+      draw();
+      if (!dlg().open) dlg().showModal();
     }
   };
+  function nextInQueue(skipped) {
+    if (skipped) cur.skipped++; else cur.sent++;
+    while (++cur.qi < cur.queue.length) {
+      const k = K.kol(cur.queue[cur.qi]);
+      if (k) { cur.k = k; cur.tab = 'compose'; return draw(); }
+    }
+    const { sent, skipped: sk } = cur;
+    dlg().close();
+    K.toast(`这一轮发完了：发出 ${sent} 封${sk ? `，跳过 ${sk} 个` : ''}`, { timeout: 5000 });
+  }
 
   async function historyOf(k) {
     if (!K.actCache[k.id]) {
@@ -172,6 +193,12 @@ ${intent || '（请根据上下文给出合适的回复）'}
       if (e.target.closest('[data-mail-close]')) return d.close();
       const m = e.target.closest('[data-m]')?.dataset.m; if (!m || !cur) return;
       const f = K.$('#mail-form'), k = K.kol(cur.k.id) || cur.k;
+      if (m === 'q-skip') return nextInQueue(true);
+      if (m === 'q-stop') { d.close(); return K.toast(`已结束：发出 ${cur.sent} 封`); }
+      if (m === 'giveup') {
+        try { await K.updateKol(k.id, { status: 'paused', next_followup_at: null }); K.toast('已改成「暂不跟进」'); } catch { return; }
+        return cur.queue ? nextInQueue(true) : d.close();
+      }
       if (m === 'copy-subject') return K.copy(f.subject.value, '主题');
       if (m === 'copy-body') return K.copy(f.body.value, '正文');
       if (m === 'mailto') {
@@ -186,7 +213,7 @@ ${intent || '（请根据上下文给出合适的回复）'}
           await K.addActivity({ kol_id: k.id, type: 'email_out', summary: `发出邮件：${f.subject.value}`.slice(0, 500), content: f.body.value, happened_at: K.today() },
             { next_followup_at: f.next.value || null, status: f.status.value });
           K.toast(`已记录「发出邮件」，下次跟进：${f.next.value ? K.fmtDate(f.next.value) : '未设置'}`);
-          d.close();
+          if (cur.queue) nextInQueue(false); else d.close();
         } catch (err) { K.fail(err); btn.disabled = false; }
         return;
       }

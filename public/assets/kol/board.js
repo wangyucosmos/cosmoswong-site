@@ -12,7 +12,7 @@
     const sc = K.tasksOf(k.id);
     return `<article class="card" data-id="${k.id}" tabindex="0" aria-label="${esc(k.name)}">
       <h4>${esc(k.name)}${k.do_not_contact ? ' <span class="dnc">勿联系</span>' : ''}</h4>
-      <div class="card-tags">${K.platformChip(k.platform)}${K.priorityChip(k.priority)}${k.country ? `<span class="flag" title="${esc(K.countryName(k.country))}">${K.flag(k.country)} ${esc(k.country)}</span>` : ''}</div>
+      <div class="card-tags">${K.platformChip(k.platform)}${K.prioChip(k)}${k.country ? `<span class="flag" title="${esc(K.countryName(k.country))}">${K.flag(k.country)} ${esc(k.country)}</span>` : ''}</div>
       <dl>
         ${k.followers != null ? `<div><dt>粉丝</dt><dd>${esc(K.fmtInt(k.followers))}</dd></div>` : ''}
         ${k.next_followup_at ? `<div><dt>下次跟进</dt><dd class="due ${live ? r.cls : ''}">${esc(live ? r.text : K.fmtDate(k.next_followup_at))}</dd></div>` : ''}

@@ -25,6 +25,9 @@
 - **鉴权**：Worker secret `KOL_PASSWORD`（和 /subs 分开；设置：`npx wrangler@4 secret put KOL_PASSWORD`，由用户自己输入）。会话 cookie `kol_session` 只发给 `/api/kol`，HttpOnly + Secure + SameSite=Strict，30 天；签名 key 在 D1 `kol_meta` 里首次登录时随机生成，并混入密码 → 换密码旧登录全失效。同一 IP 15 分钟输错 10 次锁定（D1 `login_fails`）。除 `POST /login`、`POST /logout`、`GET /session`（只回答是否已登录）外全部要登录，未登录 401；写操作必须带请求头 `x-kol-request: 1` 且同源，否则 403。
 - **前端约束**：零外部请求、无内联脚本/事件（CSP）；外部内容一律 `KOL.esc()` 转义，外链只放行 http(s) 且 `rel="noopener noreferrer"`；localStorage 只存界面偏好（`kol.*`），业务数据只走 D1。资源版本号由 `deploy.sh` 的 `/assets/kol/*` 那条 sed 维护。
 - **本地测试**：`.dev.vars` 里放测试用 `KOL_PASSWORD`；`npx wrangler@4 d1 migrations apply cosmoswong-kol --local` → `node tools/kol_seed_local.mjs`（30 个虚构 KOL，**只写本地库**，线上库不灌演示数据）→ `npx wrangler@4 dev --port 8788` → 打开 `/kol`。
+- **业务规则（2026-10-02 第二轮）**：状态多了 `partner` 长期合作；`kols.touches` = 已触达次数（发出邮件 / 私信 / 通话每记一次 +1、删掉 -1），「下一步」按它推荐：开发信 → 首次跟进 → 最后一封 → 3 封没回建议暂不跟进（`K.nextStep`）。优先级没手动设时按规则自动建议（沟通中 / 已寄样或粉丝 ≥10 万 → 高，≥1 万 → 中，其余低；`K.autoPriority`），筛选、排序、分组都按「有效优先级」。赛道、合作模式、跟进天数沿用用户 2026-09-28 的「KOL总表模板」。
+- **导入约定**（`public/assets/kol/io.js`）：表头别名覆盖她的原表（账号链接 / 联系方式 / 粉丝量（K）/ 内容赛道 / 当前阶段 / 二次标签 / 触达回复 / 回复总结）；表头带（K）/ 万 / M 自动乘单位；联系方式里的邮箱自动放进邮箱栏；「未建联」+ 二次触达 → 已联系·等回复，否则待触达；「明确拒绝 / 要求移除」→ 勿再联系；回复原文存成「收到回复」沟通记录；没认出的列默认「追加到备注」不丢。**国家名转代码时跳过 UK / FX 等废弃代码**（`Intl.DisplayNames` 会把它们也叫「英国」「法国」）。
+- **待补全**（`quality.js`，内置视图 `#fix`）：国家代码、邮箱放错栏、粉丝按千填、缺语言（按国家给建议、人工确认后才填）、没排期、缺链接 / 赛道 / 邮箱，都能就地修。
 - **AI 直接读线上数据**（只读示例）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-kol --remote --command "SELECT name, status, next_followup_at FROM kols WHERE deleted_at IS NULL ORDER BY next_followup_at"`。要改线上数据先问用户、先导出备份。
 
 ## 内容与生成物

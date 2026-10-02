@@ -64,8 +64,9 @@
       { key: 'contacted', label: '已联系/等回复', color: '#2f7cf6', days: 5 },
       { key: 'talking', label: '沟通中', color: '#f2c200', days: 3 },
       { key: 'sampled', label: '已寄样/待出内容', color: '#f5822a', days: 7 },
-      { key: 'published', label: '内容已发布', color: '#8b5cf6', days: 7 },
+      { key: 'published', label: '内容已发布', color: '#8b5cf6', days: 14 },
       { key: 'won', label: '已成交', color: '#1aa35a', days: 30 },
+      { key: 'partner', label: '长期合作', color: '#0f9fa8', days: 30 },
       { key: 'paused', label: '暂不跟进', color: '#111111', days: 0 }
     ],
     platforms: [
@@ -85,11 +86,12 @@
     languages: [
       ['en', '英语'], ['de', '德语'], ['fr', '法语'], ['es', '西班牙语'], ['it', '意大利语'], ['nl', '荷兰语'], ['pl', '波兰语'],
       ['pt', '葡萄牙语'], ['sv', '瑞典语'], ['da', '丹麦语'], ['no', '挪威语'], ['fi', '芬兰语'], ['cs', '捷克语'],
-      ['hu', '匈牙利语'], ['ro', '罗马尼亚语'], ['el', '希腊语'], ['tr', '土耳其语'], ['uk', '乌克兰语'],
+      ['sk', '斯洛伐克语'], ['hu', '匈牙利语'], ['ro', '罗马尼亚语'], ['el', '希腊语'], ['tr', '土耳其语'], ['uk', '乌克兰语'],
       ['ja', '日语'], ['ko', '韩语'], ['zh', '中文']
     ].map(([code, name]) => ({ code, name })),
-    categories: ['数码', '模拟器', '飞行模拟', '赛车模拟', 'VR 游戏', '科技测评', '其他'],
-    coop_types: ['寄样测评', '付费推广', '纯分成', '混合'],
+    // 赛道与合作模式沿用 2026-09-28「KOL总表模板」定的那套（导入时 Racing / F1 → 赛车模拟 等自动归类，见 io.js）
+    categories: ['赛车模拟', '飞行模拟', '模拟器', 'VR 游戏', '硬件测评', '游戏综合', '其他'],
+    coop_types: ['未明确', '佣金分销', '付费推广', '寄样置换', '混合'],
     sources: ['自己找的', 'CRM 公海', '推荐', '对方主动'],
     overdue_days: 7,
     profile: { my_name: '', company: '', product: '', product_link: '' },
@@ -147,7 +149,41 @@
     return `<span class="st st-${K.esc(s.key)}" style="--c:${safeColor(s.color)};--ink:${K.inkOn(safeColor(s.color))}"><i></i>${K.esc(s.label)}</span>`;
   };
   K.platformChip = name => name ? K.chip(K.platformOf(name).name, K.platformOf(name).color, 'pf') : '';
-  K.priorityChip = key => { const p = K.priorityOf(key); return p ? K.chip(p.label, p.color, 'pri') : ''; };
+  K.priorityChip = (key, auto = false) => {
+    const p = K.priorityOf(key); if (!p) return '';
+    const c = safeColor(p.color);
+    return auto ? `<span class="chip pri auto" style="--c:${c}" title="按规则自动建议：沟通中、已寄样或粉丝 ≥10 万 → 高；≥1 万 → 中；其余 → 低。点一下可以手动改">${K.esc(p.label)}</span>` : K.chip(p.label, p.color, 'pri');
+  };
+  // 自动建议优先级（沿用 KOL总表模板 的规则）；手动设过就以手动为准
+  K.autoPriority = k => {
+    if (['paused', 'partner'].includes(k.status) || k.do_not_contact) return null;
+    if (['talking', 'sampled'].includes(k.status) || (k.followers || 0) >= 1e5) return 'high';
+    return (k.followers || 0) >= 1e4 ? 'mid' : 'low';
+  };
+  K.prio = k => k.priority ? { key: k.priority, auto: false } : { key: K.autoPriority(k), auto: true };
+  K.prioChip = k => { const p = K.prio(k); return K.priorityChip(p.key, p.auto); };
+
+  // 下一步该做什么：按状态 + 已触达次数（开发信 → 首次跟进 → 最后一封 → 建议暂不跟进）
+  K.nextStep = k => {
+    if (k.do_not_contact) return { text: '勿再联系', cls: 'stop' };
+    const t = k.touches || 0;
+    switch (k.status) {
+      case 'todo': return { text: '发开发信', scene: 'outreach' };
+      case 'contacted':
+        if (t <= 1) return { text: '发第 2 封（首次跟进）', scene: 'follow1' };
+        if (t === 2) return { text: '发最后一封', scene: 'follow2' };
+        return { text: `已发 ${t} 封没回，建议暂不跟进`, cls: 'warn', giveUp: true };
+      case 'talking': return { text: '回复对方、推进合作', scene: 'sample' };
+      case 'sampled': return { text: '确认收货、催发布', scene: 'publish' };
+      case 'published': return { text: '统计带货数据', scene: 'settle' };
+      case 'won': return { text: '结算分成', scene: 'settle' };
+      case 'partner': return { text: '维护关系、谈下一单', scene: null };
+      default: return { text: '—', cls: 'muted' };
+    }
+  };
+  // 国家 → 最可能的内容语言（只作建议，填之前要人确认：比如斯洛伐克的博主可能用德语）
+  K.COUNTRY_LANG = { DE: 'de', AT: 'de', CH: 'de', LU: 'de', GB: 'en', IE: 'en', US: 'en', CA: 'en', AU: 'en', NZ: 'en', FR: 'fr', ES: 'es', MX: 'es', IT: 'it', NL: 'nl',
+    PL: 'pl', PT: 'pt', BR: 'pt', SE: 'sv', DK: 'da', NO: 'no', FI: 'fi', CZ: 'cs', SK: 'sk', HU: 'hu', RO: 'ro', GR: 'el', TR: 'tr', UA: 'uk', JP: 'ja', KR: 'ko', CN: 'zh', TW: 'zh', HK: 'zh', SG: 'en', IN: 'en' };
   K.countryLabel = code => code ? `${K.flag(code)} ${K.esc(K.countryName(code))}` : '';
 
   /* ---------- 界面偏好（localStorage，读写都包 try/catch） ---------- */
@@ -251,14 +287,14 @@
   }, true);
 
   // 带颜色的下拉选择（状态 / 平台 / 优先级 / 国家 / 语言），可搜索；multi=true 时多选
-  K.pickOption = (anchor, { options, value, multi = false, search = false, allowEmpty = true, onPick }) => {
+  K.pickOption = (anchor, { options, value, multi = false, search = false, allowEmpty = true, emptyLabel = '清空', onPick }) => {
     let sel = new Set(multi ? (value || []) : [value]);
     const draw = (q = '') => options.filter(o => !q || (o.label + ' ' + (o.hint || '') + ' ' + o.value).toLowerCase().includes(q.toLowerCase()))
       .map(o => `<button type="button" class="opt${sel.has(o.value) ? ' on' : ''}" data-v="${K.esc(o.value)}">${multi ? `<span class="box">${sel.has(o.value) ? '✓' : ''}</span>` : ''}${o.html || K.esc(o.label)}</button>`).join('')
       || '<p class="muted pad">没有匹配的选项</p>';
     const el = K.popover(anchor, `${search ? '<input class="pop-search" placeholder="搜索…" aria-label="搜索选项">' : ''}
       <div class="opts">${draw()}</div>
-      ${allowEmpty && !multi ? '<button type="button" class="opt clear" data-v="">清空</button>' : ''}
+      ${allowEmpty && !multi ? `<button type="button" class="opt clear" data-v="">${K.esc(emptyLabel)}</button>` : ''}
       ${multi ? '<div class="pop-foot"><button type="button" class="btn sm" data-done>完成</button></div>' : ''}`, { cls: 'pick', onClose: () => { if (multi) onPick([...sel]); } });
     const box = el.querySelector('.opts');
     el.querySelector('.pop-search')?.addEventListener('input', e => { box.innerHTML = draw(e.target.value); });
@@ -341,7 +377,7 @@
 
   /* ---------- 查重（与服务端同一规则，用于即时提示） ---------- */
   K.urlKey = u => {
-    try { const x = new URL(u); return (x.hostname.replace(/^(www\.|m\.|mobile\.)/, '') + x.pathname.replace(/\/+$/, '')).toLowerCase(); } catch { return null; }
+    try { const x = new URL(u); return (x.hostname.replace(/^(www\.|m\.|mobile\.)/, '') + x.pathname.replace(/\/+$/, '').replace(/\/(videos|featured|shorts|streams|about|playlists|community|posts)$/i, '')).toLowerCase(); } catch { return null; }
   };
   K.handleKey = (p, h) => p && h ? `${String(p).toLowerCase()}|${String(h).trim().replace(/^@/, '').toLowerCase()}` : null;
   K.findDupesLocal = (x, excludeId = 0) => {
