@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="升级 SOP、排错顺序、症状速查、回退方案（无密钥版）">
 <title>DeepSeek Harness 运维与故障修复手册 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20260930092805">
-<link rel="stylesheet" href="/assets/notes.css?v=20260930092805">
+<link rel="stylesheet" href="/assets/style.css?v=20261002231114">
+<link rel="stylesheet" href="/assets/notes.css?v=20261002231114">
 
 <!--head:auto-->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -1089,6 +1089,54 @@ DSH_FREE_VISION_CONFIG_PATH=&quot;$HOME/.dsh-rc8-clean/free-vision.json&quot; \
 </tbody></table></div>
 <hr>
 <p><em>本手册由 DSH 于 2026-09-12 在机器实测、源码取证与三方记录交叉核对基础上整理。所有&quot;已验证&quot;结论都可按附录 A 的证据文件复核。若与本机现状冲突，<strong>以本机现状为准</strong>。（2026-09-15 补充：§3 重启校验、§5.4 一次性任务投递、§12.4 全局记忆注入；附录 A/B 已同步。）</em></p>
+<hr>
+<h2>§21 官方桌面客户端（v0.2）与「程序 / 数据分离」原则</h2>
+<h3>21.1 官方桌面端现状（2026-09-29 查证）</h3>
+<ul>
+<li><strong>官网下载页</strong>：<a href="https://www.deepseek.com/download/">https://www.deepseek.com/download/</a>（页面含「DeepSeek Harness 全新桌面端」）</li>
+<li><strong>macOS（Apple 芯片 / 需 macOS 13+）</strong>：<code>https://download.deepseek.com/desktop/dsh-latest-macos-arm64.dmg</code></li>
+<li><strong>Windows</strong>：<code>https://download.deepseek.com/desktop/dsh-latest-windows-x64.exe</code></li>
+<li><strong>当前版本 = <code>0.2.0-rc.2</code></strong>（取自官方自动更新清单 <code>https://download.deepseek.com/dsh-desk/feeds/mac-arm64/nightly-mac.yml</code>，releaseDate 2026-09-29，mac 包约 374 MB）<ul>
+<li>安装包<strong>内置 Node / pnpm / Python 运行环境</strong>，电脑不用预装任何环境</li>
+</ul>
+</li>
+<li><strong>形态</strong>：<strong>Electron 壳 + 同一套 Web 前端</strong>（官方仓库 <code>apps/desktop</code> 目录）<ul>
+<li>对照：本机旧的 <code>~/Applications/DeepSeek Harness.app</code>（v2.0，bundle id <code>ai.deepseek.harness.rc9.native</code>）是 <strong>WKWebView 壳</strong>，内部加载 <code>http://127.0.0.1:3080/?token=…</code>（已从二进制字符串验证）→ 它只是&quot;连本机服务的窗口&quot;</li>
+</ul>
+</li>
+<li><strong>0.2 新增</strong>：左侧「<strong>插件</strong>」入口（7 个官方插件：智能体团队 / 自动授权审查 / 语音输入 / 终端 / Agent 循环 / 子智能体 / 网页搜索）、支持从 GitHub 装第三方插件、可<strong>登录 DeepSeek 账号</strong>（余额 / 用量 / 充值）并直接用账号余额跑模型（免单独申请 API Key）</li>
+<li>⚠️ <strong>仍是预览版</strong>：官方未正式官宣，功能不全（如 macOS 下不能缩放字体），插件/主题可能随版本不兼容</li>
+</ul>
+<h3>21.2 ⭐ 铁律：程序和数据是分开的</h3>
+<p>官方 Discussion <a href="https://github.com/deepseek-ai/deepseek-harness/discussions/3818">#3818</a> 官方人员原话：</p>
+<blockquote>
+<p><strong>&quot;你的资料（会话记录、API key、设置、技能）都在 <code>~/.dsh</code>（或 <code>$DSH_HOME</code>）目录里，跟代码装在哪无关。&quot;</strong>
+&quot;它们默认<strong>共享</strong>同一个 <code>~/.dsh</code>，所以新版里能看到旧版的所有会话。&quot;</p>
+</blockquote>
+<p><strong>推论（对本机至关重要）</strong>：</p>
+<ol>
+<li><strong>换客户端 / 升级版本 / 重装程序，都不会丢会话</strong> —— 会话只跟 <strong><code>$DSH_HOME</code></strong> 走。</li>
+<li><strong>但前提是&quot;同一个 DSH_HOME&quot;。</strong> 本机生产用的是 <strong><code>~/.dsh-rc9-clean</code></strong>（隔离迁移的成果），<strong>不是默认的 <code>~/.dsh</code></strong> → <strong>任何默认读 <code>~/.dsh</code> 的新客户端都看不到现有会话</strong>，必须让它指向 <code>~/.dsh-rc9-clean</code>（若它认 <code>DSH_HOME</code> 环境变量就这么启动；不认则需把 <code>sessions/</code> 复制进它的数据目录，<strong>先备份</strong>）。</li>
+<li><strong>工作区里的产出文件与客户端无关</strong> —— <code>~/Documents/deepseek harness/</code>、<code>~/Documents/我的知识库/</code> 都是磁盘上的普通文件，<strong>任何客户端只要打开同一目录就能看到</strong>。</li>
+</ol>
+<h3>21.3 要试新客户端时的安全动作</h3>
+<p>官方讨论给的原理与本机 SOP 一致：<strong>别覆盖现有安装，另装一份、数据也隔离</strong>。</p>
+<pre><code class="language-bash"># 1) 先备份生产数据（必做）
+cp -a ~/.dsh-rc9-clean ~/.dsh-rc9-clean.bak-$(date +%Y%m%d)
+
+# 2) 官方桌面端装到 /Applications，别覆盖 ~/Applications/DeepSeek Harness.app
+
+# 3) 启动后先确认它用哪个数据目录（设置 → 关于 →「打开运行目录」之类）
+#    若它认 DSH_HOME：DSH_HOME=~/.dsh-rc9-clean 启动即可看到全部会话
+#    若不认：把 ~/.dsh-rc9-clean/sessions 复制进它的数据目录（复制前先备份它自己的目录）
+</code></pre>
+<p><strong>🚨 红线</strong>：</p>
+<ol>
+<li><strong>不要在现有生产环境上原地升级/覆盖</strong>（见 §13 升级 SOP）；</li>
+<li><strong>不要移动</strong> <code>~/Documents/deepseek harness</code> 与 <code>~/Documents/我的知识库</code>（工作区归属靠 realpath 字符串相等，见 §11.3 / §11.4，一移动会话就掉进「未分组」）；</li>
+<li>确认新客户端能正常跑之前，<strong>别停用 <code>dsh-rc9-start</code> 那一套</strong>。</li>
+</ol>
+<p><strong>零风险的替代</strong>：直接用<strong>浏览器</strong>打开现有环境（<code>~/.local/bin/dsh-rc9-start --open</code>）—— 同一个 UI、什么都不会丢。</p>
 
   </article>
 </main>
@@ -1099,7 +1147,7 @@ DSH_FREE_VISION_CONFIG_PATH=&quot;$HOME/.dsh-rc8-clean/free-vision.json&quot; \
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20260930092805"></script>
-<script src="/assets/render.js?v=20260930092805"></script><script src="/assets/app.js?v=20260930092805"></script>
+<script src="/assets/data.js?v=20261002231114"></script>
+<script src="/assets/render.js?v=20261002231114"></script><script src="/assets/app.js?v=20261002231114"></script>
 </body>
 </html>
