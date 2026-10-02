@@ -63,6 +63,7 @@ K.forEach(([name, platform, handle, country, language, cat, followers, status, p
     country, language, category: JSON.stringify(cat), email, status, priority, rating: ['A', 'B', 'C'][i % 3],
     last_contact_at: last == null ? null : day(last), first_contact_at: last == null ? null : day(last - 7), next_followup_at: next == null ? null : day(next),
     quote, coop_type: quote ? ['寄样测评', '付费推广', '纯分成', '混合'][i % 4] : null, source: ['自己找的', 'CRM 公海', '推荐', '对方主动'][i % 4],
+    touches: status === 'todo' || last == null ? 0 : 1 + (i % 3 === 0 ? 1 : 0) + (i % 5 === 0 ? 1 : 0),
     crm_synced: i % 3 === 0 ? 1 : 0, tags: i % 4 === 0 ? JSON.stringify(['演示']) : null, notes: '演示数据（虚构）',
     url_key: urlKey, email_key: email, handle_key: handleKey, created_at: now, updated_at: now
   };

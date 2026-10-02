@@ -116,7 +116,10 @@ async function createActivity(db, input) {
   const kol = await db.prepare('SELECT id FROM kols WHERE id = ? AND deleted_at IS NULL').bind(act.kol_id).first();
   if (!kol) return json({ error: '这个 KOL 不存在或已删除' }, 404);
   const row = await insert(db, 'activities', stamp('activities', act, true));
-  if (CONTACT_TYPES.includes(act.type)) await syncLastContact(db, act.kol_id);
+  if (CONTACT_TYPES.includes(act.type)) {
+    await db.prepare('UPDATE kols SET touches = touches + 1 WHERE id = ?').bind(act.kol_id).run();
+    await syncLastContact(db, act.kol_id);
+  }
   // 同一请求里顺带改 KOL 的下次跟进 / 状态（「✓ 已跟进」「标记已发送」「粘贴回复」一次完成）
   const patch = input.kol_patch ? clean('kols', pick(input.kol_patch, ['next_followup_at', 'status']), true) : {};
   const kolRow = await update(db, 'kols', act.kol_id, stamp('kols', patch, false));
@@ -151,12 +154,20 @@ async function importRows(db, input) {
       const rowMode = ['skip', 'overwrite', 'merge'].includes(raw._mode) ? raw._mode : mode;
       const src = { ...raw }; delete src._mode; delete src._row;
       const autoName = src._auto_name; delete src._auto_name;   // 由账号推出的名字：只在新建时用
+      // _default_next：表里没写下次跟进时用的排期（只填空着的，不覆盖已有日期；暂不跟进 / 勿联系的不排）
+      const defNext = /^\d{4}-\d{2}-\d{2}$/.test(raw._default_next || '') ? raw._default_next : null; delete src._default_next;
+      // _reply_text / _reply_summary：对方回复原文与总结 → 存成一条「收到回复」沟通记录
+      const reply = String(raw._reply_text || '').trim(), replySum = String(raw._reply_summary || '').trim();
+      delete src._reply_text; delete src._reply_summary;
+      const schedulable = r => defNext && !r.next_followup_at && !['paused', 'won'].includes(r.status) && !r.do_not_contact;
       const full = clean('kols', { ...src, name: src.name || autoName });
       const keys = withKeys(full);
       const dupe = ['url_key', 'email_key', 'handle_key'].map(k => keys[k] && index.get(k + ':' + keys[k])).find(Boolean);
       if (!dupe) {
+        if (schedulable(full)) full.next_followup_at = defNext;
         const row = await insert(db, 'kols', stamp('kols', { ...full, ...keys }, true));
         remember(row); res.created++;
+        await importReply(db, row.id, reply, replySum);
         continue;
       }
       if (rowMode === 'skip') { res.skipped++; continue; }
@@ -174,14 +185,28 @@ async function importRows(db, input) {
         }
       }
       Object.assign(data, withKeys({ ...dupe, ...data }));
+      if (schedulable({ ...dupe, ...data })) data.next_followup_at = defNext;
       const row = await update(db, 'kols', dupe.id, stamp('kols', data, false));
       remember(row); res.updated++;
+      await importReply(db, dupe.id, reply, replySum);
     } catch (e) {
       if (!(e instanceof Invalid)) throw e;
       res.errors.push({ row: raw._row ?? i + 1, error: e.message });
     }
   }
   return json(res);
+}
+
+// 导入时带进来的回复原文：同一个 KOL 已经有一模一样的回复就不重复记
+async function importReply(db, kolId, text, summary) {
+  if (!text && !summary) return;
+  const content = text.slice(0, 20000) || null;
+  if (content && await db.prepare("SELECT id FROM activities WHERE kol_id = ? AND type = 'reply_in' AND content = ?").bind(kolId, content).first()) return;
+  await insert(db, 'activities', stamp('activities', {
+    kol_id: kolId, type: content ? 'reply_in' : 'note',
+    summary: ((summary || text.replace(/\s+/g, ' ').slice(0, 120)) + '（导入，原表没有记日期）').slice(0, 500),
+    content, happened_at: new Date().toISOString().slice(0, 10)
+  }, true));
 }
 
 async function importDeals(db, rows, mode, res) {
@@ -255,7 +280,7 @@ async function bootstrap(db, env) {
   await db.prepare('DELETE FROM kols WHERE deleted_at IS NOT NULL AND deleted_at < ?').bind(cutoff).run();
   const [kols, tasks, deals, templates, views, keywords, settings] = await db.batch([
     db.prepare(`SELECT id, name, handle, platform, profile_url, other_links, followers, avg_views, engagement_rate, country, language,
-      category, email, contact_other, status, priority, rating, can_sell, promoted_similar, first_contact_at, last_contact_at,
+      category, email, contact_other, status, priority, rating, can_sell, promoted_similar, touches, first_contact_at, last_contact_at,
       next_followup_at, quote, quote_note, coop_type, source, source_url, reason, blocker, crm_synced, do_not_contact, tags, notes,
       data_updated_at, sort_order, created_at, updated_at FROM kols WHERE deleted_at IS NULL ORDER BY id`),
     db.prepare('SELECT * FROM kol_tasks ORDER BY done, IFNULL(due_at, \'9999\'), id'),
@@ -317,8 +342,11 @@ async function route(req, env, parts) {
       const cur = await db.prepare('SELECT * FROM activities WHERE id = ?').bind(id).first();
       if (!cur) return json({ error: '这条记录不存在' }, 404);
       let row = null;
+      const wasContact = CONTACT_TYPES.includes(cur.type);
       if (m === 'PATCH') { const d = clean('activities', await body(req), true); delete d.kol_id; row = await update(db, 'activities', id, d); }
       else await db.prepare('DELETE FROM activities WHERE id = ?').bind(id).run();
+      const isContact = m === 'PATCH' && CONTACT_TYPES.includes(row.type);
+      if (wasContact !== isContact) await db.prepare('UPDATE kols SET touches = MAX(0, touches + ?) WHERE id = ?').bind(isContact ? 1 : -1, cur.kol_id).run();
       await syncLastContact(db, cur.kol_id);
       const kol = await db.prepare('SELECT * FROM kols WHERE id = ?').bind(cur.kol_id).first();
       return json({ activity: row, kol: parseRow(kol) });

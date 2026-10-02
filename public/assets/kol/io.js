@@ -39,16 +39,19 @@
     ['name', '名称', ['名称', '姓名', 'name', 'kol', 'kol名称', '达人', 'creator', 'channel name', 'channel', '频道名']],
     ['handle', '账号', ['账号', '账号名', 'kol账号', 'handle', 'username', 'user name', '用户名']],
     ['platform', '平台', ['平台', '主平台', 'platform']],
-    ['profile_url', '主页链接', ['主页链接', '主页', 'profile', 'profile url', 'url', '链接', 'channel url', '频道链接', 'link']],
+    ['profile_url', '主页链接', ['主页链接', '账号链接', '账号主页', '主页地址', '频道地址', '主页', 'profile', 'profile url', 'url', '链接', 'channel url', 'channel link', 'account link', '频道链接', 'link']],
     ['followers', '粉丝量', ['粉丝数', '粉丝量', '粉丝', 'followers', 'subscribers', '订阅数']],
     ['avg_views', '平均播放', ['平均播放量', '平均播放', 'avg views', 'average views']],
     ['engagement_rate', '互动率 %', ['互动率', 'engagement', 'engagement rate']],
     ['country', '国家', ['国家', '国家/地区', '地区', 'country', 'region']],
     ['language', '语言', ['语言', 'language', 'lang']],
-    ['category', '品类', ['品类', '内容领域', '领域', 'category', 'niche']],
-    ['email', '邮箱', ['邮箱', '商务邮箱', 'email', 'e-mail', 'mail']],
-    ['contact_other', '其他联系方式', ['其他联系方式', '联系方式', 'contact']],
-    ['status', '状态', ['状态', '当前状态', 'status']],
+    ['category', '品类 / 赛道（自动归类）', ['品类', '内容赛道', '赛道', '内容领域', '内容方向', '内容类型', '类目', '领域', 'category', 'niche']],
+    ['email', '邮箱', ['邮箱', '商务邮箱', '联系邮箱', 'email', 'e-mail', 'mail']],
+    ['contact_other', '联系方式（是邮箱会自动放进邮箱）', ['其他联系方式', '联系方式', 'contact']],
+    ['status', '状态 / 阶段', ['状态', '当前状态', '当前阶段', '阶段', '跟进阶段', 'status', 'stage']],
+    ['touches', '已触达次数（首次 / 二次触达）', ['二次标签', '触达次数', '触达轮次', '已触达次数', '跟进次数', '触达标签']],
+    ['_reply_text', '对方回复原文（存成沟通记录）', ['触达回复', '对方回复', '回复原文', '回复内容', 'reply']],
+    ['_reply_summary', '回复总结（作回复记录的摘要）', ['回复总结', '回复要点', '回复摘要']],
     ['priority', '优先级', ['优先级', 'priority']],
     ['rating', '初筛评级', ['初筛评级', '评级', 'rating']],
     ['can_sell', '带货权限', ['是否有带货权限', '带货权限']],
@@ -58,14 +61,14 @@
     ['next_followup_at', '下次跟进', ['下次跟进日期', '下次跟进', '后续跟进日期', 'next follow-up', 'next followup']],
     ['quote', '报价（€，数字）', ['报价', 'quote', 'rate']],
     ['quote_note', '报价说明', ['报价信息', '报价说明']],
-    ['coop_type', '合作方式', ['合作形式', '合作方式']],
+    ['coop_type', '合作模式', ['合作形式', '合作方式', '合作模式']],
     ['source', '来源', ['来源', 'source']],
     ['source_url', '信息来源链接', ['信息来源链接', '来源链接']],
     ['reason', '为什么值得关注', ['我为什么该关注他', '关注理由', '为什么值得关注']],
     ['blocker', '卡点', ['卡点/等待什么', '卡点']],
     ['crm_synced', '已录入 CRM', ['已录入crm', '已录入 crm', 'crm']],
     ['tags', '标签', ['标签', 'tags']],
-    ['notes', '备注', ['备注', 'notes', 'note', 'remark']],
+    ['notes', '备注', ['备注', '回复内容/备注', 'notes', 'note', 'remark']],
     ['data_updated_at', '数据核实日期', ['数据更新日期', '数据核实日期']]
   ];
   const DEAL_FIELDS = [
@@ -95,33 +98,37 @@
   /* ================= 取值规整 ================= */
   const STATUS_WORDS = {
     todo: ['待外联', '待触达', '待联系', '未联系', '已转入主表', 'todo', 'new'],
-    contacted: ['已首触', '已联系', '已联系/等回复', '等回复', '跟进中', 'contacted', 'waiting'],
-    talking: ['洽谈中', '沟通中', '谈判中', 'talking', 'negotiating'],
+    contacted: ['已首触', '已联系', '已触达', '已联系/等回复', '等回复', '跟进中', 'contacted', 'waiting'],
+    talking: ['洽谈中', '沟通中', '谈判中', '触达推进中', '推进中', '有回复', 'talking', 'negotiating'],
     sampled: ['已发货', '已寄样', '已寄样/待出内容', '待出内容', 'sampled', 'shipped'],
     published: ['内容已发', '内容已发布', '已发布', 'published', 'live'],
     won: ['已成交', '成交', 'won', 'deal'],
-    paused: ['已暂缓', '已放弃', '暂不跟进', '已拒绝', '已拒绝-勿再联系', 'paused', 'lost', 'declined']
+    partner: ['长期合作', '长期', 'partner', 'long-term'],
+    paused: ['已暂缓', '已放弃', '暂不跟进', '已拒绝', '明确拒绝', '拒绝', '已拒绝-勿再联系', 'paused', 'lost', 'declined']
   };
   const LANG_WORDS = {
     en: ['英语', '英文', 'english'], de: ['德语', '德文', 'german', 'deutsch'], fr: ['法语', '法文', 'french', 'français'],
     es: ['西语', '西班牙语', 'spanish', 'español'], it: ['意语', '意大利语', 'italian', 'italiano'], nl: ['荷兰语', 'dutch', 'nederlands'],
     pl: ['波兰语', 'polish', 'polski'], pt: ['葡萄牙语', '葡语', 'portuguese'], sv: ['瑞典语', 'swedish'], da: ['丹麦语', 'danish'],
     no: ['挪威语', 'norwegian'], fi: ['芬兰语', 'finnish'], cs: ['捷克语', 'czech'], hu: ['匈牙利语', 'hungarian'], ro: ['罗马尼亚语', 'romanian'],
-    el: ['希腊语', 'greek'], tr: ['土耳其语', 'turkish'], uk: ['乌克兰语', 'ukrainian'], ja: ['日语', 'japanese'], ko: ['韩语', 'korean'], zh: ['中文', '汉语', 'chinese']
+    el: ['希腊语', 'greek'], sk: ['斯洛伐克语', 'slovak'], tr: ['土耳其语', 'turkish'], uk: ['乌克兰语', 'ukrainian'], ja: ['日语', 'japanese'], ko: ['韩语', 'korean'], zh: ['中文', '汉语', 'chinese']
   };
   // 国家名 → 代码：用浏览器自带的 Intl.DisplayNames 生成中英文对照，不发外部请求
   let countryIndex = null;
   const countryCode = v => {
     const s = String(v || '').trim(); if (!s) return null;
-    if (/^[a-z]{2}$/i.test(s)) return s.toUpperCase() === 'UK' ? 'GB' : s.toUpperCase();
+    if (/^[a-z]{2}$/i.test(s)) return ({ UK: 'GB', FX: 'FR', EL: 'GR' })[s.toUpperCase()] || s.toUpperCase();
     if (!countryIndex) {
       countryIndex = new Map();
       for (const c of K.cfg().countries) countryIndex.set(c.name.toLowerCase(), c.code);
+      // 浏览器把已废弃的 UK / FX 等也叫「英国」「法国」，按字母顺序会覆盖掉 GB / FR —— 跳过这些代码，且先到先得不覆盖
+      const DEPRECATED = new Set(['UK', 'FX', 'EU', 'EZ', 'UN', 'QO', 'XA', 'XB', 'ZZ', 'AN', 'BU', 'CS', 'DD', 'NT', 'SU', 'TP', 'YU', 'ZR']);
       try {
         const names = ['en', 'zh', 'de'].map(l => new Intl.DisplayNames([l], { type: 'region' }));
         for (let a = 65; a < 91; a++) for (let b = 65; b < 91; b++) {
           const code = String.fromCharCode(a, b);
-          for (const n of names) { const name = n.of(code); if (name && name !== code) countryIndex.set(name.toLowerCase(), code); }
+          if (DEPRECATED.has(code)) continue;
+          for (const n of names) { const name = n.of(code); if (name && name !== code && !countryIndex.has(name.toLowerCase())) countryIndex.set(name.toLowerCase(), code); }
         }
       } catch { /* 老浏览器没有 DisplayNames，只用设置里的中文国名 */ }
       for (const [k, v] of [['uk', 'GB'], ['england', 'GB'], ['britain', 'GB'], ['great britain', 'GB'], ['usa', 'US'], ['america', 'US'], ['holland', 'NL'], ['德', 'DE'], ['英', 'GB'], ['法', 'FR']]) countryIndex.set(k, v);
@@ -152,16 +159,41 @@
   };
   const urlFix = v => { const s = String(v || '').trim(); if (!s) return null; return /^https?:\/\//i.test(s) ? s : /^[\w-]+(\.[\w-]+)+(\/|$)/.test(s) ? 'https://' + s : s; };
 
+  // 赛道归类（2026-09-28 KOL总表模板定的规则）：Racing / F1 / 驾驶模拟 → 赛车模拟；VR 飞行模拟 → 飞行模拟；
+  // VR Chat / VR 推荐 → VR 游戏；VR / PC / 科技硬件测评 → 硬件测评；泛游戏博主 → 游戏综合
+  const CAT_RULES = [
+    [/racing|f1|formula|赛车|驾驶|rennsim|simracing/i, '赛车模拟'],
+    [/飞行|flight|aviation|pilot|flug|msfs|dcs/i, '飞行模拟'],
+    [/vr ?chat|vr ?推荐|vr ?游戏|vr ?game|quest|动捕/i, 'VR 游戏'],
+    [/硬件|测评|评测|设备|hardware|tech|科技|review|unbox|开箱|pc/i, '硬件测评'],
+    [/模拟器|simulator|truck/i, '模拟器'],
+    [/游戏|gaming|gamer|game/i, '游戏综合']
+  ];
+  K.normalizeCategory = text => {
+    const t = String(text || '').trim(); if (!t) return null;
+    const known = K.cfg().categories.find(c => c.replace(/\s/g, '').toLowerCase() === t.replace(/\s/g, '').toLowerCase());
+    if (known) return known;
+    return (CAT_RULES.find(([re]) => re.test(t)) || [, '其他'])[1];
+  };
+  const EMAIL_RE = /[^\s@<>"',;:()（）]+@[^\s@<>"',;:()（）]+\.[a-z]{2,}/i;
+  const NONE_RE = /^(未知|不详|未回复|无回复|没回复|无|没有|暂无|unknown|n\/a|none|no reply|-|—|\/)$/i;
+  const touchCount = v => { const m = /\d+/.exec(v); if (m) return Number(m[0]); return /首次|第一|一次/.test(v) ? 1 : /二次|第二|两次/.test(v) ? 2 : /三次|第三/.test(v) ? 3 : /四次|第四/.test(v) ? 4 : null; };
+
   // 一行 CSV（已按映射取成 {字段: 原文}）→ 发给服务器的数据
   K.normalizeKolRow = raw => {
     const out = {}, note = [];
+    let statusRaw = '';
+    const mult = raw.__mult || {};
     const put = (k, v) => { if (v !== null && v !== undefined && v !== '') out[k] = v; };
     for (const [k, v0] of Object.entries(raw)) {
+      if (k === '__mult') continue;
       const v = String(v0 ?? '').trim();
       if (k === '__notes') { if (v) note.push(v); continue; }
-      if (!v) continue;
+      if (!v || (NONE_RE.test(v) && !['can_sell', 'promoted_similar', 'crm_synced'].includes(k))) continue;   // 「未知」「未回复」这类当空值
       switch (k) {
         case 'status': {
+          statusRaw = v;
+          if (v === '未建联') break;   // 「未建联」要结合触达次数判断，循环结束后再定
           const s = v.toLowerCase();
           const hit = Object.entries(STATUS_WORDS).find(([, ws]) => ws.some(w => w.toLowerCase() === s))
             || K.cfg().statuses.map(x => [x.key, [x.label]]).find(([, ws]) => ws[0] === v);
@@ -182,14 +214,36 @@
           break;
         }
         case 'country': { const c = countryCode(v); put('country', c); if (!c) note.push(`国家：${v}`); break; }
+        case 'touches': { const n = touchCount(v); if (n != null) put('touches', n); break; }
+        case 'email': case 'contact_other': {
+          // 联系方式里是邮箱就放进邮箱字段，剩下的（Discord 等）放其他联系方式
+          const m = EMAIL_RE.exec(v.replace(/^mailto:/i, ''));
+          const rest = m ? v.replace(/^mailto:/i, '').replace(m[0], '').replace(/^[\s/|,;，；:：-]+|[\s/|,;，；:：-]+$/g, '') : v;
+          if (m && !out.email) put('email', m[0]);
+          if (rest && (k === 'contact_other' || !m)) put('contact_other', [out.contact_other, rest].filter(Boolean).join('；'));
+          break;
+        }
+        case '_reply_text': put('_reply_text', v.slice(0, 20000)); break;
+        case '_reply_summary': put('_reply_summary', v.slice(0, 400)); break;
         case 'platform': {
           const s = v.toLowerCase().replace(/\s+/g, '');
           const alias = { twitter: 'X', yt: 'YouTube', ig: 'Instagram', tt: 'TikTok', tg: 'Telegram', 抖音国际版: 'TikTok', 油管: 'YouTube' };
           put('platform', alias[s] || K.cfg().platforms.find(p => p.name.toLowerCase() === s)?.name || v.slice(0, 30));
           break;
         }
-        case 'category': case 'tags': put(k, v.split(/[,，、;；/|]/).map(x => x.trim()).filter(Boolean)); break;
-        case 'followers': case 'avg_views': { const n = K.parseNumber(v); if (Number.isNaN(n)) note.push(`${k === 'followers' ? '粉丝' : '播放'}：${v}`); else put(k, Math.round(n)); break; }
+        case 'tags': put(k, v.split(/[,，、;；/|]/).map(x => x.trim()).filter(Boolean)); break;
+        case 'category': {
+          const parts = v.split(/[,，、;；]/).map(x => x.trim()).filter(Boolean);
+          const cats = [...new Set(parts.map(K.normalizeCategory).filter(Boolean))];
+          put('category', cats);
+          if (parts.some(p => !K.cfg().categories.some(c => c.replace(/\s/g, '').toLowerCase() === p.replace(/\s/g, '').toLowerCase()))) note.push(`原赛道：${v}`);
+          break;
+        }
+        case 'followers': case 'avg_views': {
+          const n = K.parseNumber(v);
+          if (Number.isNaN(n)) note.push(`${k === 'followers' ? '粉丝' : '播放'}：${v}`); else put(k, Math.round(n * (mult[k] || 1)));   // 表头写了（K）/万 就乘上单位
+          break;
+        }
         case 'engagement_rate': { const n = K.parseNumber(v); if (!Number.isNaN(n)) put(k, n); break; }
         case 'quote': {
           const n = K.parseNumber(v);
@@ -202,23 +256,46 @@
         case 'first_contact_at': case 'last_contact_at': case 'next_followup_at': case 'data_updated_at': {
           const d = K.parseDateLoose(v); if (d) put(k, d); else note.push(`${k}：${v}`); break;
         }
-        case 'profile_url': case 'source_url': put(k, urlFix(v)); break;
+        case 'profile_url': case 'source_url': {
+          if (/^mailto:/i.test(v) || (EMAIL_RE.test(v) && !/^https?:/i.test(v))) { const m = EMAIL_RE.exec(v.replace(/^mailto:/i, '')); if (m && !out.email) put('email', m[0]); note.push(`链接一栏填的是邮箱：${v}`); break; }
+          const u = urlFix(v);
+          if (/^https?:\/\//i.test(u)) put(k, u); else note.push(`${k === 'profile_url' ? '主页链接' : '来源链接'}：${v}`);   // 不是网址就记进备注，不让整行导入失败
+          break;
+        }
         case 'handle': put('handle', v); break;
         case 'quote_note': if (!/^(未报价|无|-|n\/a)$/i.test(v)) put('quote_note', v.slice(0, 200)); break;
         default: put(k, v);
       }
     }
+    // 「未建联」：触达过两次及以上 = 已联系·等回复；否则 = 待触达（和 ClickUp 里的实际状态一致）
+    if (statusRaw === '未建联') out.status = (out.touches || 0) >= 2 ? 'contacted' : 'todo';
+    if (out.status === 'todo') delete out.touches;   // 待触达 = 还没发过
+    // 明确拒绝 / 要求移除 → 勿再联系（GDPR）
+    const said = [statusRaw, out._reply_summary, out.notes].filter(Boolean).join(' ');
+    if (/勿再联系|别再联系|不要再联系|抹除|移除|从.*名单.*(删|去)|do not contact|remove me|unsubscribe/i.test(said)) { out.do_not_contact = 1; out.status = 'paused'; }
+    // 合作模式：从回复总结里推断（只在表里没写时）
+    if (!out.coop_type) {
+      if (/只接受付费|只做付费|付费推广|付费合作|paid promo|paid collab|only paid/i.test(said)) out.coop_type = '付费推广';
+      else if (/寄样|置换|换产品/.test(said)) out.coop_type = '寄样置换';
+      else if (/佣金|分成|分销|affiliate|commission/i.test(said) && !/不做(佣金|分销|分成)|不接受(佣金|分成|分销)/.test(said)) out.coop_type = '佣金分销';
+    }
     // 表里没有名称列时用账号当名字，但只用于新建（_auto_name），合并 / 覆盖时不会改掉已有记录的名字
     if (!out.name && out.handle) out._auto_name = out.handle.replace(/^@/, '');
-    if (!out.platform && out.profile_url) { const p = K.parseProfileUrl(out.profile_url); if (p && p.platform !== '其他') out.platform = p.platform; }
+    if (out.profile_url) {
+      const p = K.parseProfileUrl(out.profile_url);
+      if (p && !out.platform && p.platform !== '其他') out.platform = p.platform;
+      if (p && !out.handle && p.handle) out.handle = p.handle;   // 有链接没账号：从链接里取账号（查重要用）
+    }
     if (note.length) out.notes = [out.notes, ...note].filter(Boolean).join('\n').slice(0, 5000);
     return out;
   };
   K.normalizeDealRow = raw => {
     const out = {};
     for (const [k, v0] of Object.entries(raw)) {
+      if (k === '__mult') continue;
       const v = String(v0 ?? '').trim(); if (!v || k === '__notes') continue;
-      if (['views', 'orders', 'returns'].includes(k)) { const n = K.parseNumber(v); if (!Number.isNaN(n)) out[k] = Math.round(n); }
+      if (k === '__mult') continue;
+      if (['views', 'orders', 'returns'].includes(k)) { const n = K.parseNumber(v); if (!Number.isNaN(n)) out[k] = Math.round(n * ((raw.__mult || {})[k] || 1)); }
       else if (['gmv_eur', 'net_gmv_eur', 'commission_rate', 'commission_eur'].includes(k)) { const n = K.parseNumber(v); if (!Number.isNaN(n)) out[k] = n; }
       else if (k === 'period') { const m = /(\d{4})[-/.年](\d{1,2})/.exec(v); if (m) out.period = `${m[1]}-${m[2].padStart(2, '0')}`; }
       else if (k === 'published_at') { const d = K.parseDateLoose(v); if (d) out.published_at = d; }
@@ -248,6 +325,10 @@
   }
 
   function fieldsFor(target) { return target === 'deals' ? DEAL_FIELDS : KOL_FIELDS; }
+  // 数字列的单位：表头写了（K）/ 千 / 万 / M 就自动乘上
+  const UNIT_FIELDS = ['followers', 'avg_views', 'views'];
+  const UNITS = [[1, '个'], [1e3, '千（K）'], [1e4, '万'], [1e6, '百万（M）']];
+  const detectUnit = h => /[（(]\s*(k|千)\s*[)）]|千/i.test(h) ? 1e3 : /万|[（(]\s*w\s*[)）]/i.test(h) ? 1e4 : /[（(]\s*m\s*[)）]|百万/i.test(h) ? 1e6 : 1;
 
   function mapped(rowArr) {
     const raw = {};
@@ -256,6 +337,7 @@
       const v = rowArr[i] ?? '';
       if (f === '__notes') { if (String(v).trim()) raw.__notes = [raw.__notes, `${h}：${v}`].filter(Boolean).join('\n'); }
       else raw[f] = raw[f] ? raw[f] + ', ' + v : v;
+      if (UNIT_FIELDS.includes(f) && (imp.mult[i] || 1) !== 1) raw.__mult = { ...raw.__mult, [f]: imp.mult[i] };
     });
     return imp.target === 'deals' ? K.normalizeDealRow(raw) : K.normalizeKolRow(raw);
   }
@@ -270,13 +352,14 @@
     };
     const nDup = imp.target === 'deals' ? 0 : imp.rows.map(mapped).filter(d => K.findDupesLocal(d).length).length;
     const modeSel = (name, v) => `<select ${name}><option value="skip" ${v === 'skip' ? 'selected' : ''}>跳过</option><option value="overwrite" ${v === 'overwrite' ? 'selected' : ''}>覆盖</option><option value="merge" ${v === 'merge' ? 'selected' : ''}>合并</option></select>`;
-    const cols = imp.target === 'deals' ? ['kol', 'period', 'platform', 'orders', 'gmv_eur', 'commission_eur'] : ['name', 'platform', 'handle', 'country', 'language', 'status', 'followers'];
-    const label = k => (fields.find(f => f[0] === k) || [, k])[1];
-    const show = (d, k) => k === 'name' ? esc(d.name || d._auto_name || '') : k === 'country' ? K.countryLabel(d[k]) : k === 'language' ? esc(K.langName(d[k])) : k === 'status' ? (d[k] ? K.statusChip(d[k]) : '') : k === 'followers' ? esc(K.fmtInt(d[k])) : esc(d[k] ?? '');
+    const cols = imp.target === 'deals' ? ['kol', 'period', 'platform', 'orders', 'gmv_eur', 'commission_eur'] : ['name', 'platform', 'country', 'category', 'status', 'touches', 'followers', 'email', '_reply_text'];
+    const label = k => ({ category: '赛道', status: '状态', touches: '已触达', _reply_text: '回复', email: '邮箱' })[k] || (fields.find(f => f[0] === k) || [, k])[1];
+    const show = (d, k) => k === '_reply_text' ? (d._reply_text ? '有回复' : '') : k === 'category' ? esc((d.category || []).join('、')) : k === 'touches' ? esc(d.touches ?? '') : k === 'name' ? esc(d.name || d._auto_name || '') + (d.do_not_contact ? ' <span class="dnc">勿联系</span>' : '') : k === 'country' ? K.countryLabel(d[k]) : k === 'language' ? esc(K.langName(d[k])) : k === 'status' ? (d[k] ? K.statusChip(d[k]) : '') : k === 'followers' ? esc(K.fmtInt(d[k])) : esc(d[k] ?? '');
     K.$('#io-body').innerHTML = `<div class="io-step">
       <p><b>${esc(imp.name)}</b> · ${imp.rows.length} 行 · 导入到「${imp.target === 'deals' ? '带货与分成' : 'KOL 列表'}」</p>
       <h4>1. 对一下列（已自动猜好，猜错的手动改）</h4>
-      <div class="map-grid">${imp.header.map((h, i) => `<label><span title="${esc(h)}">${esc(h) || `第 ${i + 1} 列`}</span><select data-map="${i}"><option value="">（不导入）</option><option value="__notes" ${imp.map[i] === '__notes' ? 'selected' : ''}>追加到备注</option>${fields.map(f => `<option value="${f[0]}" ${imp.map[i] === f[0] ? 'selected' : ''}>${esc(f[1])}</option>`).join('')}</select><small class="muted">${esc(String(imp.rows[0]?.[i] ?? '').slice(0, 30))}</small></label>`).join('')}</div>
+      ${imp.unknown.some((u, i) => u && imp.map[i] === '__notes') ? '<p class="warn">黄色的列没认出来，已先设成「追加到备注」，内容不会丢。知道它对应哪个字段的话，在下拉里改一下。</p>' : ''}
+      <div class="map-grid">${imp.header.map((h, i) => `<label class="${imp.unknown[i] && imp.map[i] === '__notes' ? 'unknown' : ''}"><span title="${esc(h)}">${esc(h) || `第 ${i + 1} 列`}</span><select data-map="${i}"><option value="">（不导入）</option><option value="__notes" ${imp.map[i] === '__notes' ? 'selected' : ''}>追加到备注</option>${fields.filter(f => !f[0].startsWith('_') || imp.target === 'kols').map(f => `<option value="${f[0]}" ${imp.map[i] === f[0] ? 'selected' : ''}>${esc(f[1])}</option>`).join('')}</select>${UNIT_FIELDS.includes(imp.map[i]) ? `<select data-mult="${i}" aria-label="单位">${UNITS.map(([m, l]) => `<option value="${m}" ${m === (imp.mult[i] || 1) ? 'selected' : ''}>单位：${l}${m > 1 ? ` → ×${m.toLocaleString('en-US')}` : ''}</option>`).join('')}</select>` : ''}<small class="muted">例：${esc(String(imp.rows.find(r => String(r[i] || '').trim())?.[i] ?? '（空）').replace(/\s+/g, ' ').slice(0, 40))}</small></label>`).join('')}</div>
       <h4>2. 预览前 ${sample.length} 行</h4>
       <div class="table-wrap"><table class="grid preview-table"><thead><tr><th>行</th>${cols.map(c => `<th>${esc(label(c))}</th>`).join('')}<th>判断</th></tr></thead><tbody>
         ${sample.map(({ i, data }) => {
@@ -289,6 +372,9 @@
       </tbody></table></div>
       ${imp.target === 'kols' ? `<p>${nDup ? `<b class="warn-text">共 ${nDup} 行疑似重复</b>，` : '没有发现重复，'}重复的行默认：${modeSel('data-mode', imp.mode)}
         <span class="muted small">跳过 = 保留原记录不动；覆盖 = 用表里这些列替换（空格子会清空）；合并 = 只用表里有值的格子更新，空格子保留原值。</span></p>` : `<p>同一 KOL、同一视频链接、同一月份视为重复：${modeSel('data-mode', imp.mode)}</p>`}
+      ${imp.target === 'kols' ? `<p>表里没写「下次跟进」的人：<select data-sched aria-label="排期方式"><option value="spread" ${imp.sched === 'spread' ? 'selected' : ''}>分散排到接下来几天</option><option value="today" ${imp.sched === 'today' ? 'selected' : ''}>都排到今天</option><option value="none" ${imp.sched === 'none' ? 'selected' : ''}>先不排</option></select>
+        ${imp.sched === 'spread' ? `每天 <input data-per type="number" min="1" max="200" value="${imp.per}" style="width:64px" aria-label="每天几个"> 个` : ''}
+        <span class="muted small">不排的话「今日待跟进」里不会出现他们。暂不跟进、勿再联系的人不排。</span></p>` : ''}
       <div class="row end"><button type="button" class="btn sm ghost" data-io-back>重新选文件</button><button type="button" class="btn sm" data-io-run>开始导入 ${imp.rows.length} 行</button></div>
     </div>`;
   }
@@ -297,6 +383,14 @@
     const btn = K.$('[data-io-run]'); btn.disabled = true;
     const total = { created: 0, updated: 0, skipped: 0, errors: [] };
     const rows = imp.rows.map((r, i) => ({ ...mapped(r), _row: i + 2, ...(imp.overrides[i] ? { _mode: imp.overrides[i] } : {}) }));
+    // 没写下次跟进的：按选择排到今天或分散到接下来几天（服务端只填空着的，不覆盖已有日期）
+    if (imp.target === 'kols' && imp.sched !== 'none') {
+      let j = 0;
+      for (const r of rows) {
+        if (r.next_followup_at || ['paused', 'won'].includes(r.status) || r.do_not_contact) continue;
+        r._default_next = imp.sched === 'today' ? K.today() : K.addDays(K.today(), Math.floor(j++ / Math.max(1, imp.per)));
+      }
+    }
     try {
       for (let i = 0; i < rows.length; i += 200) {
         btn.textContent = `正在导入… ${Math.min(i + 200, rows.length)}/${rows.length}`;
@@ -331,13 +425,20 @@
         if (all.length < 2) return K.toast('这个文件里没有数据行', { error: true });
         const target = d.querySelector('[name=target]').value;
         const header = all[0].map(h => h.trim());
-        imp = { name: file.name, header, rows: all.slice(1), target, mode: 'skip', overrides: {}, map: header.map(h => guess(h, fieldsFor(target))) };
+        imp = { name: file.name, header, rows: all.slice(1), target, mode: 'skip', overrides: {}, map: header.map(h => guess(h, fieldsFor(target))),
+          mult: header.map(detectUnit), sched: all.length - 1 > 10 ? 'spread' : 'today', per: 10 };
         // 同一个字段只自动映射一次（后面的同名列不重复映射）
         const seen = new Set(); imp.map = imp.map.map(f => { if (!f || seen.has(f)) return ''; seen.add(f); return f; });
+        // 没认出的列：有内容就先「追加到备注」（标黄提醒），整列空的才不导入
+        imp.unknown = imp.map.map(f => !f);
+        imp.map = imp.map.map((f, i) => f || (imp.rows.some(r => String(r[i] || '').trim()) ? '__notes' : ''));
         if (imp.rows.some(r => r.length !== header.length)) K.toast('有些行的列数和表头对不上，已尽量按位置读取', { timeout: 5000 });
         return drawMapping();
       }
       if (t.matches('[data-map]')) { imp.map[Number(t.dataset.map)] = t.value; return drawMapping(); }
+      if (t.matches('[data-mult]')) { imp.mult[Number(t.dataset.mult)] = Number(t.value); return drawMapping(); }
+      if (t.matches('[data-sched]')) { imp.sched = t.value; return drawMapping(); }
+      if (t.matches('[data-per]')) { imp.per = Math.max(1, Number(t.value) || 10); return; }
       if (t.matches('[data-mode]')) { imp.mode = t.value; return drawMapping(); }
       if (t.matches('[data-row-mode]')) { imp.overrides[Number(t.dataset.rowMode)] = t.value; }
     });

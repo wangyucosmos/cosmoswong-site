@@ -1,6 +1,6 @@
 // /kol 各表的字段定义与校验：只收认得的字段，按类型和长度规整；不合格的直接报错（中文提示给页面显示）。
 
-export const STATUSES = ['todo', 'contacted', 'talking', 'sampled', 'published', 'won', 'paused'];
+export const STATUSES = ['todo', 'contacted', 'talking', 'sampled', 'published', 'won', 'partner', 'paused'];
 export const PRIORITIES = ['high', 'mid', 'low'];
 export const ACT_TYPES = ['email_out', 'reply_in', 'dm', 'call', 'sample', 'publish', 'deal', 'note'];
 export const CONTACT_TYPES = ['email_out', 'dm', 'call'];   // 这几类记录会更新 KOL 的「上次联系」
@@ -30,6 +30,7 @@ export const TABLES = {
     rating: enumOf(['A', 'B', 'C'], '初筛评级'),
     can_sell: enumOf(YNU, '带货权限'),
     promoted_similar: enumOf(YNU, '推过同类'),
+    touches: { type: 'int', label: '已触达次数', def: 0 },
     first_contact_at: { type: 'date', label: '首次联系' },
     last_contact_at: { type: 'date', label: '上次联系' },
     next_followup_at: { type: 'date', label: '下次跟进' },
@@ -191,7 +192,8 @@ export function urlKey(u) {
   if (!u) return null;
   try {
     const x = new URL(u);
-    return (x.hostname.replace(/^(www\.|m\.|mobile\.)/, '') + x.pathname.replace(/\/+$/, '')).toLowerCase();
+    // YouTube 频道的 /videos、/shorts 等标签页算同一个频道
+    return (x.hostname.replace(/^(www\.|m\.|mobile\.)/, '') + x.pathname.replace(/\/+$/, '').replace(/\/(videos|featured|shorts|streams|about|playlists|community|posts)$/i, '')).toLowerCase();
   } catch { return null; }
 }
 export const handleKey = (platform, handle) =>
