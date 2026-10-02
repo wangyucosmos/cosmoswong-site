@@ -76,12 +76,40 @@
       <section class="card-box"><h3>模板变量默认值</h3><p class="muted small">署名、公司名、产品名、默认带货链接在 <button type="button" class="link-btn" data-goto="templates">邮件模板</button> 页面顶部修改。</p></section>
       <section class="card-box"><h3>数据</h3>
         <div class="row wrap"><button type="button" class="btn sm ghost" data-s="import">导入 CSV…</button><button type="button" class="btn sm ghost" data-s="backup">下载 JSON 全量备份</button><button type="button" class="btn sm ghost" data-s="restore">从 JSON 备份恢复…</button></div></section>
+      <section class="card-box"><h3>改密码</h3>
+        <p class="muted small">知道原密码就能改。改完之后，其他电脑和手机上的登录会全部失效，要用新密码重新登录；这台设备保持登录。忘了新密码的话，网站管理员可以把它恢复成最初的密码。</p>
+        <form class="pw-form" data-password novalidate>
+          <input type="text" name="username" value="kol" autocomplete="username" hidden>
+          <label class="fld"><span class="fl">原密码</span><input name="old" type="password" autocomplete="current-password" required></label>
+          <label class="fld"><span class="fl">新密码（至少 8 位）</span><input name="new" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+          <label class="fld"><span class="fl">再输一次新密码</span><input name="new2" type="password" autocomplete="new-password" maxlength="128" required></label>
+          <p class="pw-msg" role="status"></p>
+          <div class="row"><button class="btn sm">改密码</button></div>
+        </form></section>
       <section class="card-box"><h3>账户</h3><p class="muted small">登录会保持 30 天。在别人的电脑上用完记得退出。</p>
         <button type="button" class="btn sm danger" data-s="logout">退出登录</button></section>
     </div>`;
     el.querySelectorAll('.opt-editor[data-setting]:not([data-setting=follow]) .opt-rows').forEach(box =>
       K.sortable(box, '.opt-row', () => {}, { axis: 'y', handle: '.grip' }));
   };
+
+  // 改密码：原密码 + 两次新密码；成功后服务端发新登录凭证，这台设备不用重新登录
+  async function changePassword(f) {
+    const msg = f.querySelector('.pw-msg'), btn = f.querySelector('button');
+    const say = (t, ok = false) => { msg.textContent = t; msg.className = 'pw-msg ' + (ok ? 'ok-text' : 'warn-text'); };
+    const oldPw = f.old.value, newPw = f.new.value;
+    if (!oldPw) { say('请输入原密码'); return f.old.focus(); }
+    if (newPw.length < 8) { say('新密码至少 8 位'); return f.new.focus(); }
+    if (newPw !== f.new2.value) { say('两次输入的新密码不一样'); return f.new2.focus(); }
+    if (newPw === oldPw) { say('新密码和原密码一样'); return f.new.focus(); }
+    btn.disabled = true; say('正在修改…', true);
+    try {
+      await K.api('POST', '/password', { old: oldPw, new: newPw });
+      f.reset(); say('✓ 密码已修改。下次登录（以及其他设备）请用新密码。', true);
+      K.toast('密码已修改');
+    } catch (err) { say(err.message); f.old.select(); }
+    finally { btn.disabled = false; }
+  }
 
   K.settingsEvents = (main, getView) => {
     main.addEventListener('click', async e => {
@@ -101,6 +129,7 @@
     main.addEventListener('submit', async e => {
       if (getView()?.kind !== 'settings') return;
       e.preventDefault();
+      if (e.target.matches('[data-password]')) return changePassword(e.target);
       const form = e.target, key = form.dataset.setting;
       const rows = [...form.querySelectorAll('.opt-rows .opt-row')].map(r => Object.fromEntries([...r.querySelectorAll('input[name]')].map(i => [i.name, i.value.trim()])));
       const put = async (k, value) => { await K.api('PUT', `/settings/${k}`, { value }); K.state.settings[k] = value; };

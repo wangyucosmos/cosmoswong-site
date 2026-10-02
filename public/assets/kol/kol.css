@@ -376,6 +376,9 @@ dialog::backdrop { background: rgba(10, 10, 20, .35); }
 .settle { border: 1px solid var(--warn); color: var(--warn); background: var(--warn-soft); border-radius: 5px; padding: 1px 8px; cursor: pointer; font-size: 12px; white-space: nowrap; }
 .settle.ok { border-color: color-mix(in srgb, var(--ok) 50%, transparent); color: var(--ok); background: var(--ok-soft); }
 
+.pw-form { display: grid; gap: 10px; max-width: 360px; margin-top: 8px; }
+.pw-form .row { margin: 0; }
+.pw-msg { margin: 0; min-height: 18px; font-size: 13px; }
 .opt-editor .opt-rows { display: grid; gap: 6px; margin: 8px 0; }
 .opt-row { display: flex; align-items: center; gap: 8px; }
 .opt-row input:not([type=color]):not([type=number]) { max-width: 240px; }

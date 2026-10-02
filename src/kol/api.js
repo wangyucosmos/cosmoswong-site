@@ -1,6 +1,6 @@
 // /api/kol/* 路由。除登录外全部要登录；写操作还要过 csrfOk。数据全在 D1（binding KOL_DB）。
 import { json } from '../shared.js';
-import { isAuthed, login, logout, csrfOk } from './auth.js';
+import { isAuthed, login, logout, csrfOk, changePassword } from './auth.js';
 import { TABLES, CONTACT_TYPES, Invalid, clean, urlKey, handleKey, emailKey } from './schema.js';
 
 const MAX_BODY = 4 * 1024 * 1024;   // 导入与恢复备份最大 4MB，其余请求远小于此
@@ -307,6 +307,7 @@ async function route(req, env, parts) {
   const id = idRaw && /^\d+$/.test(idRaw) ? Number(idRaw) : null;
 
   if (res === 'bootstrap' && m === 'GET') return bootstrap(db, env);
+  if (res === 'password' && m === 'POST') return changePassword(req, env);
   if (res === 'backup' && m === 'GET') return backup(db);
   if (res === 'restore' && m === 'POST') return restore(db, await body(req));
   if (res === 'import' && m === 'POST') return importRows(db, await body(req));
