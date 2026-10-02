@@ -1,8 +1,11 @@
 // cosmoswong.com 的服务端：只接 /api/*（wrangler.toml 的 run_worker_first），其余请求都是静态资源，不经过这里。
-// 目前只有一个功能：/subs 订阅倒计时页的密码门与数据读写。
+// 两个功能：/subs 订阅倒计时页、/kol KOL 工作台（路由在 src/kol/，数据在 D1）。下面是 /subs 的部分：
 //   - 密码存在 Worker secret SUBS_PASSWORD，登录 cookie 用 SUBS_COOKIE_KEY 签名；两个都不进仓库
 //   - 订阅数据存在 KV（binding SUBS，key "list"），不进仓库——仓库是公开的
 //   - 换密码：printf '%s' '新密码' | npx wrangler secret put SUBS_PASSWORD（旧登录会随之全部失效）
+
+import { json, safeEq, hmac } from './shared.js';
+import { kolApi } from './kol/api.js';
 
 const COOKIE = 'subs_session';
 const SESSION_DAYS = 30;
@@ -10,34 +13,8 @@ const MAX_FAILS = 10;          // 同一 IP 15 分钟内最多输错 10 次
 const FAIL_WINDOW = 900;
 const MAX_BYTES = 64 * 1024;   // 订阅清单上限，防止误写入大文件
 
-const json = (data, status = 200, headers = {}) => new Response(JSON.stringify(data), {
-  status,
-  headers: {
-    'content-type': 'application/json; charset=utf-8',
-    'cache-control': 'no-store',
-    'x-robots-tag': 'noindex',
-    ...headers
-  }
-});
-
-const enc = new TextEncoder();
-const b64url = buf => btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-// 长度无关的比较：先各自取哈希再逐字节比，避免按长度提前返回
-async function safeEq(a, b) {
-  const [x, y] = await Promise.all([a, b].map(s => crypto.subtle.digest('SHA-256', enc.encode(String(s)))));
-  const u = new Uint8Array(x), v = new Uint8Array(y);
-  let diff = 0;
-  for (let i = 0; i < u.length; i++) diff |= u[i] ^ v[i];
-  return diff === 0;
-}
-
 // 签名 key 里混入密码本身：换密码后旧 cookie 自动作废
-async function sign(env, msg) {
-  const key = await crypto.subtle.importKey('raw', enc.encode(env.SUBS_COOKIE_KEY + '\u0000' + env.SUBS_PASSWORD),
-    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  return b64url(await crypto.subtle.sign('HMAC', key, enc.encode(msg)));
-}
+const sign = (env, msg) => hmac(env.SUBS_COOKIE_KEY + '\u0000' + env.SUBS_PASSWORD, msg);
 
 async function isAuthed(req, env) {
   const m = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
@@ -115,6 +92,7 @@ export default {
   async fetch(req, env) {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/api/subs' || path.startsWith('/api/subs/')) return subsApi(req, env, path);
+    if (path === '/api/kol' || path.startsWith('/api/kol/')) return kolApi(req, env, path);
     if (path.startsWith('/api/')) return json({ error: '没有这个接口' }, 404);
     return env.ASSETS.fetch(req);
   }
