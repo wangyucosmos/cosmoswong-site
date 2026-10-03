@@ -1,5 +1,5 @@
-/* 我的工作台 · 设置：选项清单、在等谁标色天数、时间表模板、检查清单、提示词模板、数据（备份 / 恢复 / 初始化包 / CSV）、快捷键、改密码、退出。
-   写法照 /kol 的 settings.js。代码里只有通用默认值；具体业务内容（省份、月度时间表、检查清单、开工提示词、快捷入口）走「导入初始化包」。 */
+/* 我的工作台 · 设置（v2：常用的放上面，平时不用改的收进「高级」）。
+   代码里只有通用默认值；具体业务内容（省份、月度时间表、检查清单、开工提示词、快捷入口）走「导入初始化包」。 */
 (() => {
   const D = window.DESK;
   const { esc } = D;
@@ -14,34 +14,38 @@
       ? `<input type="color" name="${c.key}" value="${esc(r[c.key] || '#8a8f98')}" aria-label="${esc(c.label)}">`
       : `<input name="${c.key}" value="${esc(r[c.key] ?? '')}" placeholder="${esc(c.label)}" maxlength="${c.max || 30}" aria-label="${esc(c.label)}">`).join('')}<button type="button" class="x" data-del-row aria-label="删除这一行">×</button></div>`;
   }
-  const LISTS = [
-    ['kinds', '项目类型', '项目的大类，带颜色。'],
-    ['provinces', '省份', '负责的省份会变：以你自己的最新名单为准，在这里改。全国项目不用选省份。'],
-    ['deliverable_types', '交付物类型', '检查清单按它匹配。'],
-    ['ask_whom', '问谁', '「待确认」里选的对象。'],
-    ['ai_tools', 'AI 工具', '「最近经手」和生成提示词时可选的工具。'],
-    ['win_task_types', '提效记录的任务类型', ''],
-    ['inbox_sources', '收集箱来源', '']
+  const ADV_LISTS = [
+    ['deliverable_types', '交付物类型', '提效记录和检查清单都按它分类。'],
+    ['ask_whom', '问谁', '「在等谁」里选的对象。'],
+    ['ai_tools', 'AI 工具', '项目页「AI 交接」里的工具按钮。'],
+    ['inbox_sources', '收集箱来源', ''],
+    ['kinds', '项目类型', '现在只在项目「资料」里显示，可以不管。']
   ];
 
-  /* ---------- 时间表模板 ---------- */
-  const tlRow = (n = {}) => `<div class="tl-edit-row" data-id="${D.uid()}"><span class="grip" data-drag>⠿</span>
+  /* ---------- 时间表模板：三种节点 ---------- */
+  const KINDS = [['task', '我要做的'], ['deliverable', '要交的'], ['wait', '等别人给']];
+  const kindOf = n => n.kind || (n.deliverable_type ? 'deliverable' : 'task');
+  const tlRow = (n = {}) => { const k = kindOf(n); return `<div class="tl-edit-row k-${k}" data-id="${D.uid()}"><span class="grip" data-drag>⠿</span>
     <label class="lbl inline">T<input type="number" name="off" value="${esc(n.offset_days ?? '')}" min="-365" max="365" class="w70" aria-label="相对上线日的天数（负数 = 上线前）" placeholder="−7"></label>
-    <input name="title" value="${esc(n.title || '')}" maxlength="200" placeholder="这个节点做什么" aria-label="节点">
-    <select name="dtype" aria-label="同时生成的交付物">${D.selectOpts(D.cfg().deliverable_types, n.deliverable_type || '', { empty: '（不生成交付物）' })}</select>
-    <input name="dname" value="${esc(n.deliverable_name || '')}" maxlength="80" placeholder="交付物名称（可不填）" aria-label="交付物名称" class="w160">
-    <label class="check"><input type="checkbox" name="mile" ${n.is_milestone ? 'checked' : ''}> 里程碑</label>
-    <button type="button" class="x" data-del-row aria-label="删除这个节点">×</button></div>`;
+    <select name="kind" aria-label="节点类型" class="w110">${KINDS.map(([v, l]) => `<option value="${v}" ${v === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <input name="title" value="${esc(n.title || '')}" maxlength="200" placeholder="${k === 'wait' ? '要别人给 / 确认什么，如：奖品表' : '这个节点做什么'}" aria-label="节点">
+    <span class="only-d"><select name="dtype" aria-label="交付物类型">${D.selectOpts(D.cfg().deliverable_types, n.deliverable_type || '', { empty: '交付物类型…' })}</select>
+      <input name="dname" value="${esc(n.deliverable_name || '')}" maxlength="80" placeholder="名称（可不填）" aria-label="交付物名称" class="w140"></span>
+    <span class="only-w"><select name="whom" aria-label="问谁">${D.selectOpts(D.cfg().ask_whom, n.ask_whom || '', { empty: '问谁…' })}</select>
+      <label class="lbl inline">从 T<input type="number" name="from" value="${esc(n.remind_offset ?? '')}" min="-365" max="365" class="w70" aria-label="从哪天开始催（相对上线日）" placeholder="−14"> 起催</label>
+      <label class="check"><input type="checkbox" name="block" ${n.blocking ? 'checked' : ''}> 卡交付</label></span>
+    <label class="check only-t"><input type="checkbox" name="mile" ${n.is_milestone ? 'checked' : ''}> 里程碑</label>
+    <button type="button" class="x" data-del-row aria-label="删除这个节点">×</button></div>`; };
   const tlForm = t => `<form class="tl-form" data-tl="${t?.id || ''}">
     <div class="row wrap"><label class="lbl inline">模板名<input name="name" value="${esc(t?.name || '')}" maxlength="60" required></label>
       <label class="lbl inline">适用类型<select name="kind">${D.selectOpts(D.cfg().kinds.map(k => k.name), t?.kind || '', { empty: '（不限）' })}</select></label></div>
-    <p class="muted small">「T」填相对上线日的天数：上线前 21 天写 −21，上线当天写 0，上线后 3 天写 3。</p>
+    <p class="muted small">「T」填相对上线日的天数：上线前 21 天写 −21，上线当天写 0。<b>我要做的</b>生成待办；<b>要交的</b>生成交付物；<b>等别人给</b>生成「在等谁」——T 是最晚哪天要到，「起催」是从哪天开始提醒你催。</p>
     <div class="tl-rows">${(t?.items || [{}]).map(tlRow).join('')}</div>
     <template>${tlRow()}</template>
     <div class="row"><button type="button" class="tb" data-add-row>＋ 加一个节点</button><span class="grow"></span>
       ${t ? '<button type="button" class="btn sm danger ghost" data-tl-del>删除模板</button>' : ''}<button class="btn sm">保存</button></div></form>`;
 
-  /* ---------- 检查清单 ---------- */
+  /* ---------- 检查清单（v2：只做提醒，交付时能点开看一眼，不再拦着） ---------- */
   const clForm = c => `<form class="cl-form" data-cl="${c?.id || ''}">
     <label class="lbl">清单名<input name="name" value="${esc(c?.name || '')}" maxlength="60" required></label>
     <div class="lbl">适用于哪些交付物 <small class="muted">（都不勾 = 所有类型）</small>
@@ -62,39 +66,40 @@
   D.renderSettings = (view, el) => {
     const c = D.cfg();
     const open = D.pref.get('settings.open', {});
-    const sec = (id, title, body, hint = '') => `<details class="card-box set" data-sec="${id}" ${open[id] ? 'open' : ''}><summary><h3>${title}</h3>${hint ? `<span class="muted small">${hint}</span>` : ''}</summary>${body}</details>`;
+    const want = D.pref.get('settings.jump', null);
+    const sec = (id, title, body, hint = '') => `<details class="card-box set" data-sec="${id}" id="set-${id}" ${open[id] || want === id ? 'open' : ''}><summary><h3>${title}</h3>${hint ? `<span class="muted small">${hint}</span>` : ''}</summary>${body}</details>`;
+    const baseTypes = [...new Set([...c.deliverable_types, ...Object.keys(c.baselines)])];
     el.innerHTML = `<div class="page settings">
-      <section class="card-box hero-box"><h2>⚙️ 设置</h2><p class="muted">选项、模板、清单都可以在这里改。第一次用的话，先用「数据 → 导入初始化包」把你的省份、时间表、检查清单、提示词模板、快捷入口一次导进来。</p></section>
-      ${sec('lists', '选项清单', `
-        <div class="opt-group"><h4>项目状态 <small class="muted">（只能改名字和颜色，顺序固定）</small></h4>
-          <form class="opt-editor" data-setting="statuses"><div class="opt-rows fixed">${c.statuses.map(s => `<div class="opt-row" data-key="${s.key}">${D.statusChip(s.key)}
-            <input name="label" value="${esc(s.label)}" maxlength="20" aria-label="状态名"><input type="color" name="color" value="${esc(s.color)}" aria-label="颜色"></div>`).join('')}</div>
-            <div class="row end"><button class="btn sm">保存</button></div></form></div>
-        ${LISTS.map(([k, t, hint]) => `<div class="opt-group"><h4>${t} ${hint ? `<small class="muted">${hint}</small>` : ''}</h4>${k === 'kinds'
-          ? rowsEditor(k, c.kinds, [{ key: 'name', label: '类型名' }, { key: 'color', label: '颜色', type: 'color' }])
-          : rowsEditor(k, c[k].map(name => ({ name })), [{ key: 'name', label: t }])}</div>`).join('')}`, '类型、省份、交付物类型、问谁、AI 工具……')}
-      ${sec('nudge', '在等谁 · 标色', `<form class="opt-editor" data-setting="nudge_days"><div class="row wrap">
-        <label class="lbl inline">等了 <input type="number" name="warn" min="1" max="365" value="${esc(c.nudge_days.warn)}" class="w70"> 天以上标橙</label>
-        <label class="lbl inline">等了 <input type="number" name="danger" min="1" max="365" value="${esc(c.nudge_days.danger)}" class="w70"> 天以上标红</label>
-        <span class="grow"></span><button class="btn sm">保存</button></div></form>`, `现在：${c.nudge_days.warn} 天标橙、${c.nudge_days.danger} 天标红`)}
-      ${sec('timelines', '时间表模板', `<p class="muted small">新建项目或在项目「概览」里一键排期时用。内置一个通用示例（开工 T−7 / 交付 T−1 / 上线 T），不能改；你自己的模板在下面。</p>
+      <section class="card-box hero-box"><h2>⚙️ 设置</h2><p class="muted">常改的在上面；平时不用动的收在「高级」里。第一次用，先在「数据」里导入初始化包。</p></section>
+      ${sec('provinces', '省份', `<p class="muted small">名单随时可以改。新建项目、项目列表分组都按这里的顺序。</p>${rowsEditor('provinces', c.provinces.map(name => ({ name })), [{ key: 'name', label: '省份' }])}`, c.provinces.length ? `${c.provinces.length} 个` : '还没填')}
+      ${sec('baselines', '提效基准', `<p class="muted small">每类交付物「以前不用 AI 大概要多少分钟」。标成已交付时自动带出来，你只填「这次用了多久」。第一次交某类东西时会顺手问一次。</p>
+        <form class="opt-editor" data-setting="baselines"><div class="base-grid">${baseTypes.map(t => `<label class="lbl inline"><span>${esc(t)}</span><input type="number" min="0" max="100000" name="b" data-type="${esc(t)}" value="${esc(c.baselines[t] ?? '')}" class="w80"> 分钟</label>`).join('')}</div>
+        <div class="row end"><button class="btn sm">保存</button></div></form>`, `${Object.keys(c.baselines).length} 类已填`)}
+      ${sec('timelines', '时间表模板', `<p class="muted small">项目页「排期」和新建项目时用。内置一个通用示例（开工 T−7 / 交付 T−1 / 上线 T），不能改；你自己的模板在下面。</p>
         ${D.state.timelines.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${t.items.length} 个节点${t.kind ? ' · ' + esc(t.kind) : ''}</span></summary>${tlForm(t)}</details>`).join('')}
         <details class="sub"><summary class="add">＋ 新建时间表模板</summary>${tlForm(null)}</details>`, `${D.state.timelines.length} 个`)}
-      ${sec('checklists', '检查清单', `<p class="muted small">交付物标「已交付」前要逐项勾完（可强制跳过，要二次确认）。按交付物类型自动匹配。</p>
-        ${D.state.checklists.map(cl => `<details class="sub"><summary><b>${esc(cl.name)}</b> <span class="muted small">${cl.items.length} 项 · ${cl.applies_to.length ? esc(cl.applies_to.join('、')) : '所有类型'}</span></summary>${clForm(cl)}</details>`).join('')}
-        <details class="sub"><summary class="add">＋ 新建检查清单</summary>${clForm(null)}</details>`, `${D.state.checklists.length} 个`)}
-      ${sec('prompts', '提示词模板', `<p class="muted small">在项目抽屉「AI 交接」、收集箱「需求梳理」、玩法创意「写提案」里用。点上面的变量把它插进正文；生成时会换成项目里的真实内容。</p>
+      ${sec('prompts', '提示词模板', `<p class="muted small">项目页「AI 交接」、收集箱「复制给 AI 拆」、玩法创意「写提案」会用到。点变量插进正文，生成时换成项目里的真实内容。<b>不用自己写回填格式</b>：开工 / 收工提示词最后会自动加上【回填工作台】那一段，需求梳理会自动加上【新建项目】那一段。</p>
         ${D.state.prompts.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${esc(t.scene || '其他')}${t.tool ? ' · ' + esc(t.tool) : ''}</span></summary>${ptForm(t)}</details>`).join('')}
         ${D.BUILTIN_PROMPTS.map(t => `<details class="sub builtin"><summary><b>${esc(t.name)}</b> <span class="muted small">内置 · ${esc(t.scene)} · 改它会另存成你的模板</span></summary>${ptForm(t)}</details>`).join('')}
         <details class="sub"><summary class="add">＋ 新建提示词模板</summary>${ptForm(null)}</details>`, `${D.state.prompts.length} 个`)}
-      ${sec('links', '快捷入口', `<p>在「快捷入口」页直接增删改、拖动排序。<button type="button" class="link-btn" data-goto="links">去快捷入口 →</button></p>`, `${D.state.links.length} 个`)}
-      ${sec('data', '数据：备份、恢复、初始化包、导出', `
+      ${sec('links', '快捷入口', D.linksManager(), `${D.state.links.length} 个，显示在今天页底部`)}
+      ${sec('data', '数据：备份、恢复、初始化包', `
         <p class="muted small">数据保存在服务器上（不是这台电脑），换电脑、用手机打开都是同一份。建议每周下载一次 JSON 全量备份。</p>
         <div class="row wrap"><button type="button" class="btn sm" data-s="initpack">导入初始化包…</button>
-          <button type="button" class="btn sm ghost" data-s="backup">下载 JSON 全量备份</button><button type="button" class="btn sm ghost" data-s="restore">从 JSON 备份恢复…</button>
-          <button type="button" class="btn sm ghost" data-s="csv">导出全部项目 CSV</button></div>
-        <p class="muted small">初始化包：只<b>新增</b>选项、时间表、检查清单、提示词模板、快捷入口，不改、不删已有的；导入前会先给你看要加什么，重复导入不会出现重复项。</p>`)}
-      ${sec('keys', '快捷键', `<p><kbd>/</kbd> 搜索　<kbd>c</kbd> 收集　<kbd>n</kbd> 新项目　<kbd>t</kbd> 回到今天　<kbd>Esc</kbd> 关闭抽屉或浮层</p>
+          <button type="button" class="btn sm ghost" data-s="backup">下载 JSON 全量备份</button><button type="button" class="btn sm ghost" data-s="restore">从 JSON 备份恢复…</button></div>
+        <p class="muted small">初始化包：<b>新增</b>选项、时间表、检查清单、提示词模板、快捷入口，不删已有的；导入前会先给你看要加什么，重复导入不会出现重复项。已有同名、内容却不同的，会单独列出来，你勾了才换成包里的版本。</p>`)}
+      ${sec('advanced', '高级', `
+        ${ADV_LISTS.map(([k, t, hint]) => `<div class="opt-group"><h4>${t} ${hint ? `<small class="muted">${hint}</small>` : ''}</h4>${k === 'kinds'
+          ? rowsEditor(k, c.kinds, [{ key: 'name', label: '类型名' }, { key: 'color', label: '颜色', type: 'color' }])
+          : rowsEditor(k, c[k].map(name => ({ name })), [{ key: 'name', label: t }])}</div>`).join('')}
+        <div class="opt-group"><h4>在等谁 · 没写「最晚哪天要」时怎么标色</h4><form class="opt-editor" data-setting="nudge_days"><div class="row wrap">
+          <label class="lbl inline">等了 <input type="number" name="warn" min="1" max="365" value="${esc(c.nudge_days.warn)}" class="w70"> 天以上标橙</label>
+          <label class="lbl inline">等了 <input type="number" name="danger" min="1" max="365" value="${esc(c.nudge_days.danger)}" class="w70"> 天以上标红</label>
+          <span class="grow"></span><button class="btn sm">保存</button></div></form></div>
+        <div class="opt-group"><h4>检查清单 <small class="muted">交付时能点开看一眼，只做提醒，不拦着</small></h4>
+          ${D.state.checklists.map(cl => `<details class="sub"><summary><b>${esc(cl.name)}</b> <span class="muted small">${cl.items.length} 项 · ${cl.applies_to.length ? esc(cl.applies_to.join('、')) : '所有类型'}</span></summary>${clForm(cl)}</details>`).join('')}
+          <details class="sub"><summary class="add">＋ 新建检查清单</summary>${clForm(null)}</details></div>`, '交付物类型、问谁、AI 工具、检查清单…')}
+      ${sec('keys', '快捷键', `<p><kbd>/</kbd> 搜索　<kbd>c</kbd> 收集　<kbd>n</kbd> 新项目　<kbd>t</kbd> 回到今天　<kbd>Esc</kbd> 关掉浮层；在项目页里按 <kbd>Esc</kbd> 回到上一页</p>
         <p class="muted small">在输入框里打字时快捷键不生效。收集框里：回车保存，Shift+回车换行。</p>`)}
       ${sec('password', '改密码', `<p class="muted small">知道原密码就能改。改完之后，其他电脑和手机上的登录会全部失效，要用新密码重新登录；这台设备保持登录。忘了新密码，可以让 AI 按站点说明把它恢复成最初的密码。</p>
         <form class="pw-form" data-password novalidate>
@@ -107,8 +112,10 @@
       <section class="card-box"><h3>账户</h3><p class="muted small">登录会保持 30 天。在别人的电脑上用完记得退出。</p>
         <button type="button" class="btn sm danger" data-s="logout">退出登录</button></section>
     </div>`;
-    el.querySelectorAll('.opt-editor .opt-rows:not(.fixed)').forEach(box => D.sortable(box, '.opt-row', () => {}, { axis: 'y', handle: '.grip' }));
+    el.querySelectorAll('.opt-editor .opt-rows').forEach(box => D.sortable(box, '.opt-row', () => {}, { axis: 'y', handle: '.grip' }));
     el.querySelectorAll('.tl-rows').forEach(box => D.sortable(box, '.tl-edit-row', () => {}, { axis: 'y', handle: '.grip' }));
+    el.querySelectorAll('.links-manager').forEach(D.bindLinksManager);
+    if (want) { D.pref.set('settings.jump', null); requestAnimationFrame(() => D.$('#set-' + want)?.scrollIntoView({ block: 'start' })); }
   };
 
   /* ---------- 改密码：原密码 + 两次新密码；成功后服务端发新登录凭证，这台设备不用重新登录 ---------- */
@@ -130,6 +137,7 @@
   }
 
   /* ---------- 数据：备份 / 恢复 / 初始化包 ---------- */
+  const shTime = iso => `${D.isoToShDate(iso)} ${new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(iso))}`;
   D.io = {
     async backup(silentName) {
       try {
@@ -152,7 +160,7 @@
       const text = await D.io.pickFile('.json,application/json'); if (!text) return;
       let data; try { data = JSON.parse(text); } catch { return D.toast('这个文件不是有效的备份', { error: true }); }
       if (data?.app !== 'cosmoswong-desk') return D.toast('这不是工作台导出的备份文件', { error: true });
-      if (!(await D.confirm(`要用这份备份（导出于 ${data.exported_at ? `${D.isoToShDate(data.exported_at)} ${new Intl.DateTimeFormat('zh-CN', { timeZone: 'Asia/Shanghai', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date(data.exported_at))}` : '未知时间'}，含 ${(data.projects || []).length} 个项目）替换当前全部数据吗？当前有 ${D.state.projects.length} 个项目。点确认后会先自动下载一份当前数据。`, '继续'))) return;
+      if (!(await D.confirm(`要用这份备份（导出于 ${data.exported_at ? shTime(data.exported_at) : '未知时间'}，含 ${(data.projects || []).length} 个项目）替换当前全部数据吗？当前有 ${D.state.projects.length} 个项目。点确认后会先自动下载一份当前数据。`, '继续'))) return;
       if (!(await D.io.backup(`我的工作台-恢复前自动备份-${D.today()}.json`))) return;
       if (!(await D.confirm('已下载当前数据的备份。最后确认一次：恢复后，现在的所有项目、待办、待确认、模板、设置都会被备份里的内容替换。', '确认恢复'))) return;
       try { const res = await D.api('POST', '/restore', { confirm: 'RESTORE', data }); await D.app.reload(); D.toast(`已恢复 ${res.rows} 条数据`); }
@@ -167,9 +175,13 @@
       try { plan = await D.api('POST', '/init-pack', { pack, current, apply: false }); } catch (e) { return D.fail(e); }
       const NAMES = { kinds: '项目类型', provinces: '省份', deliverable_types: '交付物类型', ask_whom: '问谁', ai_tools: 'AI 工具', win_task_types: '提效任务类型', inbox_sources: '收集箱来源' };
       const li = (title, list) => list.length ? `<li><b>${esc(title)}</b>（${list.length}）：${list.map(esc).join('、')}</li>` : '';
-      const p = plan.plan;
-      D.$('#initpack-body').innerHTML = plan.count ? `<p>这个初始化包会<b>新增</b>下面 ${plan.count} 项（已有的不动、不重复加）：</p>
-        <ul class="plan">${Object.entries(p.options).map(([k, v]) => li('选项 · ' + (NAMES[k] || k), v)).join('')}${li('时间表模板', p.timelines)}${li('检查清单', p.checklists)}${li('提示词模板', p.prompt_templates)}${li('快捷入口', p.links)}</ul>
+      const p = plan.plan, changed = p.changed || [];
+      const adds = plan.count ? `<p>这个初始化包会<b>新增</b>下面 ${plan.count} 项（已有的不动、不重复加）：</p>
+        <ul class="plan">${Object.entries(p.options).map(([k, v]) => li('选项 · ' + (NAMES[k] || k), v)).join('')}${li('时间表模板', p.timelines)}${li('检查清单', p.checklists)}${li('提示词模板', p.prompt_templates)}${li('快捷入口', p.links)}</ul>` : '';
+      // 同名但内容不同：可能是包更新了，也可能是你自己改过——默认不勾，勾上才覆盖
+      const chg = changed.length ? `<p>下面 ${changed.length} 项已经有同名的，但内容和包里不一样（可能是包更新了，也可能是你自己改过）。<b>勾上的</b>会换成包里的版本，不勾就保持原样：</p>
+        <ul class="plan">${changed.map(c => `<li><label><input type="checkbox" data-ip-replace="${esc(c.id)}"> ${esc(c.kind)} · ${esc(c.name)}</label></li>`).join('')}</ul>` : '';
+      D.$('#initpack-body').innerHTML = plan.count || changed.length ? `${adds}${chg}
         <div class="row end"><button type="button" class="btn sm ghost" data-ip-close>取消</button><button type="button" class="btn sm" data-ip-go>确认导入</button></div>`
         : `<p>这个初始化包里的内容都已经有了，没有要新增的。</p><div class="row end"><button type="button" class="btn sm" data-ip-close>好的</button></div>`;
       const dlg = D.$('#initpack');
@@ -177,28 +189,38 @@
       dlg.onclick = async e => {
         if (e.target.closest('[data-ip-close]')) return dlg.close();
         if (!e.target.closest('[data-ip-go]')) return;
+        const replace = [...dlg.querySelectorAll('[data-ip-replace]:checked')].map(x => x.dataset.ipReplace);
+        if (!plan.count && !replace.length) { dlg.close(); return D.toast('没有勾选要换的，什么都没改'); }
         e.target.disabled = true;
-        try { const r = await D.api('POST', '/init-pack', { pack, current, apply: true }); await D.app.reload(); dlg.close(); D.toast(`已导入 ${r.count} 项`); }
-        catch (err) { D.fail(err); e.target.disabled = false; }
+        try {
+          const r = await D.api('POST', '/init-pack', { pack, current, apply: true, replace });
+          await D.app.reload(); dlg.close();
+          D.toast([r.count ? `新增 ${r.count} 项` : '', r.replaced ? `换成新版 ${r.replaced} 项` : ''].filter(Boolean).join('，') || '没有改动');
+        } catch (err) { D.fail(err); e.target.disabled = false; }
       };
     }
   };
 
   /* ---------- 事件 ---------- */
-  D.settingsEvents = (main, getView) => {
+  D.settingsEvents = main => {
+    const on = () => D.current?.kind === 'settings';
     main.addEventListener('toggle', e => {
-      if (getView()?.kind !== 'settings' || !e.target.matches?.('details[data-sec]')) return;
+      if (!on() || !e.target.matches?.('details[data-sec]')) return;
       const o = D.pref.get('settings.open', {}); o[e.target.dataset.sec] = e.target.open; D.pref.set('settings.open', o);
     }, true);
     main.addEventListener('change', e => {
-      if (getView()?.kind !== 'settings') return;
-      // 提示词模板换了场景：变量按钮跟着换
+      if (!on()) return;
       if (e.target.name === 'scene' && e.target.closest('.pt-form')) {
         e.target.closest('.pt-form').querySelector('[data-vars]').innerHTML = varsFor(e.target.value).map(v => `<button type="button" class="tag var" data-var="${v}">{{${v}}}</button>`).join('');
       }
+      if (e.target.name === 'kind' && e.target.closest('.tl-edit-row')) {
+        const row = e.target.closest('.tl-edit-row');
+        row.className = row.className.replace(/\bk-\w+/, 'k-' + e.target.value);
+        row.querySelector('[name=title]').placeholder = e.target.value === 'wait' ? '要别人给 / 确认什么，如：奖品表' : '这个节点做什么';
+      }
     });
     main.addEventListener('click', async e => {
-      if (getView()?.kind !== 'settings') return;
+      if (!on()) return;
       const form = e.target.closest('form');
       if (e.target.closest('[data-add-row]')) {
         const box = form.querySelector('.opt-rows, .tl-rows');
@@ -218,16 +240,10 @@
       if (s === 'backup') D.io.backup();
       if (s === 'restore') D.io.restore();
       if (s === 'initpack') D.io.initPack();
-      if (s === 'csv') {
-        const list = D.state.projects;
-        if (!list.length) return D.toast('还没有项目', { error: true });
-        const keys = ['title', 'kind', 'province', 'month', 'status', 'priority', 'requester', 'launch_at', 'due_at', 'summary', 'next_action', 'pendings', 'progress', 'last_ai', 'tags', 'notes', 'updated_at'];
-        D.download(`项目-全部-${D.today()}.csv`, D.toCsv(keys.map(k => D.col(k)?.label || k), list.map(p => keys.map(k => D.cellText(p, k)))), 'text/csv;charset=utf-8');
-      }
       if (s === 'logout') D.app.logout();
     });
     main.addEventListener('submit', async e => {
-      if (getView()?.kind !== 'settings') return;
+      if (!on()) return;
       e.preventDefault();
       const form = e.target;
       if (form.matches('[data-password]')) return changePassword(form);
@@ -235,11 +251,17 @@
       const done = () => { D.render(true); D.toast('已保存'); };
       try {
         if (form.matches('.tl-form')) {
-          const items = [...form.querySelectorAll('.tl-edit-row')].map(r => ({ offset_days: r.querySelector('[name=off]').value, title: r.querySelector('[name=title]').value.trim(),
-            deliverable_type: r.querySelector('[name=dtype]').value, deliverable_name: r.querySelector('[name=dname]').value.trim(), is_milestone: r.querySelector('[name=mile]').checked }))
-            .filter(n => n.title || n.offset_days !== '');
+          const items = [...form.querySelectorAll('.tl-edit-row')].map(r => {
+            const q = n => r.querySelector(`[name=${n}]`);
+            const kind = q('kind').value, n = { offset_days: q('off').value, title: q('title').value.trim(), kind, is_milestone: q('mile').checked };
+            if (kind === 'deliverable') { n.deliverable_type = q('dtype').value; n.deliverable_name = q('dname').value.trim(); }
+            if (kind === 'wait') { n.ask_whom = q('whom').value; n.remind_offset = q('from').value === '' ? null : Number(q('from').value); n.blocking = q('block').checked; }
+            return n;
+          }).filter(n => n.title || n.offset_days !== '');
           if (items.some(n => n.offset_days === '' || !Number.isInteger(Number(n.offset_days)))) return D.toast('每个节点都要填「T」的天数（整数，上线前写负数）', { error: true });
+          if (items.some(n => n.kind === 'deliverable' && !n.deliverable_type)) return D.toast('「要交的」节点要选交付物类型', { error: true });
           items.forEach(n => { n.offset_days = Number(n.offset_days); });
+          if (items.some(n => n.kind === 'wait' && n.remind_offset != null && n.remind_offset > n.offset_days)) return D.toast('「起催」要早于或等于最晚那天的 T', { error: true });
           items.sort((a, b) => a.offset_days - b.offset_days);
           const data = { name: form.name.value.trim(), kind: form.kind.value || null, items };
           if (form.dataset.tl) await D.patch('timelines', form.dataset.tl, data); else await D.create('timelines', data);
@@ -256,9 +278,10 @@
           return done();
         }
         const key = form.dataset.setting;
-        if (key === 'statuses') {
-          await put('statuses', [...form.querySelectorAll('.opt-row')].map(r => ({ key: r.dataset.key, label: r.querySelector('[name=label]').value.trim() || D.statusOf(r.dataset.key).label, color: r.querySelector('[name=color]').value })));
-          return done();
+        if (key === 'baselines') {
+          const b = {};
+          for (const i of form.querySelectorAll('[name=b]')) if (i.value !== '') b[i.dataset.type] = Math.max(0, Math.round(Number(i.value)));
+          await put('baselines', b); return done();
         }
         if (key === 'nudge_days') {
           const warn = Number(form.warn.value), danger = Number(form.danger.value);

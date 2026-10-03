@@ -9,7 +9,7 @@
 <title>我的工作台</title>
 <!-- 独立应用页：不走主站导航/页脚注入（tools/build_pages.mjs 的页面清单里没有它），不进 sitemap、不进导航。数据只经 /api/desk 读写。 -->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/assets/desk/desk.css?v=20261004024301">
+<link rel="stylesheet" href="/assets/desk/desk.css">
 </head>
 <body>
 <form id="login" class="login" novalidate>
@@ -33,10 +33,13 @@
   </header>
   <nav id="tabs" class="tabs" aria-label="视图"></nav>
   <main id="main"></main>
+  <!-- 手机上的底部大按钮：今天 / ＋收集 / 项目 -->
+  <nav id="bottombar" class="bottombar" aria-label="常用">
+    <button type="button" data-goto="today"><span class="bi">☀️</span>今天<span class="badge" hidden></span></button>
+    <button type="button" class="cap" data-capture><span class="bi">＋</span>收集</button>
+    <button type="button" data-goto="projects"><span class="bi">📋</span>项目</button>
+  </nav>
 </div>
-
-<div id="drawer-backdrop" class="drawer-backdrop"></div>
-<aside id="drawer" class="drawer" hidden aria-label="项目详情"><div id="drawer-body" class="drawer-body"></div></aside>
 
 <dialog id="capture" class="dlg" aria-labelledby="capture-title">
   <div class="dlg-in">
@@ -56,6 +59,16 @@
   <form id="wrapup-form" novalidate></form></div>
 </dialog>
 
+<dialog id="deliver" class="dlg" aria-labelledby="deliver-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="deliver-title">标成已交付</h2></header>
+  <form id="deliver-form" novalidate></form></div>
+</dialog>
+
+<dialog id="backfill" class="dlg wide" aria-labelledby="backfill-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="backfill-title">贴回 AI 收工汇报</h2><button type="button" class="icon" data-bf-x aria-label="关闭">✕</button></header>
+  <div id="backfill-body"></div></div>
+</dialog>
+
 <dialog id="win" class="dlg" aria-labelledby="win-title">
   <div class="dlg-in"><header class="dlg-head"><h2 id="win-title">记一条提效</h2><button type="button" class="icon" data-win-close aria-label="关闭">✕</button></header>
   <form id="win-form" novalidate></form></div>
@@ -73,20 +86,17 @@
 
 <div id="toasts" class="toasts" aria-live="polite"></div>
 
-<script src="/assets/desk/core.js?v=20261004024301"></script>
-<script src="/assets/desk/model.js?v=20261004024301"></script>
-<script src="/assets/desk/ai.js?v=20261004024301"></script>
-<script src="/assets/desk/list.js?v=20261004024301"></script>
-<script src="/assets/desk/board.js?v=20261004024301"></script>
-<script src="/assets/desk/timeline.js?v=20261004024301"></script>
-<script src="/assets/desk/waiting.js?v=20261004024301"></script>
-<script src="/assets/desk/drawer.js?v=20261004024301"></script>
-<script src="/assets/desk/today.js?v=20261004024301"></script>
-<script src="/assets/desk/inbox.js?v=20261004024301"></script>
-<script src="/assets/desk/ideas.js?v=20261004024301"></script>
-<script src="/assets/desk/wins.js?v=20261004024301"></script>
-<script src="/assets/desk/links.js?v=20261004024301"></script>
-<script src="/assets/desk/settings.js?v=20261004024301"></script>
-<script src="/assets/desk/app.js?v=20261004024301"></script>
+<script src="/assets/desk/core.js"></script>
+<script src="/assets/desk/ai.js"></script>
+<script src="/assets/desk/waiting.js"></script>
+<script src="/assets/desk/today.js"></script>
+<script src="/assets/desk/projects.js"></script>
+<script src="/assets/desk/inbox.js"></script>
+<script src="/assets/desk/ideas.js"></script>
+<script src="/assets/desk/wins.js"></script>
+<script src="/assets/desk/records.js"></script>
+<script src="/assets/desk/links.js"></script>
+<script src="/assets/desk/settings.js"></script>
+<script src="/assets/desk/app.js"></script>
 </body>
 </html>

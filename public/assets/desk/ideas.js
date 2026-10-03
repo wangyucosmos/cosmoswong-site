@@ -73,17 +73,17 @@
 
   D.ideasEvents = (main, getView) => {
     main.addEventListener('change', e => {
-      if (getView()?.kind !== 'ideas' || !e.target.dataset.if) return;
+      if (!D.isRec('ideas') || !e.target.dataset.if) return;
       const f = D.pref.get('ideas.filter', {}); f[e.target.dataset.if] = e.target.value; D.pref.set('ideas.filter', f); D.render();
     });
     main.addEventListener('submit', async e => {
-      if (getView()?.kind !== 'ideas' || !e.target.matches('[data-idea-add]')) return;
+      if (!D.isRec('ideas') || !e.target.matches('[data-idea-add]')) return;
       e.preventDefault();
       const title = e.target.title.value.trim(); if (!title) return;
       try { await D.create('ideas', { week: D.isoWeek(D.today()), title, status: 'draft' }); D.toast('已记下本周创意，写好后把状态改成「已提交」'); } catch (err) { D.fail(err); }
     });
     main.addEventListener('click', async e => {
-      if (getView()?.kind !== 'ideas') return;
+      if (!D.isRec('ideas')) return;
       if (e.target.closest('[data-idea-new]')) {
         const td = e.target.closest('td');
         td.innerHTML = `<form class="inline-add" data-idea-add><input name="title" maxlength="120" placeholder="创意名，回车保存（记在本周）" aria-label="创意名"></form>`;

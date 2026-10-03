@@ -1,100 +1,91 @@
-/* 我的工作台 · 今天（默认首页，一屏看完）：逾期 → 今天要做 → 7 天内上线 / 截止 → 在等谁 → 本周玩法创意 → 收集箱 → 今天收工。
-   「今天」按 Asia/Shanghai 算；「已交付」「暂缓」的项目不在这里出现。 */
+/* 我的工作台 · 今天（默认首页）。v2 收成三块：
+   现在要做（逾期 + 今天，同一件事只出现一次；原定上线日过了会问「上线了吗」）→ 在等谁（按最晚哪天要排）→ 接下来两周（按天列出上线、交付、节点、最晚日期）。
+   「今天」按 Asia/Shanghai 算；已交付 / 暂缓 / 观望的项目不进这一页。 */
 (() => {
   const D = window.DESK;
   const { esc } = D;
-
-  // 项目还「活着」：没归档、不是已交付 / 暂缓（不属于任何项目的待办也算）
-  D.projOk = pid => { if (!pid) return true; const p = D.project(pid); return !!p && !p.archived_at && !D.LIVE_OUT.includes(p.status); };
   D.nextWorkday = s => { let d = D.addDays(s, 1); while ([0, 6].includes(D.dow(d))) d = D.addDays(d, 1); return d; };
 
-  function itemRow({ kind, row }, { showProject = true } = {}) {
+  function itemRow({ kind, row }, today) {
     const p = row.project_id && D.project(row.project_id), r = D.rel(row.due_at);
-    const proj = showProject && p ? `<button type="button" class="link-btn proj" data-open-project="${p.id}" data-tab="${kind === 'task' ? 'tasks' : 'delivs'}">${esc(p.title)}</button>` : '';
+    const proj = p ? `<button type="button" class="link-btn proj" data-open-project="${p.id}" data-tab="${kind === 'task' ? 'tasks' : 'delivs'}">${esc(p.title)}</button>` : '';
+    const due = row.due_at < today ? `<span class="due overdue">${esc(r.text)}</span>` : '';
     if (kind === 'task') {
-      return `<li class="trow" data-today-task="${row.id}">
+      return `<li class="trow${row.due_at < today ? ' late' : ''}" data-today-task="${row.id}">
         <label class="check"><input type="checkbox" data-tdone aria-label="完成"> <span>${row.milestone ? '🚩 ' : ''}${esc(row.title)}</span></label>
-        ${row.offset_days != null ? `<small class="muted">${esc(D.offsetLabel(row.offset_days))}</small>` : ''}${proj}
-        <span class="due ${r.cls}">${esc(r.text)}</span></li>`;
+        ${row.offset_days != null ? `<small class="muted">${esc(D.offsetLabel(row.offset_days))}</small>` : ''}${proj}${due}</li>`;
     }
-    const cp = D.checkProgress(row);
-    return `<li class="trow deliv" data-today-deliv="${row.id}">
-      <label class="check"><input type="checkbox" data-ddone aria-label="标成已交付"> <span>📦 ${esc(D.delivLabel(row))} <small class="muted">交付物 · ${esc(D.delivStatusOf(row.status).label)}${cp.total ? ` · 检查 ${cp.done}/${cp.total}` : ''}</small></span></label>
-      ${proj}<span class="due ${r.cls}">${esc(r.text)}</span></li>`;
+    return `<li class="trow deliv${row.due_at < today ? ' late' : ''}" data-today-deliv="${row.id}">
+      <label class="check"><input type="checkbox" data-ddone aria-label="标成已交付"> <span>📦 ${esc(D.delivLabel(row))} <small class="muted">要交 · ${esc(D.delivStatusOf(row.status).label)}</small></span></label>
+      ${row.offset_days != null ? `<small class="muted">${esc(D.offsetLabel(row.offset_days))}</small>` : ''}${proj}${due}</li>`;
   }
 
-  function countdown(p, today) {
-    const lines = [];
-    const notLive = !['live', 'done', 'paused'].includes(p.status);
-    const within = d => d && d >= today && D.diffDays(d, today) <= 7;
-    if (within(p.launch_at) && notLive) { const n = D.diffDays(p.launch_at, today); lines.push({ n, text: n === 0 ? '今天上线' : `还有 ${n} 天上线`, cls: 'launch' }); }
-    if (within(p.due_at)) { const n = D.diffDays(p.due_at, today); lines.push({ n, text: n === 0 ? '今天截止' : `还有 ${n} 天截止`, cls: 'due' }); }
-    if (!lines.length) return null;
-    lines.sort((a, b) => a.n - b.n);   // 更近的那个日期写在前面
-    const nn = D.nextNode(p.id);
-    let node = '';
-    if (nn) {
-      const d = D.diffDays(nn.due_at, today);
-      const when = d < 0 ? `已逾期 ${-d} 天` : d === 0 ? '今天' : d <= 6 ? D.wk(nn.due_at) : `${D.fmtDate(nn.due_at)} ${D.wk(nn.due_at)}`;
-      node = `<small class="nn">下一个节点：${esc(D.offsetLabel(nn.offset_days))} ${esc(nn.title)}（${esc(when)}）</small>`;
+  // 接下来两周：按天列出（只列有事的那几天）
+  function agenda(today) {
+    const days = [];
+    for (let i = 1; i <= 14; i++) {
+      const d = D.addDays(today, i), rows = [];
+      for (const p of D.state.projects) if (p.launch_at === d && D.projOk(p.id)) rows.push(`<li class="ag launch"><span class="ic">◆</span><b>${p.launch_tentative ? '暂定上线' : '上线'}</b>：<button type="button" class="link-btn" data-open-project="${p.id}">${esc(p.title)}</button></li>`);
+      for (const x of D.state.deliverables) if (x.due_at === d && x.status !== 'done' && D.projOk(x.project_id)) rows.push(`<li class="ag"><span class="ic">📦</span>交 ${esc(D.delivLabel(x))} <button type="button" class="link-btn proj" data-open-project="${x.project_id}" data-tab="delivs">${esc(D.projectName(x.project_id))}</button></li>`);
+      for (const x of D.state.pendings) if (x.need_by === d && x.status === 'waiting' && D.projOk(x.project_id)) rows.push(`<li class="ag wait"><span class="ic">⏳</span>最晚要到：${esc(x.question)}（问${esc(x.ask_whom || '—')}）${x.project_id ? ` <button type="button" class="link-btn proj" data-open-project="${x.project_id}" data-tab="pendings">${esc(D.projectName(x.project_id))}</button>` : ''}</li>`);
+      for (const x of D.state.tasks) if (x.due_at === d && !x.done && !x.deliverable_id && D.projOk(x.project_id)) rows.push(`<li class="ag"><span class="ic">${x.milestone ? '🚩' : '☐'}</span>${esc(x.title)}${x.project_id ? ` <button type="button" class="link-btn proj" data-open-project="${x.project_id}" data-tab="tasks">${esc(D.projectName(x.project_id))}</button>` : ''}</li>`);
+      if (rows.length) days.push(`<div class="agday${[0, 6].includes(D.dow(d)) ? ' wkend' : ''}"><h4>${i === 1 ? '明天 ' : ''}${esc(D.fmtDate(d))} <small>${D.wk(d)}</small></h4><ul>${rows.join('')}</ul></div>`);
     }
-    const name = p.province && !p.title.startsWith(p.province) ? `${p.province} ${p.title}` : p.title;
-    return { n: Math.min(...lines.map(l => l.n)), html: `<button type="button" class="cd-card${lines[0].n <= 1 ? ' hot' : ''}" data-open-project="${p.id}">
-      <b>${esc(name)}</b>${lines.map(l => `<span class="cd ${l.cls}">${esc(l.text)}</span>`).join('')}${node}</button>` };
+    return days.join('') || '<p class="muted">接下来两周没有上线、交付或要催的东西。</p>';
   }
 
   D.renderToday = (view, el) => {
     const today = D.today(), c = D.cfg();
-    const tasks = D.state.tasks.filter(t => !t.done && t.due_at && D.projOk(t.project_id));
-    const delivs = D.state.deliverables.filter(d => d.status !== 'done' && d.due_at && D.projOk(d.project_id));
-    const items = [...tasks.map(row => ({ kind: 'task', row })), ...delivs.map(row => ({ kind: 'deliv', row }))];
-    const overdue = items.filter(x => x.row.due_at < today).sort((a, b) => a.row.due_at.localeCompare(b.row.due_at) || a.row.id - b.row.id);
-    const dueToday = items.filter(x => x.row.due_at === today);
-    const groups = new Map();
-    for (const x of dueToday) { const k = x.row.project_id || 0; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(x); }
-    const soon = D.state.projects.filter(p => !p.archived_at && !D.LIVE_OUT.includes(p.status)).map(p => countdown(p, today)).filter(Boolean).sort((a, b) => a.n - b.n);
-    const waits = D.sortWaiting(D.state.pendings.filter(x => x.status === 'waiting' && D.projOk(x.project_id)));
+    const tasks = D.state.tasks.filter(t => !t.done && !t.deliverable_id && t.due_at && t.due_at <= today && D.projOk(t.project_id));
+    const delivs = D.state.deliverables.filter(d => d.status !== 'done' && d.due_at && d.due_at <= today && D.projOk(d.project_id));
+    const items = [...tasks.map(row => ({ kind: 'task', row })), ...delivs.map(row => ({ kind: 'deliv', row }))]
+      .sort((a, b) => a.row.due_at.localeCompare(b.row.due_at) || a.row.id - b.row.id);
+    const overdueN = items.filter(x => x.row.due_at < today).length;
+    const askLaunch = D.state.projects.filter(p => !p.archived_at && D.normStatus(p.status) === 'active' && p.launch_at && p.launch_at < today);
+    const waitsAll = D.state.pendings.filter(x => x.status === 'waiting' && D.projOk(x.project_id));
+    const later = waitsAll.filter(x => D.pendState(x).later).sort((a, b) => (a.remind_from || '').localeCompare(b.remind_from || ''));
+    const waits = D.sortWaiting(waitsAll.filter(x => !D.pendState(x).later));
     const week = D.isoWeek(today), dow = D.dow(today);
     const ideaDone = D.state.ideas.some(i => i.week === week && i.status !== 'draft');
-    const ideaLate = dow === 0 || dow >= 4;   // 周四起变橙
     const inboxN = D.state.inbox.filter(i => !i.processed_at).length;
 
     const welcome = c.welcome_done ? '' : `<section class="card-box welcome">
       <h3>👋 每天这样用</h3>
       <ol>
-        <li>早上先看这一页：<b>红色</b>是逾期的，先处理；「今天要做」做完直接勾掉。</li>
-        <li>「在等谁」按等的天数排好了，等久了点 <b>催一下</b>，会拼好一句客气的催办话，复制去微信发就行。</li>
-        <li>业务方发来新需求，按 <kbd>c</kbd> 粘进「收集箱」，有空再转成项目、待办或待确认。</li>
-        <li>给 AI 开工前，打开项目 →「AI 交接」生成开工提示词；AI 干完把汇报贴回来，顺手记一条提效。</li>
-        <li>下班前点最下面的 <b>今天收工</b>，一分钟记下明天第一件事。</li>
+        <li>早上先看「现在要做」：红色是逾期的，做完直接勾掉；要交的东西勾掉时，顺手记一下这次用了多久。</li>
+        <li>「在等谁」按<b>最晚哪天要</b>排好了，快到期的标橙、过期的标红。点「催一下」会拼好一句客气话，复制去微信发。</li>
+        <li>业务方发来新需求，按 <kbd>c</kbd> 粘进收集箱；让 AI 拆完，把它输出的【新建项目】那段贴回来，项目、交付物、待确认一次建好。</li>
+        <li>给 AI 派活：打开项目 → 点工具名，开工提示词就复制好了。AI 干完把汇报整段贴回「回填」，下一步、待确认、交付、用时自动更新。</li>
       </ol>
       <div class="row"><button type="button" class="btn sm" data-welcome-done>知道了，不再显示</button><span class="muted small">快捷键：<kbd>/</kbd> 搜索 <kbd>c</kbd> 收集 <kbd>n</kbd> 新项目 <kbd>t</kbd> 回到今天</span></div>
     </section>`;
 
-    const left = `
-      ${overdue.length ? `<section class="card-box sec-overdue"><h3>逾期 <span class="badge red">${overdue.length}</span></h3><ul class="tlist">${overdue.map(x => itemRow(x)).join('')}</ul></section>` : ''}
-      <section class="card-box"><h3>今天要做 <span class="gcount">${dueToday.length}</span> <small class="muted">${esc(D.fmtDateW(today))}</small></h3>
-        ${dueToday.length ? [...groups.entries()].map(([pid, list]) => `<div class="tgroup">${pid ? `<button type="button" class="link-btn gname" data-open-project="${pid}">${esc(D.projectName(pid))}</button>` : '<span class="gname muted">不属于任何项目</span>'}
-          <ul class="tlist">${list.map(x => itemRow(x, { showProject: false })).join('')}</ul></div>`).join('')
-          : `<p class="muted">${overdue.length ? '今天到期的都清了，先把上面逾期的处理掉。' : '🎉 今天没有到期的事。'}</p>`}
-        <form class="add-row today-add" data-today-add>
-          <input name="title" maxlength="200" placeholder="＋ 加一条今天的待办" aria-label="今天的待办">
-          <select name="project" aria-label="项目">${D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' })}</select>
-          <button class="tb">添加</button></form></section>
-      <section class="card-box"><h3>7 天内上线 / 截止</h3>
-        ${soon.length ? `<div class="cd-grid">${soon.map(s => s.html).join('')}</div>` : '<p class="muted">7 天内没有要上线或截止的项目。</p>'}</section>`;
+    const now = `<section class="card-box now${overdueN ? ' has-late' : ''}"><h3>现在要做 <span class="gcount">${items.length}</span>${overdueN ? ` <span class="badge red">逾期 ${overdueN}</span>` : ''}</h3>
+      ${askLaunch.map(p => `<div class="ask-launch" data-launch-ask="${p.id}"><span>⚠ 「<button type="button" class="link-btn" data-open-project="${p.id}">${esc(p.title)}</button>」${p.launch_tentative ? '暂定' : '原定'} ${esc(D.fmtDate(p.launch_at))} 上线，上线了吗？</span>
+        <span class="row-btns"><button type="button" class="btn sm" data-launched>已上线</button><button type="button" class="btn sm ghost" data-reschedule>改期</button></span></div>`).join('')}
+      ${items.length ? `<ul class="tlist">${items.map(x => itemRow(x, today)).join('')}</ul>` : `<p class="muted">${askLaunch.length ? '' : '🎉 今天没有到期的事。'}</p>`}
+      <form class="add-row today-add" data-today-add>
+        <input name="title" maxlength="200" placeholder="＋ 加一条今天的待办" aria-label="今天的待办">
+        <select name="project" aria-label="项目">${D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' })}</select>
+        <button class="tb">添加</button></form></section>`;
 
-    const right = `
-      <section class="card-box"><h3>在等谁 <span class="gcount">${waits.length}</span> <button type="button" class="link-btn small" data-goto="waiting">全部 →</button></h3>
-        ${waits.length ? `<ul class="wlist">${waits.map(x => D.pendingRow(x)).join('')}</ul>` : '<p class="muted">没有在等的事。业务方口头说了、还没定下来的口径，记在项目的「待确认」里，这里就会提醒你催。</p>'}</section>
-      ${ideaDone ? '' : `<section class="card-box idea-nag${ideaLate ? ' late' : ''}"><h3>💡 本周玩法创意还没提交</h3>
-        <p>每周一个，写好后在「玩法创意」里把状态改成「已提交」，这张卡就会消失。${ideaLate ? '<b>已经周' + '日一二三四五六'[dow] + '了。</b>' : ''}</p>
-        <button type="button" class="btn sm" data-goto="ideas">去写</button></section>`}
-      ${inboxN ? `<section class="card-box inbox-nag"><h3>📥 收集箱还有 ${inboxN} 条没处理</h3><button type="button" class="btn sm ghost" data-goto="inbox">去处理</button></section>` : ''}`;
+    const wait = `<section class="card-box"><h3>在等谁 <span class="gcount">${waits.length}</span></h3>
+      ${waits.length ? `<ul class="wlist">${waits.map(x => D.pendingRow(x)).join('')}</ul>` : '<p class="muted">现在没有要催的事。</p>'}
+      ${later.length ? `<details class="later-box"><summary>还没到催的时候（${later.length}）</summary><ul class="wlist">${later.map(x => D.pendingRow(x)).join('')}</ul></details>` : ''}
+    </section>`;
+
+    const side = `
+      ${inboxN ? `<section class="card-box inbox-nag"><h3>📥 收集箱还有 ${inboxN} 条没处理</h3><button type="button" class="btn sm ghost" data-goto="inbox">去处理</button></section>` : ''}
+      ${ideaDone ? '' : `<section class="card-box idea-nag${dow === 0 || dow >= 4 ? ' late' : ''}"><h3>💡 本周玩法创意还没提交</h3>
+        <p>每周一个，写好后在「记录 → 玩法创意」里把状态改成「已提交」，这张卡就会消失。${dow === 0 || dow >= 4 ? '<b>已经周' + '日一二三四五六'[dow] + '了。</b>' : ''}</p>
+        <button type="button" class="btn sm" data-goto="records" data-seg="ideas">去写</button></section>`}`;
 
     el.innerHTML = `<div class="page today">${welcome}
-      <div class="today-cols"><div class="col">${left}</div><div class="col">${right}</div></div>
-      <div class="wrap-bar"><button type="button" class="btn" data-wrapup>🌙 今天收工</button></div></div>`;
+      <p class="today-sum">${esc(D.fmtDateW(today))}　·　${overdueN ? `<b class="due overdue">逾期 ${overdueN}</b>　·　` : ''}今天 ${items.length - overdueN} 件　·　在等 ${waits.length} 件</p>
+      <div class="today-cols"><div class="col">${now}${wait}</div>
+        <div class="col"><section class="card-box"><h3>接下来两周</h3><div class="agenda">${agenda(today)}</div></section>${side}</div></div>
+      ${D.linksRow ? D.linksRow() : ''}
+      <div class="wrap-bar"><button type="button" class="btn" data-wrapup>🌙 今天收工</button><button type="button" class="link-btn mobile-only" data-goto="records">玩法创意 · 提效记录 →</button></div></div>`;
   };
 
   D.todayEvents = (main, getView) => {
@@ -113,6 +104,12 @@
         D.state.settings.welcome_done = true; D.render();
         try { await D.api('PUT', '/settings/welcome_done', { value: true }); } catch (err) { D.fail(err); }
       }
+      const ask = e.target.closest('[data-launch-ask]');
+      if (ask) {
+        const p = D.project(ask.dataset.launchAsk);
+        if (e.target.closest('[data-launched]')) return D.patch('projects', p.id, { status: 'live', launch_tentative: 0 }).then(() => D.toast(`「${p.title}」已标成「已上线收尾」`)).catch(() => {});
+        if (e.target.closest('[data-reschedule]')) return D.datePopover(e.target.closest('[data-reschedule]'), null, v => v && D.setLaunch(p, v), { base: D.today(), clear: false });
+      }
       if (e.target.closest('[data-wrapup]')) D.wrapup.open();
     });
     main.addEventListener('submit', async e => {
@@ -124,78 +121,41 @@
     });
   };
 
-  /* ================= 今天收工 ================= */
+  /* ================= 今天收工：看一眼今天勾掉了什么，记下明天第一件事（提效挪到「标成已交付」时记） ================= */
   const dlg = () => D.$('#wrapup');
-  const NAG_MAX = 3;   // 提效快填：每周最多主动展开 3 次
   function open() {
-    const today = D.today(), week = D.isoWeek(today), c = D.cfg();
-    const doneTasks = D.state.tasks.filter(t => t.done && t.done_at === today);
+    const today = D.today();
+    const doneTasks = D.state.tasks.filter(t => t.done && t.done_at === today && !t.deliverable_id);
     const doneDelivs = D.state.deliverables.filter(d => d.status === 'done' && d.delivered_at === today);
-    const nag = c.wrapup_nag?.week === week ? c.wrapup_nag : { week, count: 0 };
-    const showWin = nag.count < NAG_MAX;
-    if (showWin) {
-      D.state.settings.wrapup_nag = { week, count: nag.count + 1 };
-      D.api('PUT', '/settings/wrapup_nag', { value: D.state.settings.wrapup_nag }).catch(() => {});
-    }
     const tomorrow = D.nextWorkday(today);
-    const projOpts = D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' });
-    const tools = c.ai_tools.filter(x => x !== '我自己');
     D.$('#wrapup-form').innerHTML = `
       <section class="wsec"><h4>今天勾掉了 ${doneTasks.length + doneDelivs.length} 件</h4>
         ${doneTasks.length + doneDelivs.length ? `<ul class="done-list">${doneTasks.map(t => `<li>✓ ${esc(t.title)}${t.project_id ? ` <small class="muted">${esc(D.projectName(t.project_id))}</small>` : ''}</li>`).join('')}${doneDelivs.map(d => `<li>📦 交付了 ${esc(D.delivLabel(d))} <small class="muted">${esc(D.projectName(d.project_id))}</small></li>`).join('')}</ul>` : '<p class="muted">今天还没勾掉任何事。没关系，明天继续。</p>'}</section>
       <section class="wsec"><h4>明天第一件事 <small class="muted">${esc(D.fmtDateW(tomorrow))}</small></h4>
         <input name="first" maxlength="200" placeholder="写成能直接动手的一句话，如：把原型 V2 发群" aria-label="明天第一件事">
-        <div class="row wrap"><select name="first_project" aria-label="属于哪个项目">${projOpts}</select>
+        <div class="row wrap"><select name="first_project" aria-label="属于哪个项目">${D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' })}</select>
           <label class="check"><input type="radio" name="first_mode" value="task" checked> 新建明天的待办</label>
           <label class="check"><input type="radio" name="first_mode" value="next"> 写进项目的「下一步」</label></div></section>
-      <section class="wsec"><h4>有没有新的待确认要记？</h4>
-        <input name="pq" maxlength="500" placeholder="要确认什么（没有就空着）" aria-label="新的待确认">
-        <div class="row wrap"><select name="pq_project" aria-label="项目">${projOpts}</select>
-          <select name="pq_whom" aria-label="问谁">${D.selectOpts(c.ask_whom, c.ask_whom[0])}</select>
-          <label class="check"><input type="checkbox" name="pq_block"> 卡交付</label></div></section>
-      <section class="wsec win-quick" ${showWin ? '' : 'hidden'}><h4>提效记录快填 <small class="muted">今天哪件事用了 AI？可以跳过（本周第 ${Math.min(nag.count + 1, NAG_MAX)} 次提醒，每周最多 ${NAG_MAX} 次）</small></h4>
-        <div class="row wrap"><input name="win_task" maxlength="200" placeholder="做了什么，如：客服文档 V1" aria-label="做了什么">
-          <select name="win_type" aria-label="任务类型">${D.selectOpts(c.win_task_types, c.win_task_types[0])}</select>
-          <select name="win_project" aria-label="项目">${projOpts}</select></div>
-        <div class="checks">${tools.map(t => `<label><input type="checkbox" name="win_tools" value="${esc(t)}"> ${esc(t)}</label>`).join('')}</div>
-        <div class="row wrap"><label class="lbl inline">以前大概 <input type="number" name="win_before" min="0" max="100000" class="w80" aria-label="以前大概多少分钟"> 分钟</label>
-          <label class="lbl inline">这次 <input type="number" name="win_after" min="0" max="100000" class="w80" aria-label="这次多少分钟"> 分钟</label>
-          <label class="check"><input type="checkbox" name="win_ok"> 可以上作品集（需脱敏）</label></div></section>
-      ${showWin ? '' : '<p class="muted small"><button type="button" class="link-btn" data-show-win>＋ 也记一条提效</button>（本周已经提醒过 3 次，不再自动展开）</p>'}
       <div class="row end"><button type="button" class="btn sm ghost" data-wrap-close>取消</button><button class="btn sm">收工</button></div>`;
     dlg().showModal();
     D.$('#wrapup-form [name=first]').focus();
   }
-
   async function save(e) {
     e.preventDefault();
-    const f = e.target, today = D.today(), jobs = [];
-    const first = f.first.value.trim(), fp = f.first_project.value ? Number(f.first_project.value) : null;
-    if (first) {
-      if (f.first_mode.value === 'next' && fp) jobs.push(() => D.patch('projects', fp, { next_action: first }));
-      else jobs.push(() => D.create('tasks', { title: first, project_id: fp, due_at: D.nextWorkday(today) }));
-    }
-    const pq = f.pq.value.trim();
-    if (pq) jobs.push(() => D.create('pendings', { question: pq, project_id: f.pq_project.value ? Number(f.pq_project.value) : null, ask_whom: f.pq_whom.value, blocking: f.pq_block.checked ? 1 : 0, asked_at: today }));
-    const wt = f.win_task.value.trim(), before = f.win_before.value, after = f.win_after.value;
-    if (!f.querySelector('.win-quick').hidden && wt && (before || after)) {
-      jobs.push(() => D.create('wins', { happened_at: today, task: wt, task_type: f.win_type.value, project_id: f.win_project.value ? Number(f.win_project.value) : null,
-        tools: [...f.querySelectorAll('[name=win_tools]:checked')].map(x => x.value), before_minutes: before === '' ? null : Number(before), after_minutes: after === '' ? null : Number(after), portfolio_ok: f.win_ok.checked ? 1 : 0 }));
-    } else if (!f.querySelector('.win-quick').hidden && wt) return D.toast('提效记录要填「以前大概多久」和「这次多久」，或者把「做了什么」清空跳过', { error: true });
+    const f = e.target, first = f.first.value.trim(), fp = f.first_project.value ? Number(f.first_project.value) : null;
     const btn = f.querySelector('button:not([type=button])'); btn.disabled = true;
     try {
-      for (const j of jobs) await j();
-      dlg().close(); D.toast(jobs.length ? '收工啦，明天见 👋' : '收工啦，明天见');
-    } catch (err) { if (err.status !== 409) D.fail(err); }
+      if (first) {
+        if (f.first_mode.value === 'next' && fp) await D.patch('projects', fp, { next_action: first });
+        else await D.create('tasks', { title: first, project_id: fp, due_at: D.nextWorkday(D.today()) });
+      }
+      dlg().close(); D.toast('收工啦，明天见 👋');
+    } catch (err) { D.fail(err); }
     finally { btn.disabled = false; }
   }
-
   D.wrapup = { open };
   document.addEventListener('DOMContentLoaded', () => {
     D.$('#wrapup-form').addEventListener('submit', save);
-    dlg().addEventListener('click', e => {
-      if (e.target.closest('[data-wrap-close]')) dlg().close();
-      if (e.target.closest('[data-show-win]')) { D.$('#wrapup-form .win-quick').hidden = false; e.target.closest('p').remove(); }
-    });
+    dlg().addEventListener('click', e => { if (e.target.closest('[data-wrap-close]')) dlg().close(); });
   });
 })();

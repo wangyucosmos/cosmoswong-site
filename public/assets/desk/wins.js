@@ -1,4 +1,5 @@
 /* 我的工作台 · 提效记录：平时顺手记「以前要多久 / 用 AI 后多久」，攒作品集素材。
+   v2：主要在「标成已交付」时顺手记（每类交付物的「以前大概要多久」只问一次），任务类型就用交付物类型，导出时正好是「客服文档：从 4 小时降到 40 分钟」这种说法。
    数据卡、按月节省时长柱状图（手写 SVG）、按任务类型排名、明细表行内编辑、「导出作品集素材」（只导出可上作品集的）。 */
 (() => {
   const D = window.DESK;
@@ -47,7 +48,7 @@
       .sort((a, b) => b.happened_at.localeCompare(a.happened_at) || b.id - a.id);
     const tm = D.thisMonth(), month = all.filter(w => w.happened_at.slice(0, 7) === tm);
     const months = [...new Set(all.map(w => w.happened_at.slice(0, 7)))].sort().reverse();
-    const types = [...new Set([...D.cfg().win_task_types, ...all.map(w => w.task_type).filter(Boolean)])];
+    const types = D.winTypes();
     const tools = [...new Set(all.flatMap(w => w.tools || []))];
     const pids = [...new Set(all.map(w => w.project_id).filter(Boolean))];
     const rank = D.winByType(shown), rmax = Math.max(...rank.map(r => r.saved), 1);
@@ -110,7 +111,7 @@
     D.$('#win-form').innerHTML = `<div class="fgrid">
       <label class="fld wide"><span class="fl">做了什么</span><input name="task" maxlength="200" required value="${esc(w.task || '')}" placeholder="如：客服文档 V1"></label>
       <label class="fld"><span class="fl">日期</span><input type="date" name="date" value="${esc(w.happened_at)}" required></label>
-      <label class="fld"><span class="fl">任务类型</span><select name="type">${D.selectOpts(c.win_task_types, w.task_type || c.win_task_types[0])}</select></label>
+      <label class="fld"><span class="fl">类型（交付物类型）</span><select name="type">${D.selectOpts(D.winTypes(), w.task_type || '其他')}</select></label>
       <label class="fld wide"><span class="fl">项目</span><select name="project">${D.selectOpts(D.optionsFor('project'), w.project_id ? String(w.project_id) : '', { empty: '（不属于任何项目）' })}</select></label>
       <div class="fld wide"><span class="fl">用了什么（可多选，也可以写别的，如「生成脚本」）</span><div class="checks">${toolOpts.map(t => `<label><input type="checkbox" name="tools" value="${esc(t)}" ${(w.tools || []).includes(t) ? 'checked' : ''}> ${esc(t)}</label>`).join('')}</div>
         <input name="tools_extra" maxlength="120" placeholder="其他工具，逗号分隔" aria-label="其他工具"></div>
@@ -145,11 +146,11 @@
 
   D.winsEvents = (main, getView) => {
     main.addEventListener('change', e => {
-      if (getView()?.kind !== 'wins' || !e.target.dataset.wf) return;
+      if (!D.isRec('wins') || !e.target.dataset.wf) return;
       const f = D.pref.get('wins.filter', {}); f[e.target.dataset.wf] = e.target.value; D.pref.set('wins.filter', f); D.render();
     });
     main.addEventListener('click', e => {
-      if (getView()?.kind !== 'wins') return;
+      if (!D.isRec('wins')) return;
       if (e.target.closest('[data-win-new]')) return edit(null);
       if (e.target.closest('[data-win-export]')) {
         const ok = D.state.wins.filter(w => w.portfolio_ok);
@@ -170,7 +171,7 @@
   function inlineEdit(td, w, key) {
     const save = v => { if (JSON.stringify(v ?? null) !== JSON.stringify(w[key] ?? null)) D.patch('wins', w.id, { [key]: v }).catch(() => {}); };
     if (key === 'happened_at') return D.datePopover(td, w.happened_at, v => v && save(v), { clear: false });
-    if (key === 'task_type') return D.pickOption(td, { options: D.optionsFor('task_type'), value: w.task_type, onPick: save });
+    if (key === 'task_type') return D.pickOption(td, { options: D.winTypes().map(x => ({ value: x, label: x })), value: w.task_type, onPick: save });
     if (key === 'project_id') return D.pickOption(td, { options: D.optionsFor('project'), value: w.project_id ? String(w.project_id) : null, search: true, emptyLabel: '不属于任何项目', onPick: v => save(v ? Number(v) : null) });
     if (key === 'tools') {
       const opts = [...new Set([...D.cfg().ai_tools, ...D.state.wins.flatMap(x => x.tools || [])])].map(x => ({ value: x, label: x }));

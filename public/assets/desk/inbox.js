@@ -1,4 +1,5 @@
-/* 我的工作台 · 收集箱：随手粘贴业务方的微信消息（快捷键 c），有空再转成项目 / 待办 / 待确认，或者生成「需求梳理」提示词让 AI 拆。 */
+/* 我的工作台 · 收集箱：随手粘贴业务方的微信消息（快捷键 c），有空再转成项目 / 待办 / 待确认。
+   v2：「生成需求梳理提示词」→ AI 拆完会输出一段【新建项目】→「AI 拆完贴回来」一次建好项目、交付物、待确认。 */
 (() => {
   const D = window.DESK;
   const { esc } = D;
@@ -82,8 +83,9 @@
   const itemHtml = (i, done) => `<li class="iitem" data-inbox="${i.id}">
     <div class="imeta"><span class="tag">${esc(i.source || '其他')}</span><span class="muted">${esc(when(i.created_at))}</span>${done ? `<span class="muted">${convertedLabel(i.converted_to)}</span>` : ''}</div>
     <div class="itext">${esc(i.content)}</div>
-    <div class="iact">${done ? '' : `<button type="button" class="btn sm ghost" data-conv="project">转成项目</button><button type="button" class="btn sm ghost" data-conv="task">转成待办</button><button type="button" class="btn sm ghost" data-conv="pending">转成待确认</button>`}
-      <button type="button" class="tb" data-intake>🤖 生成需求梳理提示词</button><span class="grow"></span><button type="button" class="link-btn danger" data-idel>删除</button></div></li>`;
+    <div class="iact">${done ? '' : `<button type="button" class="tb" data-intake>① 🤖 复制给 AI 拆</button><button type="button" class="btn sm" data-intake-paste>② 📥 AI 拆完贴回来</button>
+      <span class="sep"></span><button type="button" class="btn sm ghost" data-conv="project">直接转成项目</button><button type="button" class="btn sm ghost" data-conv="task">转成待办</button><button type="button" class="btn sm ghost" data-conv="pending">转成待确认</button>`}
+      <span class="grow"></span><button type="button" class="link-btn danger" data-idel>删除</button></div></li>`;
 
   D.renderInbox = (view, el) => {
     const match = i => !D.q || i.content.toLowerCase().includes(D.q.toLowerCase());
@@ -111,9 +113,57 @@
       if (b.dataset.conv === 'task') return toTask(b, item);
       if (b.dataset.conv === 'pending') return toPending(b, item);
       if (b.matches('[data-intake]')) return intake(b, item);
+      if (b.matches('[data-intake-paste]')) return intakePaste(item);
       if (b.matches('[data-idel]')) return D.remove('inbox', item.id, { label: D.firstLine(item.content, 20), text: '删除这条收集？' });
     });
   };
+
+  /* ---------- AI 拆完贴回来：识别【新建项目】→ 预览 → 一次建好 ---------- */
+  function intakePaste(item) {
+    const dlg = D.$('#backfill'), body = D.$('#backfill-body');
+    D.$('#backfill-title').textContent = '收集箱：AI 拆完贴回来';
+    const step1 = (text = '') => {
+      body.onchange = null;
+      body.innerHTML = `<p class="muted small">把 AI 拆完的回答整段贴进来。用「① 复制给 AI 拆」生成的提示词，AI 会在最后输出一段【新建项目】；识别后先给你看，确认了才建。</p>
+        <textarea name="text" rows="12" maxlength="50000" placeholder="整段粘贴 AI 的回答" aria-label="AI 的回答">${esc(text)}</textarea>
+        <div class="row end"><button type="button" class="btn sm ghost" data-bf-close>取消</button><button type="button" class="btn sm" data-it-parse>识别</button></div>`;
+      body.querySelector('textarea').focus();
+    };
+    const step2 = text => {
+      const r = D.parseIntake(text);
+      if (!r) { D.toast('没找到【新建项目】这一段。可以让 AI 按提示词最后的格式再输出一次', { error: true, timeout: 6000 }); return; }
+      const p = r.project;
+      body.innerHTML = `<p>识别到下面这些，确认后一次建好（不要的取消勾选）：</p>
+        <div class="fgrid">
+          <label class="fld wide"><span class="fl">项目名</span><input name="title" value="${esc(p.title)}" maxlength="120"></label>
+          <label class="fld"><span class="fl">省份</span><input name="province" value="${esc(p.province || '')}" maxlength="30" placeholder="全国"></label>
+          <div class="fld"><span class="fl">上线日</span><div class="row tight"><input type="date" name="launch_at" value="${esc(p.launch_at || '')}"><label class="check"><input type="checkbox" name="tent" ${p.launch_tentative ? 'checked' : ''}> 暂定</label></div></div>
+          <label class="fld wide"><span class="fl">一句话需求</span><textarea name="summary" rows="2" maxlength="2000">${esc(p.summary || '')}</textarea></label></div>
+        <h4>交付物（${r.deliverables.length}）</h4><ul class="bf-list">${r.deliverables.map((d, i) => `<li><label class="check"><input type="checkbox" data-it-d="${i}" checked> 📦 ${esc(d.type)}${d.name ? '：' + esc(d.name) : ''}</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
+        <h4>待确认（${r.pendings.length}）</h4><ul class="bf-list">${r.pendings.map((x, i) => `<li><label class="check"><input type="checkbox" data-it-p="${i}" checked> ⏳ ${esc(x.question)}（问${esc(x.ask_whom || '—')}${x.need_by ? '，最晚 ' + esc(D.fmtDate(x.need_by)) : ''}）</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
+        <div class="row end"><button type="button" class="btn sm ghost" data-it-back>返回修改</button><button type="button" class="btn sm" data-it-go>建项目</button></div>`;
+      body.querySelector('[data-it-back]').onclick = () => step1(text);
+      body.querySelector('[data-it-go]').onclick = async e => {
+        const v = k => body.querySelector(`[name=${k}]`).value.trim() || null;
+        const project = { ...p, title: v('title') || p.title, province: v('province'), launch_at: v('launch_at'), launch_tentative: body.querySelector('[name=tent]').checked ? 1 : 0, summary: v('summary') };
+        const deliverables = r.deliverables.filter((d, i) => body.querySelector(`[data-it-d="${i}"]`).checked);
+        const pendings = r.pendings.filter((x, i) => body.querySelector(`[data-it-p="${i}"]`).checked);
+        e.target.disabled = true;
+        try {
+          const res = await D.api('POST', `/inbox/${item.id}/intake`, { project, deliverables, pendings });
+          D.put('inbox', res.item); D.applySubtree(res); dlg.close();
+          D.toast(`已建好「${res.project.title}」：${res.deliverables.length} 件交付物、${res.pendings.length} 条待确认`);
+          D.app.openProject(res.project.id);
+        } catch (err) { D.fail(err); e.target.disabled = false; }
+      };
+    };
+    body.onclick = e => {
+      if (e.target.closest('[data-bf-close]')) dlg.close();
+      if (e.target.closest('[data-it-parse]')) { const text = body.querySelector('[name=text]').value.trim(); if (!text) return D.toast('先把 AI 的回答贴进来', { error: true }); step2(text); }
+    };
+    step1();
+    dlg.showModal();
+  }
 
   D.capture = { open: openCapture };
   document.addEventListener('DOMContentLoaded', () => {

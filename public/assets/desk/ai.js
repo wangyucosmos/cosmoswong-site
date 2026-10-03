@@ -114,31 +114,85 @@
 
   /* ---------- 项目的变量 ---------- */
   const lines = arr => arr.length ? arr.map(x => '- ' + x).join('\n') : '';
+  // 已拍板的口径：你自己的决定 + 业务方的答复，按日期排（生成提示词时放进 {{pendings_answered}}，几个 AI 就不会各按各的记录走）
+  D.settledOf = pid => [
+    ...D.decisionsOf(pid).map(x => ({ date: x.decided_at, text: x.content, who: x.source || '我', kind: 'decision', ref: x })),
+    ...D.pendingsOf(pid).filter(x => x.status === 'answered').map(x => ({ date: x.answered_at || '', text: `${x.question} → ${x.answer || ''}`, who: x.ask_whom || '对方', kind: 'answer', ref: x }))
+  ].sort((a, b) => (b.date || '').localeCompare(a.date || '') || b.ref.id - a.ref.id);
+  D.baseText = d => d.base ? `底稿：${d.base}${d.base_locked ? '（我手改的版本，AI 不得改动）' : ''}` : '';
   D.projectVars = async (p, { tool = '', todo = '' } = {}) => {
     const acts = await D.loadActs(p.id);
     const delivs = D.delivsOf(p.id), pend = D.pendingsOf(p.id);
     return {
-      project: p.title, province: p.province || '', kind: p.kind || '', month: p.month || '',
-      launch_at: p.launch_at ? D.fmtDateW(p.launch_at) : '', due_at: p.due_at ? D.fmtDateW(p.due_at) : '',
+      project: p.title, province: p.province || '全国', kind: p.kind || '', month: p.month || '',
+      launch_at: p.launch_at ? `${p.launch_tentative ? '暂定 ' : ''}${D.fmtDateW(p.launch_at)}` : '', due_at: p.due_at ? D.fmtDateW(p.due_at) : '',
       status: D.statusOf(p.status).label, priority: D.priorityOf(p.priority)?.label || '', requester: p.requester || '',
       summary: p.summary || '', next_action: p.next_action || '', todo, tool, today: D.fmtDateW(D.today()), notes: p.notes || '',
-      deliverables: lines(delivs.map(d => `${D.delivLabel(d)}：${D.delivStatusOf(d.status).label}${d.due_at ? `，截止 ${D.fmtDate(d.due_at)}` : ''}${d.file_hint ? `（${d.file_hint}）` : ''}`)),
-      pendings_open: lines(pend.filter(x => x.status === 'waiting').map(x => `${x.question}（问${x.ask_whom || '—'}${x.ask_name ? ' ' + x.ask_name : ''}，等了 ${D.waitDays(x)} 天${x.blocking ? '，卡交付' : ''}）`)),
-      pendings_answered: lines(pend.filter(x => x.status === 'answered').map(x => `${x.question} → ${x.answer || ''}${x.answered_at ? `（${D.fmtDate(x.answered_at)} 确认）` : ''}`)),
+      deliverables: lines(delivs.map(d => [`${D.delivLabel(d)}：${D.delivStatusOf(d.status).label}${d.due_at ? `，截止 ${D.fmtDate(d.due_at)}` : ''}`, D.baseText(d), d.file_hint ? `位置：${d.file_hint}` : ''].filter(Boolean).join('；'))),
+      pendings_open: lines(D.sortWaiting(pend.filter(x => x.status === 'waiting')).map(x => `${x.question}（问${x.ask_whom || '—'}${x.ask_name ? ' ' + x.ask_name : ''}${x.need_by ? `，最晚 ${D.fmtDate(x.need_by)} 要` : ''}${x.blocking ? '，卡交付' : ''}）`)),
+      pendings_answered: lines(D.settledOf(p.id).map(x => `${x.date ? D.fmtDate(x.date) + ' ' : ''}${x.kind === 'decision' ? `${x.who}定：` : `${x.who}答复：`}${x.text}`)),
       links: lines((p.links || []).map(l => `${l.label || '链接'}：${l.url}`)),
       local_paths: lines(p.local_paths || []),
       recent_activities: lines(acts.slice(0, 5).map(a => `${D.fmtDate(a.happened_at)} ${D.actOf(a.type).label}${a.tool ? `（${a.tool}）` : ''}：${a.summary || D.firstLine(a.content, 60)}`))
     };
   };
 
+  /* ---------- 自动加在提示词后面的三段：回填格式 / 比稿规则 / 建项目格式（模板里已经写了就不重复加） ---------- */
+  D.BACKFILL_START = '【回填工作台】'; D.BACKFILL_END = '【回填结束】';
+  D.INTAKE_START = '【新建项目】'; D.INTAKE_END = '【新建结束】';
+  D.backfillFooter = project => `
+
+—— 收工时请在汇报最后原样附上下面这一段（没有的项写「无」），我会把它贴回工作台：
+${D.BACKFILL_START}
+项目：${project}
+下一步：一句能直接动手的话
+产出：交付物名称｜版本｜文件位置｜状态（制作中 / 待审 / 已交付），每件一行
+待确认：问谁｜要确认什么｜最晚哪天要，每条一行
+已确认：这次确认下来的口径，每条一行
+用时：这次实际约多少分钟｜不用 AI 估计要多少分钟
+${D.BACKFILL_END}`;
+  D.SUFFIX = { 'Claude Code': 'claude', Codex: 'codex', 'DeepSeek Harness': 'dsh', ChatGPT: 'chatgpt', Cowork: 'cowork' };
+  D.suffixOf = tool => D.SUFFIX[tool] || String(tool || 'ai').toLowerCase().replace(/[^a-z0-9]+/g, '') || 'ai';
+  D.compareFooter = tool => `
+
+—— 这是比稿：我会让几个 AI 各做一版再挑。请把你的版本单独存一份，文件名带上「-${D.suffixOf(tool)}」后缀；在我选定之前，不要改共享的知识库和进度记录。做完告诉我文件位置和大概用了多久。`;
+  D.intakeFooter = `
+
+最后请按下面格式原样输出一段（没提到的写「没说」），我会贴回工作台自动建项目：
+${D.INTAKE_START}
+项目名：
+省份：全国就写「全国」
+上线日：YYYY-MM-DD；只是暂定就在后面写「暂定」；没说就写「没说」
+一句话需求：
+交付物：交付物类型｜名称，每件一行
+待确认：问谁｜要确认什么｜最晚哪天要，每条一行
+${D.INTAKE_END}`;
+  const withFooter = (text, footer, marker) => text.includes(marker) ? text : text + footer;
+
+  // 开工提示词：按工具挑模板 + 项目变量 + 回填格式（比稿时换成比稿规则）
+  D.kickoffPrompt = async (p, tool, todo, { compare = false, tplId } = {}) => {
+    const tpl = (tplId && D.promptById(tplId)) || D.templatesFor('开工', tool)[0];
+    const text = D.fillTemplate(tpl.body, await D.projectVars(p, { tool, todo }));
+    return { tpl, text: compare ? text + D.compareFooter(tool) : withFooter(text, D.backfillFooter(p.title), D.BACKFILL_START) };
+  };
+  D.otherPrompt = async (p, tpl) => {
+    const text = D.fillTemplate(tpl.body, await D.projectVars(p, { tool: tpl.tool || '', todo: p.next_action || '' }));
+    return tpl.scene === '收工' ? withFooter(text, D.backfillFooter(p.title), D.BACKFILL_START) : text;
+  };
+  // 比稿选定后，发给被选中的那个 AI
+  D.chosenPrompt = (p, tool, scope) => `你做的「${scope || p.title}」这一版被我选中了，其他 AI 的版本落选。请：
+1. 以你的版本为准继续：去掉文件名里的「-${D.suffixOf(tool)}」比稿后缀，或者另存一份定稿；
+2. 按平时的收工流程更新进度记录、沉淀这次的经验；
+3. 告诉我做完了什么、放在哪。` + D.backfillFooter(p.title);
+
   /* ---------- 「复制成 进度.md 条目」：按看板「更新约定」的格式，进行中 ≤10 行，已交付 ≤5 行 ---------- */
-  D.PROGRESS_MARK = { need: '进行中', plan: '进行中', proto: '进行中', review: '等待用户确认', docs: '进行中', test: '进行中', live: '进行中', done: '已交付', paused: '暂缓' };
+  D.PROGRESS_MARK = { active: '进行中', live: '进行中', done: '已交付', paused: '暂缓', watch: '暂缓' };
   D.progressEntry = p => {
-    const delivs = D.delivsOf(p.id), pend = D.waitingOf(p.id);
+    const delivs = D.delivsOf(p.id), pend = D.sortWaiting(D.waitingOf(p.id));
     const by = (p.last_ai || []).join('、') || '我自己';
-    const date = D.today();
+    const date = D.today(), st = D.normStatus(p.status);
     const head = `### ${p.title}${p.province && !p.title.includes(p.province) ? `（${p.province}）` : ''}`;
-    if (p.status === 'done' || p.archived_at) {
+    if (st === 'done' || p.archived_at) {
       const done = delivs.filter(d => d.status === 'done');
       return [head, '',
         `- **状态：** ${p.archived_at ? '已归档' : '已交付'}（${date}）。${(p.summary || '').replace(/\s+/g, ' ').slice(0, 80)}`,
@@ -146,43 +200,142 @@
         `- **最近经手：** ${by} ｜ ${date}`].join('\n');
     }
     const open = delivs.filter(d => d.status !== 'done'), last = delivs.filter(d => d.status === 'done').pop();
-    const ver = open.length ? open.slice(0, 4).map(d => `${D.delivLabel(d)}（${D.delivStatusOf(d.status).label}）`).join('；') + (open.length > 4 ? ` 等 ${open.length} 件` : '')
+    const ver = open.length ? open.slice(0, 4).map(d => `${D.delivLabel(d)}（${D.delivStatusOf(d.status).label}${d.base ? `，底稿：${d.base}` : ''}）`).join('；') + (open.length > 4 ? ` 等 ${open.length} 件` : '')
       : last ? `${D.delivLabel(last)}（已交付）` : '（还没有交付物）';
-    const mark = D.PROGRESS_MARK[p.status] || '进行中';
+    const note = { live: '已上线收尾', watch: '观望，不一定由我做' }[st];
     return [head, '',
       `- **当前版本：** ${ver}`,
-      `- **状态：** ${mark}（${D.statusOf(p.status).label}${p.launch_at ? `，上线日 ${p.launch_at}` : ''}）`,
+      `- **状态：** ${D.PROGRESS_MARK[st] || '进行中'}（${note ? note + '，' : ''}${p.launch_at ? `上线日 ${p.launch_at}${p.launch_tentative ? '（暂定）' : ''}` : '上线日未定'}）`,
       `- **下一步：** ${p.next_action || '（待补：写成可执行的动作）'}`,
-      `- **待确认：** ${pend.length ? pend.slice(0, 3).map(x => `${x.question}（${x.ask_whom || '—'}${x.blocking ? '，卡交付' : ''}）`).join('；') + (pend.length > 3 ? ` 等 ${pend.length} 项` : '') : '无'}`,
+      `- **待确认：** ${pend.length ? pend.slice(0, 3).map(x => `${x.question}（${x.ask_whom || '—'}${x.need_by ? `，最晚 ${x.need_by.slice(5)}` : ''}${x.blocking ? '，卡交付' : ''}）`).join('；') + (pend.length > 3 ? ` 等 ${pend.length} 项` : '') : '无'}`,
       `- **最近经手：** ${by} ｜ ${date}`].join('\n');
   };
 
-  /* ---------- 催办话术：按问谁、问什么、等了多久拼一句客气的大白话 ---------- */
+  /* ---------- 催办话术：按问谁、问什么、最晚哪天要拼一句客气的大白话 ---------- */
   const HONOR = /(老师|总|经理|主任|领导|姐|哥|同学|老板)$/;
   D.nudgeText = x => {
     const p = x.project_id && D.project(x.project_id);
     const name = (x.ask_name || '').trim();
     const who = name ? (HONOR.test(name) ? name : name + '老师') : x.ask_whom === '领导' ? '领导' : '您好';
     const q = String(x.question || '').trim().replace(/[？?。.!！\s]+$/, '');
-    const give = /(表|单|名单|文件|素材|图|链接|编号|方案|原文|数据|截图|地址|文案|账号)$/.test(q) || /^(给|提供|发)/.test(q);
+    const give = /(表|单|名单|文件|素材|图|链接|编号|方案|原文|数据|截图|地址|文案|账号|清单)$/.test(q) || /^(给|提供|发)/.test(q);
     const topic = p ? `${p.title.replace(/[（(].*?[)）]/g, '').trim()}的` : '';
     const ask = give ? `${topic}${q.replace(/^(给|提供|发)(一下)?/, '')}方便今天给一下吗？` : `${topic}${q}，方便今天确认一下吗？`;
-    const days = D.waitDays(x);
-    const pre = (x.nudge_count || 0) >= 1 ? '不好意思再跟您确认一下，' : days >= D.cfg().nudge_days.danger ? '这边有点赶了，' : '';
+    const st = D.pendState(x);
+    const pre = (x.nudge_count || 0) >= 1 ? '不好意思再跟您确认一下，' : st.level === 'danger' ? '这边有点赶了，' : '';
     const d = p && D.delivsOf(p.id).filter(v => v.status !== 'done' && v.due_at).sort((a, b) => a.due_at.localeCompare(b.due_at))[0];
-    const why = x.blocking ? (d ? `${d.name || d.type}要用，` : '后面的交付在等这个，') : '';
+    const when = x.need_by ? `${D.fmtDate(x.need_by)}前` : '';
+    const why = x.blocking ? (d ? `${d.name || d.type}${when ? when + '' : ''}要用，` : `后面的交付${when ? '，' + when : ''}在等这个，`) : when ? `最晚${when}要，` : '';
     return `${who}，${pre}${ask}${why}谢谢～`;
   };
 
   /* ---------- 收集箱 → 需求梳理；玩法创意 → 写提案 ---------- */
   D.intakePrompt = (item, tplId) => {
     const t = D.promptById(tplId) || D.templatesFor('需求梳理')[0];
-    return D.fillTemplate(t.body, { content: item.content, source: item.source || '', today: D.fmtDateW(D.today()) });
+    return withFooter(D.fillTemplate(t.body, { content: item.content, source: item.source || '', today: D.fmtDateW(D.today()) }), D.intakeFooter, D.INTAKE_START);
   };
   D.ideaPrompt = (idea, tplId) => {
     const t = D.promptById(tplId) || D.templatesFor('写玩法提案')[0];
     return D.fillTemplate(t.body, { title: idea.title, week: D.weekLabel(idea.week), mechanism: idea.mechanism || '',
       target: D.labelOf(D.IDEA_TARGETS, idea.target), dev_cost: D.labelOf(D.IDEA_COSTS, idea.dev_cost), notes: idea.notes || '', today: D.fmtDateW(D.today()) });
+  };
+
+  /* ---------- 读 AI 输出里的固定格式段落 ---------- */
+  const NONE = /^[（(]?(无|没有|没说|暂无|不详|未知)[)）]?$|^[-—]+$/;
+  D.readBlock = (text, start, end, keys) => {
+    text = String(text || '');
+    const s = text.lastIndexOf(start); if (s < 0) return null;
+    let body = text.slice(s + start.length);
+    const e = body.indexOf(end); if (e >= 0) body = body.slice(0, e);
+    const out = {}; let cur = null;
+    for (const raw of body.split(/\r?\n/)) {
+      const line = raw.replace(/^\s*(?:[-*•·]|\d+[.、)）])\s*/, '').replace(/\*\*/g, '').trim();
+      if (!line) continue;
+      const m = line.match(/^([^：:｜|]{1,8}?)\s*[：:]\s*(.*)$/);
+      if (m && keys.includes(m[1].trim())) { cur = m[1].trim(); out[cur] = []; if (m[2].trim() && !NONE.test(m[2].trim())) out[cur].push(m[2].trim()); continue; }
+      if (cur && !NONE.test(line)) out[cur].push(line);
+    }
+    return out;
+  };
+  const cells = line => line.split(/[｜|]/).map(x => x.trim());
+  const norm = s => String(s || '').replace(/\s+/g, '').toLowerCase();
+  const STATUS_WORDS = [[/已交付|交付了|已完成|完成/, 'done'], [/待审|待确认|审核|待领导/, 'review'], [/制作|进行|在做|修改/, 'doing'], [/未开始/, 'todo']];
+  const delivStatus = s => (STATUS_WORDS.find(([re]) => re.test(s || '')) || [])[1];
+  // 交付物名字 → 交付物类型（认不出就是「其他」）
+  D.guessType = name => { const n = norm(name); return D.cfg().deliverable_types.find(t => n.includes(norm(t))) || null; };
+  // 回填里的一件「产出」对应项目里的哪件交付物：名字最像的那件（同类型有多件时，优先名字里互相包含的、还没交付的）
+  const matchDeliv = (pid, name) => {
+    const n = norm(name), list = D.delivsOf(pid);
+    return list.find(d => d.name && norm(d.name) === n) || list.find(d => d.name && (n.includes(norm(d.name)) || norm(d.name).includes(n)))
+      || list.filter(d => d.status !== 'done').find(d => n.includes(norm(d.type)) || norm(d.type) === n) || list.find(d => n.includes(norm(d.type)));
+  };
+
+  // 【回填工作台】→ 一组可勾选的更新
+  D.parseBackfill = (text, p, tool) => {
+    const B = D.readBlock(text, D.BACKFILL_START, D.BACKFILL_END, ['项目', '下一步', '产出', '待确认', '已确认', '用时']);
+    const items = [];
+    const push = (label, op, extra = {}) => items.push({ id: items.length, label, op, checked: true, ...extra });
+    if (B) {
+      const next = (B['下一步'] || []).join('；');
+      if (next) push(`下一步改成：${next}`, { op: 'project', data: { next_action: next.slice(0, 300) } });
+      const matched = [];
+      for (const line of B['产出'] || []) {
+        const [name, version, file, status] = cells(line);
+        if (!name) continue;
+        const st = delivStatus(status), d = matchDeliv(p.id, name);
+        const data = {};
+        if (version && !NONE.test(version)) data.version = version.slice(0, 20);
+        if (file && !NONE.test(file)) data.file_hint = file.slice(0, 300);
+        if (st) data.status = st;
+        if (d) {
+          matched.push(d);
+          const bits = [data.version && `版本 ${data.version}`, data.file_hint && `位置 ${data.file_hint}`, st && `状态改成「${D.delivStatusOf(st).label}」`].filter(Boolean);
+          if (bits.length) push(`交付物「${D.delivLabel(d)}」：${bits.join('，')}`, { op: 'deliverable', id: d.id, data });
+        } else {
+          push(`新建交付物「${name}」${bits2(data)}`, { op: 'deliverable', data: { type: D.guessType(name) || '其他', name: name.slice(0, 80), ...data } });
+        }
+      }
+      const waiting = D.waitingOf(p.id);
+      for (const line of B['待确认'] || []) {
+        const c = cells(line), [who, q, by] = c.length >= 2 ? c : ['', c[0], ''];
+        if (!q) continue;
+        if (waiting.some(x => norm(x.question) === norm(q))) continue;   // 已经在等的不重复加
+        const need = D.parseDateLoose(by);
+        push(`新的待确认：${q}（问${who || '—'}${need ? `，最晚 ${D.fmtDate(need)}` : ''}）`, { op: 'pending', data: { question: q.slice(0, 500), ask_whom: (who || '').slice(0, 30) || null, need_by: need } });
+      }
+      for (const line of B['已确认'] || []) {
+        const hit = waiting.find(x => x.question.length >= 2 && (norm(line).includes(norm(x.question)) || norm(x.question).includes(norm(line))));
+        if (hit) push(`待确认「${hit.question}」标成已答复：${line}`, { op: 'answer', id: hit.id, answer: line.slice(0, 5000) });
+        else push(`记一条已拍板的口径：${line}`, { op: 'decision', data: { content: line.slice(0, 1000), source: `${tool || 'AI'} 汇报` } });
+      }
+      const time = (B['用时'] || []).join('｜');
+      if (time) {
+        const [a, b] = cells(time), after = D.parseMinutes(a), before = D.parseMinutes(b);
+        if (after != null) {
+          const one = matched.length === 1 ? matched[0] : null;
+          const name = one ? D.delivLabel(one) : (B['产出'] || [])[0] ? cells(B['产出'][0])[0] : '这次的工作';
+          push('记一条提效', { op: 'win', data: { task: `${p.title}：${name}`.slice(0, 200), task_type: one?.type || D.guessType(name) || '其他', tools: tool ? [tool] : [], before_minutes: before, after_minutes: after, deliverable_id: one?.id || null } }, { win: true });
+        }
+      }
+    }
+    push('把整段汇报存进项目动态', { op: 'activity', data: { type: 'ai', tool: tool || null, summary: `${tool || 'AI'} 收工汇报：${D.firstLine(text, 80)}`.slice(0, 500), content: String(text).slice(0, 50000) } });
+    return { found: !!B, items };
+  };
+  const bits2 = data => { const b = [data.version && `版本 ${data.version}`, data.file_hint && `位置 ${data.file_hint}`, data.status && `状态「${D.delivStatusOf(data.status).label}」`].filter(Boolean); return b.length ? `：${b.join('，')}` : ''; };
+
+  // 【新建项目】→ 项目 + 交付物 + 待确认
+  D.parseIntake = text => {
+    const B = D.readBlock(text, D.INTAKE_START, D.INTAKE_END, ['项目名', '省份', '上线日', '一句话需求', '交付物', '待确认']);
+    if (!B) return null;
+    const one = k => (B[k] || []).join(' ').trim();
+    const provRaw = one('省份'), provs = D.cfg().provinces;
+    const province = !provRaw || /全国/.test(provRaw) ? null : provs.find(x => provRaw.includes(x) || x.includes(provRaw)) || provRaw.slice(0, 30);
+    const launchRaw = one('上线日'), launch = D.parseDateLoose(launchRaw);
+    const project = { title: (one('项目名') || '（AI 拆出来的项目）').slice(0, 120), province, launch_at: launch, launch_tentative: launch && /暂定|待定|大概|左右/.test(launchRaw) ? 1 : 0,
+      summary: one('一句话需求').slice(0, 2000) || null, status: 'active', priority: 'mid' };
+    const deliverables = (B['交付物'] || []).map(line => { const [a, b] = cells(line); const type = D.guessType(a) || D.guessType(b) || '其他'; return { type, name: (b || (type === '其他' ? a : '') || '').slice(0, 80) || null }; }).filter(d => d.type);
+    const pendings = (B['待确认'] || []).map(line => { const c = cells(line), [who, q, by] = c.length >= 2 ? c : ['', c[0], '']; return q ? { question: q.slice(0, 500), ask_whom: (who || '').slice(0, 30) || null, need_by: D.parseDateLoose(by) } : null; }).filter(Boolean);
+    return { project, deliverables, pendings };
   };
 
   D.PROJECT_VARS = ['project', 'province', 'kind', 'month', 'launch_at', 'due_at', 'status', 'priority', 'requester', 'summary', 'next_action', 'todo', 'tool', 'deliverables', 'pendings_open', 'pendings_answered', 'links', 'local_paths', 'recent_activities', 'notes', 'today'];

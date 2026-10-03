@@ -59,6 +59,12 @@
     if (d === 1) return { text: '明天', cls: 'soon' };
     return { text: D.fmtDate(s), cls: d <= 7 ? 'soon' : '' };
   };
+  D.launchText = p => {
+    if (!p.launch_at) return '';
+    const d = D.diffDays(p.launch_at, D.today()), pre = p.launch_tentative ? '暂定 ' : '';
+    const when = d === 0 ? '今天' : d === 1 ? '明天' : D.fmtDateW(p.launch_at);
+    return `${pre}${when}上线${d > 1 ? `（还有 ${d} 天）` : d < 0 ? `（已过 ${-d} 天）` : ''}`;
+  };
   D.offsetLabel = n => n == null ? '' : n === 0 ? 'T' : n < 0 ? `T−${-n}` : `T+${n}`;
   D.fmtMinutes = m => {
     if (m == null || m === '') return '';
@@ -76,24 +82,27 @@
       { name: '临时需求', color: '#f59e0b' }, { name: '个人', color: '#64748b' }
     ],
     provinces: [],   // 省份默认为空：名单会变，在设置里填，或从初始化包导入
-    statuses: [
-      { key: 'need', label: '需求中', color: '#8b8f98' }, { key: 'plan', label: '策划中', color: '#2f7cf6' },
-      { key: 'proto', label: '原型中', color: '#8b5cf6' }, { key: 'review', label: '等确认', color: '#e8a400' },
-      { key: 'docs', label: '出文档中', color: '#0ea5e9' }, { key: 'test', label: '测试拨测', color: '#f5822a' },
-      { key: 'live', label: '已上线', color: '#1aa35a' }, { key: 'done', label: '已交付', color: '#0f766e' },
-      { key: 'paused', label: '暂缓', color: '#9ca3af' }
-    ],
     deliverable_types: ['思路方案', '策划案', '原型', '动效稿', '客服文档', '活动规则', '掌厅文案', '切图归档', '拨测报告', '玩法提案', '其他'],
     ask_whom: ['业务方', '领导', '设计师', '搭建同事', '开发', '其他'],
     ai_tools: ['Claude Code', 'Codex', 'DeepSeek Harness', 'ChatGPT', 'Cowork', '我自己'],
     win_task_types: ['策划', '原型', 'Word 文档', '规则更新', '切图归档', '拨测', '数据整理', '其他'],
     inbox_sources: ['微信', '会议', '邮件', '自己想到', '其他'],
     nudge_days: { warn: 3, danger: 7 },
-    view_order: null,
     welcome_done: false,
-    wrapup_nag: null
+    baselines: {}   // 提效基准：每类交付物「以前大概要多少分钟」，第一次交付时问一次
   };
-  D.LIVE_OUT = ['done', 'paused'];   // 「已交付」「暂缓」默认不在今天视图里出现
+  // v2：项目状态只有 5 个。旧版的 6 个细分状态（需求中 / 策划中 / 原型中 / 等确认 / 出文档中 / 测试拨测）都算「进行中」——
+  // 数据库里不改它们，回退到旧版时原样还在
+  D.STATUSES = [
+    { key: 'active', label: '进行中', color: '#2f7cf6' },
+    { key: 'live', label: '已上线收尾', color: '#1aa35a' },
+    { key: 'watch', label: '观望', color: '#b7791f', hint: '不一定是我做：能看排期，但不进「今天」' },
+    { key: 'paused', label: '暂缓', color: '#9ca3af' },
+    { key: 'done', label: '已交付', color: '#0f766e' }
+  ];
+  D.LEGACY_ACTIVE = ['need', 'plan', 'proto', 'review', 'docs', 'test'];
+  D.normStatus = k => D.LEGACY_ACTIVE.includes(k) ? 'active' : k;
+  D.LIVE_OUT = ['done', 'paused', 'watch'];   // 已交付 / 暂缓 / 观望 的项目不进「今天」
   D.PRIORITIES = [{ key: 'high', label: '高', color: '#e5484d' }, { key: 'mid', label: '中', color: '#f59e0b' }, { key: 'low', label: '低', color: '#64748b' }];
   D.DELIV_STATUSES = [{ key: 'todo', label: '未开始', color: '#9ca3af' }, { key: 'doing', label: '制作中', color: '#2f7cf6' }, { key: 'review', label: '待审', color: '#e8a400' }, { key: 'done', label: '已交付', color: '#1aa35a' }];
   D.PEND_STATUSES = [{ key: 'waiting', label: '等待中' }, { key: 'answered', label: '已答复' }, { key: 'dropped', label: '不需要了' }];
@@ -110,16 +119,15 @@
   D.TODO_SCOPES = ['策划', '原型', 'Word', '规则更新', '拨测', '其他'];
   D.SCENES = ['开工', '收工', '需求梳理', '写玩法提案', '其他'];
 
-  D.state = { projects: [], deliverables: [], tasks: [], pendings: [], ideas: [], wins: [], inbox: [], timelines: [], checklists: [], prompts: [], links: [], views: [], settings: {} };
+  D.state = { projects: [], deliverables: [], tasks: [], pendings: [], decisions: [], ideas: [], wins: [], inbox: [], timelines: [], checklists: [], prompts: [], links: [], settings: {} };
   const named = x => typeof x === 'string' ? { name: x } : x;
   D.cfg = () => {
     const s = D.state.settings || {};
     const out = {};
     for (const [k, v] of Object.entries(D.DEFAULTS)) out[k] = s[k] ?? v;
-    // 状态的 key 是固定的（业务逻辑依赖），只允许改名和颜色
-    out.statuses = D.DEFAULTS.statuses.map(d => ({ ...d, ...((s.statuses || []).find(x => x.key === d.key) || {}), key: d.key }));
     out.kinds = (out.kinds || []).map(named).filter(x => x?.name).map(x => ({ name: x.name, color: x.color || D.hashColor(x.name) }));
     out.nudge_days = { ...D.DEFAULTS.nudge_days, ...(s.nudge_days || {}) };
+    out.baselines = { ...(s.baselines || {}) };
     return out;
   };
 
@@ -137,10 +145,10 @@
     return `<span class="chip ${extra}" style="--c:${c};--ink:${D.inkOn(c)}">${D.esc(label)}</span>`;
   };
   D.soft = (label, color, extra = '') => `<span class="soft ${extra}" style="--c:${safeColor(color)}">${D.esc(label)}</span>`;
-  D.statusOf = key => D.cfg().statuses.find(s => s.key === key) || { key, label: key || '—', color: '#999' };
+  D.statusOf = key => D.STATUSES.find(s => s.key === D.normStatus(key)) || { key, label: key || '—', color: '#999' };
   D.statusChip = key => {
     const s = D.statusOf(key);
-    return `<span class="st st-${D.esc(s.key)}" style="--c:${safeColor(s.color)}"><i></i>${D.esc(s.label)}</span>`;
+    return `<span class="st st-${D.esc(s.key)}" style="--c:${safeColor(s.color)}" title="${D.esc(s.hint || '')}"><i></i>${D.esc(s.label)}</span>`;
   };
   D.kindOf = name => D.cfg().kinds.find(k => k.name === name) || { name, color: D.hashColor(name || '') };
   D.kindChip = name => name ? D.soft(name, D.kindOf(name).color, 'kind') : '';
@@ -265,7 +273,7 @@
   D.optionsFor = field => {
     const c = D.cfg();
     switch (field) {
-      case 'status': return c.statuses.map(s => ({ value: s.key, label: s.label, html: D.statusChip(s.key) }));
+      case 'status': return D.STATUSES.map(s => ({ value: s.key, label: s.label, hint: s.hint, html: `${D.statusChip(s.key)}${s.hint ? ` <small class="muted">${D.esc(s.hint)}</small>` : ''}` }));
       case 'kind': return c.kinds.map(k => ({ value: k.name, label: k.name, html: D.kindChip(k.name) }));
       case 'province': return c.provinces.map(p => ({ value: p, label: p }));
       case 'priority': return D.PRIORITIES.map(p => ({ value: p.key, label: p.label, html: D.priorityChip(p.key) }));
@@ -377,7 +385,7 @@
       throw e;
     }
   };
-  const CHILD = ['deliverables', 'tasks', 'pendings'];
+  const CHILD = ['deliverables', 'tasks', 'pendings', 'decisions'];
   D.remove = async (res, id, { label, text } = {}) => {
     const isAct = res === 'activities';
     const row = isAct ? Object.values(D.acts || {}).flat().find(x => x.id === Number(id)) : D.find(res, id);
@@ -391,7 +399,6 @@
       if (isAct) return D.emit('activity', row);   // ai.js 会把它按日期放回 D.acts
       for (const [k, rows] of Object.entries(removed)) rows.forEach(r => D.put(k, r));
     };
-    if (res === 'projects') D.drawer?.closeIf(row.id);
     D.render();
     try { await D.api('DELETE', `/${res}/${id}`); }
     catch (e) { putBack(); D.render(); D.fail(e); return false; }
@@ -412,10 +419,42 @@
   D.pendingsOf = pid => D.state.pendings.filter(x => x.project_id === Number(pid));
   D.waitingOf = pid => D.pendingsOf(pid).filter(x => x.status === 'waiting');
   D.progressOf = pid => { const l = D.delivsOf(pid); return { done: l.filter(d => d.status === 'done').length, total: l.length }; };
-  D.waitDays = p => D.diffDays(D.today(), p.asked_at || D.isoToShDate(p.created_at) || D.today());
-  D.waitLevel = p => { const n = D.waitDays(p), c = D.cfg().nudge_days; return n >= c.danger ? 'danger' : n >= c.warn ? 'warn' : ''; };
-  // 下一个时间表节点（还没做完的、日期最早的那个）
-  D.nextNode = pid => D.tasksOf(pid).filter(t => !t.done && t.offset_days != null && t.due_at).sort((a, b) => a.due_at.localeCompare(b.due_at) || a.offset_days - b.offset_days)[0];
+  D.decisionsOf = pid => D.state.decisions.filter(x => x.project_id === Number(pid));
+  // 旧版时间表留下的「同名待办」挂在交付物上（deliverable_id），页面上只显示那件交付物
+  D.openTasks = pid => D.tasksOf(pid).filter(t => !t.deliverable_id);
+  // 项目还「活着」：没归档、不是已交付 / 暂缓 / 观望（不属于任何项目的也算）
+  D.projOk = pid => { if (!pid) return true; const p = D.project(pid); return !!p && !p.archived_at && !D.LIVE_OUT.includes(D.normStatus(p.status)); };
+  // 等了几天：从问的那天（模板生成的从开始催那天）算起
+  D.waitDays = x => Math.max(0, D.diffDays(D.today(), x.asked_at || x.remind_from || D.isoToShDate(x.created_at) || D.today()));
+  // 待确认的紧急程度：有「最晚哪天要」就按离那天还有几天算；没有就按等了几天（设置里的天数）
+  D.pendState = x => {
+    const today = D.today();
+    if (x.status !== 'waiting') return { level: '', text: '' };
+    if (x.remind_from && x.remind_from > today) return { later: true, level: '', text: `${D.fmtDate(x.remind_from)} 开始催` };
+    if (x.need_by) {
+      const d = D.diffDays(x.need_by, today);
+      if (d < 0) return { level: 'danger', text: `已过最晚日期 ${-d} 天`, d };
+      if (d <= 2) return { level: 'warn', text: d === 0 ? '今天就要' : `最晚 ${D.fmtDate(x.need_by)}（${D.wk(x.need_by)}），还有 ${d} 天`, d };
+      return { level: '', text: `最晚 ${D.fmtDate(x.need_by)}（${D.wk(x.need_by)}），还有 ${d} 天`, d };
+    }
+    const w = D.waitDays(x), c = D.cfg().nudge_days;
+    return { level: w >= c.danger ? 'danger' : w >= c.warn ? 'warn' : '', text: '', d: 9999 };
+  };
+  D.waitLevel = x => D.pendState(x).level;
+  const LV = { danger: 0, warn: 1, '': 2 };
+  D.sortWaiting = list => [...list].sort((a, b) => {
+    const A = D.pendState(a), B = D.pendState(b);
+    return LV[A.level] - LV[B.level] || b.blocking - a.blocking || (A.d ?? 9999) - (B.d ?? 9999) || D.waitDays(b) - D.waitDays(a) || a.id - b.id;
+  });
+  // 一个项目的排期：时间表生成的待办、交付物、等别人给的，按日期排在一起
+  D.scheduleOf = pid => [
+    ...D.tasksOf(pid).filter(t => t.offset_days != null && !t.deliverable_id && t.due_at).map(t => ({ kind: 'task', date: t.due_at, off: t.offset_days, title: t.title, done: !!t.done, milestone: !!t.milestone, ref: t })),
+    ...D.delivsOf(pid).filter(d => d.offset_days != null && d.due_at).map(d => ({ kind: 'deliverable', date: d.due_at, off: d.offset_days, title: D.delivLabel(d), done: d.status === 'done', ref: d })),
+    ...D.pendingsOf(pid).filter(x => x.offset_days != null && x.need_by).map(x => ({ kind: 'wait', date: x.need_by, off: x.offset_days, title: x.question, done: x.status !== 'waiting', ref: x }))
+  ].sort((a, b) => a.date.localeCompare(b.date) || a.off - b.off);
+  // 下一个节点：还没完成的、日期最早的那个
+  D.nextNode = pid => D.scheduleOf(pid).find(n => !n.done);
+  D.KIND_ICON = { task: '☐', deliverable: '📦', wait: '⏳', launch: '◆' };
   D.delivLabel = d => [d.name || d.type, d.version].filter(Boolean).join(' ');
   // 交付前检查：按交付物类型匹配清单（清单的「适用交付物」为空 = 所有类型）
   D.checklistsFor = type => D.state.checklists.filter(cl => !(cl.applies_to || []).length || cl.applies_to.includes(type));
@@ -423,6 +462,54 @@
     let total = 0, done = 0;
     for (const cl of D.checklistsFor(d.type)) for (const item of cl.items || []) { total++; if (d.checklist_state?.[cl.id]?.[item]) done++; }
     return { total, done };
+  };
+
+  /* ---------- 日期小弹层（快捷 今天 / 明天 / +3 / +7 / +14） ---------- */
+  D.datePopover = (anchor, value, onPick, { base, clear = true } = {}) => {
+    const from = base || D.today();
+    const el = D.popover(anchor, `<div class="quick">${[['今天', 0], ['明天', 1], ['+3 天', 3], ['+7 天', 7], ['+14 天', 14]].map(([l, n]) => `<button type="button" class="tb" data-d="${D.addDays(from, n)}">${l}</button>`).join('')}</div>
+      <input type="date" value="${D.esc(value || '')}" aria-label="选日期">
+      ${clear ? '<div class="pop-foot"><button type="button" class="btn sm ghost" data-d="">清空</button></div>' : ''}`, { cls: 'datepop' });
+    el.addEventListener('click', e => { const b = e.target.closest('[data-d]'); if (b) { D.closePopover(); onPick(b.dataset.d || null); } });
+    el.querySelector('input').addEventListener('change', e => { if (e.target.value) { D.closePopover(); onPick(e.target.value); } });
+  };
+
+  D.setTaskDone = async (id, done) => {
+    if (!D.find('tasks', id)) return;
+    try { await D.patch('tasks', id, done ? { done: 1, done_at: D.today() } : { done: 0 }); } catch { /* 已提示 */ }
+  };
+
+  // 排期 / 回填 / 拆解之后，服务端返回这个项目的全部子记录，整体替换
+  D.applySubtree = r => {
+    const pid = r.project.id;
+    D.put('projects', r.project);
+    for (const k of ['tasks', 'deliverables', 'pendings', 'decisions', 'wins']) if (Array.isArray(r[k])) D.state[k] = D.state[k].filter(x => x.project_id !== pid).concat(r[k]);
+    delete D.acts?.[pid];
+    D.render();
+  };
+
+  /* ---------- 识别 AI 写的日期和时长（回填用） ---------- */
+  // 2026-10-22 / 10-22 / 10/22 / 10月22日 → YYYY-MM-DD；没写年份的取今年，已经过去两个月以上的算明年
+  D.parseDateLoose = s => {
+    s = String(s || '').trim();
+    let m = s.match(/(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/);
+    let y, mo, d;
+    if (m) [, y, mo, d] = m.map(Number);
+    else if ((m = s.match(/(\d{1,2})[-/.月](\d{1,2})日?/))) { [, mo, d] = m.map(Number); y = Number(D.today().slice(0, 4)); }
+    else return null;
+    if (mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+    let out = `${y}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    if (!m[0].match(/\d{4}/) && D.diffDays(out, D.today()) < -60) out = `${y + 1}${out.slice(4)}`;
+    return new Date(out + 'T00:00:00Z').toISOString().slice(0, 10) === out ? out : null;
+  };
+  // 40 / 40 分钟 / 1.5 小时 / 3h / 半天 / 2 天（一天按 8 小时） → 分钟
+  D.parseMinutes = s => {
+    s = String(s || '').replace(/[，,]/g, '').trim();
+    if (/半天/.test(s)) return 240;
+    const m = s.match(/(\d+(?:\.\d+)?)\s*(小时|个小时|h|H|天|分钟|分|min|m)?/);
+    if (!m) return null;
+    const n = Number(m[1]), u = m[2] || '分钟';
+    return Math.round(/小时|h/i.test(u) ? n * 60 : /天/.test(u) ? n * 480 : n);
   };
 
   /* ---------- 简单事件 ---------- */
