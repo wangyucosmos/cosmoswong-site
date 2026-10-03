@@ -5,7 +5,7 @@
 ## 架构
 - 静态站为主，Cloudflare Workers 静态资源托管（`wrangler.toml` 的 `[assets]`）。
 - **唯一的服务端代码是 `src/worker.js`，只接 `/api/*`**（`run_worker_first`），其余请求直接走静态资源，不经过它。
-  `/subs` 与 `/kol` 共用的小工具（JSON 响应、HMAC、长度无关比较）在 `src/shared.js`。
+  `/subs`、`/kol`、`/desk` 共用的小工具（JSON 响应、HMAC、长度无关比较）在 `src/shared.js`。
   `/subs` 订阅倒计时页（2026-09-29 起）：
   - 页面 `public/subs.html` + `public/assets/subs.js` 是公开的壳，**不含任何订阅数据**；数据只经 `/api/subs` 读写
   - 数据存在 KV（binding `SUBS`，key `list`），**不进仓库**（仓库是公开的）
@@ -15,6 +15,7 @@
   - 本地测试：`.dev.vars` 放测试密码（已 gitignore，不要放真实密码），`npx wrangler@4 dev --port 8788`
   - 导航里有「订阅」入口（用户要求入口公开、内容加密）；页面 noindex，不进 sitemap
 - `/kol` KOL 工作台（2026-10-02 起，私用的海外 KOL 跟进工作台，密码保护，见下方「/kol」一节）。
+- `/desk` 我的工作台（2026-10-04 起，站长自己的工作待办 / 待确认 / 排期台，密码保护，**不进导航**，见下方「/desk」一节）。
 - **零外部请求**：不引 CDN、Web Font、图标库、任何前端依赖。唯一外部脚本是 Cloudflare 自动注入的 Insights beacon。`public/_headers` 里的 CSP 就是按这个前提写的，引任何外部资源都会被拦。
 
 ## /kol KOL 工作台
@@ -29,6 +30,18 @@
 - **导入约定**（`public/assets/kol/io.js`）：表头别名覆盖她的原表（账号链接 / 联系方式 / 粉丝量（K）/ 内容赛道 / 当前阶段 / 二次标签 / 触达回复 / 回复总结）；表头带（K）/ 万 / M 自动乘单位；联系方式里的邮箱自动放进邮箱栏；「未建联」+ 二次触达 → 已联系·等回复，否则待触达；「明确拒绝 / 要求移除」→ 勿再联系；回复原文存成「收到回复」沟通记录；没认出的列默认「追加到备注」不丢。**国家名转代码时跳过 UK / FX 等废弃代码**（`Intl.DisplayNames` 会把它们也叫「英国」「法国」）。
 - **待补全**（`quality.js`，内置视图 `#fix`）：国家代码、邮箱放错栏、粉丝按千填、缺语言（按国家给建议、人工确认后才填）、没排期、缺链接 / 赛道 / 邮箱，都能就地修。
 - **AI 直接读线上数据**（只读示例）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-kol --remote --command "SELECT name, status, next_followup_at FROM kols WHERE deleted_at IS NULL ORDER BY next_followup_at"`。要改线上数据先问用户、先导出备份。
+
+## /desk 我的工作台
+- **红线：工作内容不进本仓库。** 公司项目名、负责的省份名单、流程原文、内部仓库名、本机路径、Figma 链接——包括代码默认值、注释、演示数据、测试用例——一律不写进来。这些都放在仓库以外的「初始化包」JSON 里，由用户在页面「设置 → 数据 → 导入初始化包」导入到 D1（只新增、不覆盖）。代码里只放通用空壳和通用默认值（如内置时间表只有「开工 T−7 / 交付 T−1 / 上线 T」示例，内置提示词模板只有通用版）。
+- **路由**：页面 `public/desk.html`（独立应用，不带主站导航和页脚）+ `public/assets/desk/*.js|css`；接口 `/api/desk/*` 在 `src/desk/`（`api.js` 路由、`auth.js` 密码门、`schema.js` 字段校验），`worker.js` 只做转发。鉴权代码照 `/kol` 复制了一份到 `src/desk/auth.js`（**没有改 `/kol` 的任何文件**），共用的只有 `src/shared.js`。
+- **不进导航、不进 sitemap**（和 `/kol` 不同：用户不希望别人顺着主页找到入口，靠书签访问）。`desk.html` **不在** `tools/build_pages.mjs` 的 `DYNAMIC` / `STATIC` 清单里，`render.js` 的 `navItems` 也没有它——两处都**不要加**。三层 noindex：页面 `<meta name="robots">`、`_headers` 的 `/desk` → `X-Robots-Tag`、`robots.txt` 的 `Disallow: /desk`。
+- **数据**：Cloudflare D1 `cosmoswong-desk`（binding `DESK_DB`，APAC，id 见 `wrangler.toml`），**不进仓库**。表：`projects` / `deliverables` / `tasks` / `pendings`（待确认）/ `activities`（项目时间线）/ `ideas`（每周玩法创意）/ `wins`（提效记录）/ `inbox`（收集箱）/ `timelines`（时间表模板）/ `checklists` / `prompt_templates` / `links` / `saved_views` / `settings` / `desk_meta`（会话签名 key、改过的密码哈希，接口不返回、不进备份）/ `login_fails`。主表都有 `deleted_at` 软删除（页面 5 秒内可撤销，24 小时后清理；删项目会连带它的交付物、待办、待确认、时间线，撤销时一起回来）。日期存 `YYYY-MM-DD`，「今天 / 本周 / 逾期」一律按 **Asia/Shanghai** 算（前端 `DESK.today()`、后端 `shToday()`），时间戳存 ISO。
+- **建表只用迁移**，迁移文件单独放 `migrations/desk/`（`wrangler.toml` 里 `DESK_DB` 的 `migrations_dir`，和 `/kol` 的 `migrations/` 互不干扰）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 migrations apply cosmoswong-desk --remote`（本地 `--local`）。**线上只跑迁移，不灌任何数据**；改表结构 = 在 `migrations/desk/` 新加文件。
+- **鉴权**（同 `/kol`，各自独立）：初始密码 Worker secret `DESK_PASSWORD`（和 `/subs`、`/kol` 都分开；`npx wrangler@4 secret put DESK_PASSWORD`，由用户自己输入）。页面「设置 → 改密码」（`POST /api/desk/password`）后新密码以 PBKDF2 加盐哈希存在 D1 `desk_meta` 的 `password_hash`，登录优先认它，其他设备登录失效。**忘了新密码**（先问用户）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-desk --remote --command "DELETE FROM desk_meta WHERE key = 'password_hash'"` → 恢复成 secret 里的初始密码。会话 cookie `desk_session` 只发给 `/api/desk`，HttpOnly + Secure + SameSite=Strict，30 天；同一 IP 15 分钟输错 10 次锁定；除 `POST /login`、`POST /logout`、`GET /session` 外全部要登录（未登录 401），写操作必须带 `x-desk-request: 1` 且同源（否则 403）。
+- **几个带业务逻辑的接口**：`POST /projects/:id/schedule`（`mode: apply` 按时间表节点生成待办 + 交付物，日期 = 上线日 T + 天数，周末提前到周五、T 本身不挪；`mode: shift` 改上线日时只顺移没完成的节点）、`POST /pendings/:id/nudge` / `answer`（同时写项目时间线）、`POST /inbox/:id/convert`、`POST /init-pack`（`apply: false` 只预览）、`GET /backup` / `POST /restore`。交付物改成「已交付」时服务端会核对交付前检查清单，没勾完返回 409，带 `force: true` 才放行（页面上要二次确认）。
+- **前端约束**：同 `/kol`——零外部请求、无内联脚本/事件；外部内容一律 `DESK.esc()` 转义（收集箱里粘的微信消息尤其要转义），外链只放行 http(s) 且 `rel="noopener noreferrer"`；localStorage 只存界面偏好（`desk.*`），业务数据只走 D1。资源版本号由 `deploy.sh` 的 `/assets/desk/*` 那条 sed 维护。
+- **本地测试**：`.dev.vars` 里放测试用 `DESK_PASSWORD`；`npx wrangler@4 d1 migrations apply cosmoswong-desk --local` → `node tools/desk_seed_local.mjs`（12 个虚构项目等，内容全是「示例省份 A」这类，**只写本地库**）→ `npx wrangler@4 dev --port 8788` → 打开 `/desk`。
+- **AI 直接读线上数据**（只读示例，在站点目录）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-desk --remote --command "SELECT p.title, x.question, x.ask_whom, x.asked_at FROM pendings x LEFT JOIN projects p ON p.id = x.project_id WHERE x.status = 'waiting' AND x.deleted_at IS NULL ORDER BY x.asked_at"`。状态等存英文 key：projects.status = need 需求中 / plan 策划中 / proto 原型中 / review 等确认 / docs 出文档中 / test 测试拨测 / live 已上线 / done 已交付 / paused 暂缓。**改线上数据前先问用户、先在页面「设置 → 数据」下载 JSON 全量备份**。
 
 ## 内容与生成物
 - **所有内容只改 `public/assets/data.js`（`window.SITE`）**。不要把内容写进 HTML 模板或 `tools/*.mjs`。

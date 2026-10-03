@@ -18,6 +18,10 @@
 /kol
   X-Robots-Tag: noindex, nofollow
 
+# /desk 我的工作台：密码页，禁止搜索引擎收录（也不进导航、不进 sitemap）
+/desk
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable

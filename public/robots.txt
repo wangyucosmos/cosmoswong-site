@@ -25,5 +25,6 @@
 
 User-agent: *
 Disallow: /kol
+Disallow: /desk
 
 Sitemap: https://cosmoswong.com/sitemap.xml
