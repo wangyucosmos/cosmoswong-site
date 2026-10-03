@@ -1,5 +1,5 @@
 # cosmoswong.com 个人主页 —— 静态站为主，Cloudflare Worker 静态资源托管。
-# 唯一的服务端代码是 src/worker.js，只接 /api/*（/subs 订阅页、/kol KOL 工作台的密码门与数据），其余请求直接走静态资源。
+# 唯一的服务端代码是 src/worker.js，只接 /api/*（/subs 订阅页、/kol KOL 工作台、/desk 我的工作台的密码门与数据），其余请求直接走静态资源。
 # 部署：cd cosmoswong-site && ./deploy.sh
 
 name = "cosmoswong-site"
@@ -25,6 +25,14 @@ binding = "KOL_DB"
 database_name = "cosmoswong-kol"
 database_id = "779ab33c-a834-418f-bdef-23837d8b0e44"
 migrations_dir = "migrations"
+
+# /desk 我的工作台的数据（不进仓库）。密码是 Worker secret：DESK_PASSWORD
+# 迁移文件单独放在 migrations/desk/（和 /kol 的分开）：npx wrangler@4 d1 migrations apply cosmoswong-desk --local / --remote
+[[d1_databases]]
+binding = "DESK_DB"
+database_name = "cosmoswong-desk"
+database_id = "f817a51f-a151-4fcb-81ac-42069e62152b"
+migrations_dir = "migrations/desk"
 
 # 主域名 + www 都指到这里；`wrangler deploy` 会自动建域名绑定和 DNS 记录
 [[routes]]

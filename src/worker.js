@@ -1,11 +1,13 @@
 // cosmoswong.com 的服务端：只接 /api/*（wrangler.toml 的 run_worker_first），其余请求都是静态资源，不经过这里。
-// 两个功能：/subs 订阅倒计时页、/kol KOL 工作台（路由在 src/kol/，数据在 D1）。下面是 /subs 的部分：
+// 三个功能：/subs 订阅倒计时页、/kol KOL 工作台（路由在 src/kol/，数据在 D1）、/desk 我的工作台（路由在 src/desk/，数据在另一个 D1）。
+// 下面是 /subs 的部分：
 //   - 密码存在 Worker secret SUBS_PASSWORD，登录 cookie 用 SUBS_COOKIE_KEY 签名；两个都不进仓库
 //   - 订阅数据存在 KV（binding SUBS，key "list"），不进仓库——仓库是公开的
 //   - 换密码：printf '%s' '新密码' | npx wrangler secret put SUBS_PASSWORD（旧登录会随之全部失效）
 
 import { json, safeEq, hmac } from './shared.js';
 import { kolApi } from './kol/api.js';
+import { deskApi } from './desk/api.js';
 
 const COOKIE = 'subs_session';
 const SESSION_DAYS = 30;
@@ -93,6 +95,7 @@ export default {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
     if (path === '/api/subs' || path.startsWith('/api/subs/')) return subsApi(req, env, path);
     if (path === '/api/kol' || path.startsWith('/api/kol/')) return kolApi(req, env, path);
+    if (path === '/api/desk' || path.startsWith('/api/desk/')) return deskApi(req, env, path);
     if (path.startsWith('/api/')) return json({ error: '没有这个接口' }, 404);
     return env.ASSETS.fetch(req);
   }
