@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>我的工作台</title>
+<!-- 独立应用页：不走主站导航/页脚注入（tools/build_pages.mjs 的页面清单里没有它），不进 sitemap、不进导航。数据只经 /api/desk 读写。 -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/desk/desk.css">
+</head>
+<body>
+<form id="login" class="login" novalidate>
+  <div class="login-card">
+    <h1>工作台</h1>
+    <label for="login-pw">请输入密码</label>
+    <input id="login-pw" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">进入</button>
+    <p id="login-msg" class="login-msg" role="status"></p>
+    <noscript><p class="login-msg">这个页面需要开启 JavaScript。</p></noscript>
+  </div>
+</form>
+
+<div id="app" hidden>
+  <header class="topbar">
+    <div class="brand"><span class="logo">台</span><span>我的工作台</span></div>
+    <div class="search"><input id="q" type="search" placeholder="搜索项目名、需求、下一步、备注、待确认（按 / ）" aria-label="搜索" autocomplete="off"></div>
+    <button id="open-capture" class="btn sm ghost" type="button" title="快捷键 c">＋ 收集</button>
+    <button id="new-project" class="btn sm" type="button" title="快捷键 n">＋ 项目</button>
+    <button id="open-settings" class="icon" type="button" aria-label="设置" title="设置">⚙️</button>
+  </header>
+  <nav id="tabs" class="tabs" aria-label="视图"></nav>
+  <main id="main"></main>
+</div>
+
+<div id="drawer-backdrop" class="drawer-backdrop"></div>
+<aside id="drawer" class="drawer" hidden aria-label="项目详情"><div id="drawer-body" class="drawer-body"></div></aside>
+
+<dialog id="capture" class="dlg" aria-labelledby="capture-title">
+  <div class="dlg-in">
+    <header class="dlg-head"><h2 id="capture-title">收集一条</h2><button type="button" class="icon" data-cap-close aria-label="关闭">✕</button></header>
+    <textarea id="capture-text" rows="7" maxlength="20000" placeholder="把业务方的微信消息直接粘进来。回车保存，Shift+回车换行。" aria-label="收集内容"></textarea>
+    <div class="row wrap"><div id="capture-src"></div><span class="grow"></span><button type="button" id="capture-save" class="btn sm">保存到收集箱</button></div>
+  </div>
+</dialog>
+
+<dialog id="newproj" class="dlg" aria-labelledby="newproj-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="newproj-title">新建项目</h2><button type="button" class="icon" data-np-close aria-label="关闭">✕</button></header>
+  <form id="newproj-form" novalidate></form></div>
+</dialog>
+
+<dialog id="wrapup" class="dlg wide" aria-labelledby="wrapup-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="wrapup-title">🌙 今天收工</h2><button type="button" class="icon" data-wrap-close aria-label="关闭">✕</button></header>
+  <form id="wrapup-form" novalidate></form></div>
+</dialog>
+
+<dialog id="win" class="dlg" aria-labelledby="win-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="win-title">记一条提效</h2><button type="button" class="icon" data-win-close aria-label="关闭">✕</button></header>
+  <form id="win-form" novalidate></form></div>
+</dialog>
+
+<dialog id="initpack" class="dlg" aria-labelledby="initpack-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="initpack-title">导入初始化包</h2><button type="button" class="icon" data-ip-close aria-label="关闭">✕</button></header>
+  <div id="initpack-body"></div></div>
+</dialog>
+
+<dialog id="confirm" class="dlg small" aria-labelledby="confirm-text">
+  <div class="dlg-in"><p id="confirm-text"></p>
+    <div class="row end"><button type="button" id="confirm-cancel" class="btn sm ghost">取消</button><button type="button" id="confirm-ok" class="btn sm danger">确认删除</button></div></div>
+</dialog>
+
+<div id="toasts" class="toasts" aria-live="polite"></div>
+
+<script src="/assets/desk/core.js"></script>
+<script src="/assets/desk/model.js"></script>
+<script src="/assets/desk/ai.js"></script>
+<script src="/assets/desk/list.js"></script>
+<script src="/assets/desk/board.js"></script>
+<script src="/assets/desk/timeline.js"></script>
+<script src="/assets/desk/waiting.js"></script>
+<script src="/assets/desk/drawer.js"></script>
+<script src="/assets/desk/today.js"></script>
+<script src="/assets/desk/inbox.js"></script>
+<script src="/assets/desk/ideas.js"></script>
+<script src="/assets/desk/wins.js"></script>
+<script src="/assets/desk/links.js"></script>
+<script src="/assets/desk/settings.js"></script>
+<script src="/assets/desk/app.js"></script>
+</body>
+</html>
