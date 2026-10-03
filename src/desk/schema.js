@@ -1,7 +1,8 @@
 // /desk 各表的字段定义与校验：只收认得的字段，按类型和长度规整；不合格的直接报错（中文提示给页面显示）。
 // 写法照 src/kol/schema.js，多了几种类型：sint（可为负的整数，如 T−14）、week（ISO 周）、paths（本机路径清单）、iso（时间戳）。
 
-export const STATUSES = ['need', 'plan', 'proto', 'review', 'docs', 'test', 'live', 'done', 'paused'];
+// v2 页面只用 active / live / done / paused / watch 五个；旧版的 need / plan / proto / review / docs / test 仍然有效（显示成「进行中」），回退到 v1 时数据照样能用
+export const STATUSES = ['active', 'watch', 'need', 'plan', 'proto', 'review', 'docs', 'test', 'live', 'done', 'paused'];
 export const PRIORITIES = ['high', 'mid', 'low'];
 export const DELIV_STATUSES = ['todo', 'doing', 'review', 'done'];
 export const PEND_STATUSES = ['waiting', 'answered', 'dropped'];
@@ -20,10 +21,11 @@ export const TABLES = {
     kind: t(30, '类型'),
     province: t(30, '省份'),
     month: { type: 'month', label: '所属月份' },
-    status: { ...enumOf(STATUSES, '状态'), required: true, def: 'need' },
+    status: { ...enumOf(STATUSES, '状态'), required: true, def: 'active' },
     priority: enumOf(PRIORITIES, '优先级'),
     requester: t(60, '需求方'),
     launch_at: { type: 'date', label: '上线日' },
+    launch_tentative: { type: 'bool', label: '上线日暂定' },
     due_at: { type: 'date', label: '截止日' },
     summary: t(2000, '一句话需求'),
     next_action: t(300, '下一步'),
@@ -33,7 +35,8 @@ export const TABLES = {
     tags: { type: 'list', max: 30, label: '标签' },
     notes: t(5000, '备注'),
     sort_order: { type: 'order', label: '排序' },
-    archived_at: { type: 'iso', label: '归档时间' }
+    archived_at: { type: 'iso', label: '归档时间' },
+    compare: { type: 'json', max: 2000, label: '比稿' }
   },
   deliverables: {
     project_id: { type: 'int', required: true, label: '项目' },
@@ -47,7 +50,10 @@ export const TABLES = {
     notes: t(2000, '备注'),
     checklist_state: { type: 'json', max: 20000, label: '检查清单' },
     offset_days: { type: 'sint', label: '相对上线日' },
-    sort_order: { type: 'order', label: '排序' }
+    sort_order: { type: 'order', label: '排序' },
+    base: t(200, '当前底稿'),
+    base_locked: { type: 'bool', label: '底稿 AI 不得改动' },
+    checked: { type: 'bool', label: '交付前已确认' }
   },
   tasks: {
     project_id: { type: 'int', label: '项目' },
@@ -57,7 +63,8 @@ export const TABLES = {
     sort_order: { type: 'order', label: '排序' },
     source: { ...enumOf(TASK_SOURCES, '来源'), def: 'manual' },
     offset_days: { type: 'sint', label: '相对上线日' },
-    milestone: { type: 'bool', label: '里程碑' }
+    milestone: { type: 'bool', label: '里程碑' },
+    deliverable_id: { type: 'int', label: '对应交付物' }
   },
   pendings: {
     project_id: { type: 'int', label: '项目' },
@@ -70,7 +77,18 @@ export const TABLES = {
     answer: t(5000, '答复'),
     answered_at: { type: 'date', label: '答复日期' },
     status: { ...enumOf(PEND_STATUSES, '状态'), required: true, def: 'waiting' },
-    blocking: { type: 'bool', label: '卡交付' }
+    blocking: { type: 'bool', label: '卡交付' },
+    need_by: { type: 'date', label: '最晚哪天要' },
+    remind_from: { type: 'date', label: '从哪天开始催' },
+    offset_days: { type: 'sint', label: '相对上线日' },
+    remind_offset: { type: 'sint', label: '开始催（相对上线日）' },
+    source: t(20, '来源')
+  },
+  decisions: {
+    project_id: { type: 'int', required: true, label: '项目' },
+    content: { ...t(1000, '拍板的内容'), required: true },
+    source: t(40, '谁定的'),
+    decided_at: { type: 'date', required: true, label: '日期' }
   },
   activities: {
     project_id: { type: 'int', required: true, label: '项目' },
@@ -100,7 +118,8 @@ export const TABLES = {
     after_minutes: { type: 'int', label: '这次多久' },
     output: t(500, '产出'),
     portfolio_ok: { type: 'bool', label: '可上作品集' },
-    note: t(2000, '备注')
+    note: t(2000, '备注'),
+    deliverable_id: { type: 'int', label: '对应交付物' }
   },
   inbox: {
     content: { ...t(20000, '内容'), required: true },
@@ -218,12 +237,26 @@ function cleanValue(spec, raw, key) {
         if (!Number.isInteger(off) || Math.abs(off) > 365) throw new Invalid(`第 ${i + 1} 个节点的天数不对（要是 −365 到 365 的整数）`);
         const title = String(x?.title || '').trim();
         if (!title || title.length > 200) throw new Invalid(`第 ${i + 1} 个节点要写做什么（最多 200 字）`);
-        const node = { offset_days: off, title };
+        const yes = v => v === true || v === 1 || v === '1' || v === 'true';
         const dt = String(x?.deliverable_type || '').trim(), dn = String(x?.deliverable_name || '').trim();
         if (dt.length > 30 || dn.length > 80) throw new Invalid(`第 ${i + 1} 个节点的交付物名太长`);
-        if (dt) node.deliverable_type = dt;
-        if (dt && dn) node.deliverable_name = dn;
-        if (x?.is_milestone === true || x?.is_milestone === 1 || x?.is_milestone === '1' || x?.is_milestone === 'true') node.is_milestone = true;
+        // kind：task 我要做的 / deliverable 要交的 / wait 等别人给的（没写 kind 的旧模板：有交付物类型就是 deliverable，否则 task）
+        const kind = ['task', 'deliverable', 'wait'].includes(x?.kind) ? x.kind : dt ? 'deliverable' : 'task';
+        if (kind === 'deliverable' && !dt) throw new Invalid(`第 ${i + 1} 个节点是「要交的」，要选交付物类型`);
+        const node = { offset_days: off, title, kind };
+        if (kind === 'deliverable') { node.deliverable_type = dt; if (dn) node.deliverable_name = dn; }
+        if (kind === 'wait') {
+          const who = String(x?.ask_whom || '').trim();
+          if (who.length > 30) throw new Invalid(`第 ${i + 1} 个节点的「问谁」太长`);
+          if (who) node.ask_whom = who;
+          if (x?.remind_offset !== undefined && x?.remind_offset !== null && x?.remind_offset !== '') {
+            const r = Number(x.remind_offset);
+            if (!Number.isInteger(r) || Math.abs(r) > 365 || r > off) throw new Invalid(`第 ${i + 1} 个节点「从哪天开始催」要早于或等于最晚日期`);
+            node.remind_offset = r;
+          }
+          if (yes(x?.blocking)) node.blocking = true;
+        }
+        if (yes(x?.is_milestone)) node.is_milestone = true;
         return node;
       });
       return JSON.stringify(out);
@@ -252,7 +285,7 @@ export function clean(table, input, partial = false) {
 
 // 表里存成 JSON 文本的列：读出来给页面前先解析
 export const JSON_COLS = {
-  projects: ['links', 'local_paths', 'last_ai', 'tags'],
+  projects: ['links', 'local_paths', 'last_ai', 'tags', 'compare'],
   deliverables: ['checklist_state'],
   wins: ['tools'],
   timelines: ['items'],

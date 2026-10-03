@@ -1,5 +1,7 @@
 // /api/desk/* 路由。除登录外全部要登录；写操作还要过 csrfOk。数据全在 D1（binding DESK_DB）。
-// 结构照 src/kol/api.js：通用增改删 + 几个带业务逻辑的动作（一键排期、催办、答复、收集箱转换、交付前检查、初始化包、备份恢复）。
+// 结构照 src/kol/api.js：通用增改删 + 几个带业务逻辑的动作（一键排期、催办、答复、收集箱转换与拆解、回填、初始化包、备份恢复）。
+// v2（2026-10-04）：时间表节点分三种（我做的 / 要交的 / 等别人给）、待确认有「最晚哪天要」、交付不再被检查清单拦、已拍板的口径（decisions）。
+// 数据库只加不删，旧版代码（git 标签 desk-v1）照样能用这份数据。
 import { json } from '../shared.js';
 import { isAuthed, login, logout, csrfOk, changePassword } from './auth.js';
 import { TABLES, JSON_COLS, Invalid, clean } from './schema.js';
@@ -10,14 +12,14 @@ const UNDO_HOURS = 24;              // 软删除保留 24 小时后清理（页�
 const RES = {
   projects: 'projects', deliverables: 'deliverables', tasks: 'tasks', pendings: 'pendings', activities: 'activities',
   ideas: 'ideas', wins: 'wins', inbox: 'inbox', timelines: 'timelines', checklists: 'checklists',
-  prompts: 'prompt_templates', links: 'links', views: 'saved_views'
+  prompts: 'prompt_templates', links: 'links', views: 'saved_views', decisions: 'decisions'
 };
-const CHILDREN = ['deliverables', 'tasks', 'pendings', 'activities'];   // 跟着项目一起软删除 / 恢复
+const CHILDREN = ['deliverables', 'tasks', 'pendings', 'activities', 'decisions'];   // 跟着项目一起软删除 / 恢复
 const REORDERABLE = ['deliverables', 'tasks', 'links', 'timelines'];
 // 选项清单类设置（初始化包只往里「新增」）+ 其他偏好
 const OPTION_KEYS = ['kinds', 'provinces', 'deliverable_types', 'ask_whom', 'ai_tools', 'win_task_types', 'inbox_sources'];
-const SETTING_KEYS = [...OPTION_KEYS, 'statuses', 'nudge_days', 'view_order', 'welcome_done', 'wrapup_nag'];
-const BACKUP_TABLES = ['projects', 'deliverables', 'tasks', 'pendings', 'activities', 'ideas', 'wins', 'inbox',
+const SETTING_KEYS = [...OPTION_KEYS, 'statuses', 'nudge_days', 'view_order', 'welcome_done', 'wrapup_nag', 'baselines'];
+const BACKUP_TABLES = ['projects', 'deliverables', 'tasks', 'pendings', 'activities', 'decisions', 'ideas', 'wins', 'inbox',
   'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views', 'settings'];
 
 const now = () => new Date().toISOString();
@@ -41,7 +43,8 @@ const parseRow = (table, r) => {
   delete r.deleted_at;
   for (const c of JSON_COLS[table] || []) {
     if (!(c in r)) continue;
-    try { r[c] = r[c] ? JSON.parse(r[c]) : (c === 'checklist_state' ? {} : []); } catch { r[c] = c === 'checklist_state' ? {} : []; }
+    const empty = c === 'checklist_state' ? {} : c === 'compare' ? null : [];
+    try { r[c] = r[c] ? JSON.parse(r[c]) : empty; } catch { r[c] = empty; }
   }
   return r;
 };
@@ -83,30 +86,15 @@ async function beforeWrite(db, table, data, cur, input) {
   }
   if (table === 'pendings' && !cur && !data.asked_at) data.asked_at = shToday();
   if (table === 'pendings' && 'status' in data && data.status === 'answered' && !(cur?.answered_at) && !data.answered_at) data.answered_at = shToday();
+  // v2：交付前检查只做提醒（页面上一句确认），不再拦着标「已交付」
   if (table === 'deliverables' && 'status' in data) {
-    if (data.status === 'done' && cur?.status !== 'done') {
-      if (!input.force) {
-        const missing = await checklistMissing(db, data.type || cur?.type, 'checklist_state' in data ? data.checklist_state : cur?.checklist_state);
-        if (missing.length) { const e = new Invalid(`交付前检查还有 ${missing.length} 项没勾`); e.status = 409; e.missing = missing; throw e; }
-      }
-      if (!data.delivered_at && !cur?.delivered_at) data.delivered_at = shToday();
-    }
+    if (data.status === 'done' && cur?.status !== 'done' && !data.delivered_at && !cur?.delivered_at) data.delivered_at = shToday();
     if (data.status !== 'done' && cur?.status === 'done' && !('delivered_at' in data)) data.delivered_at = null;
   }
 }
-
-// 交付前检查：按交付物类型匹配清单（清单的 applies_to 为空 = 所有类型），返回还没勾的项
-async function checklistMissing(db, type, stateRaw) {
-  const { results } = await db.prepare('SELECT id, name, applies_to, items FROM checklists WHERE deleted_at IS NULL').all();
-  let state = {};
-  try { state = typeof stateRaw === 'string' ? JSON.parse(stateRaw || '{}') : (stateRaw || {}); } catch { state = {}; }
-  const missing = [];
-  for (const cl of results.map(r => parseRow('checklists', r))) {
-    if (cl.applies_to.length && !cl.applies_to.includes(type)) continue;
-    for (const item of cl.items) if (!state?.[cl.id]?.[item]) missing.push(`${cl.name}：${item}`);
-  }
-  return missing;
-}
+// 交付物标成已交付时，旧版时间表留下的同名待办（挂在它上面的）一起勾掉，回退到旧版时也是一致的
+const doneLinkedTasks = (db, deliverableId, date) =>
+  db.prepare('UPDATE tasks SET done = 1, done_at = ?, updated_at = ? WHERE deliverable_id = ? AND done = 0 AND deleted_at IS NULL').bind(date, now(), deliverableId);
 
 async function create(db, table, input) {
   const data = clean(table, input);
@@ -127,7 +115,10 @@ async function patch(db, table, id, input) {
   const row = await update(db, table, id, stamp(table, data, false));
   const out = { item: row };
   if (table === 'activities') out.project = await afterActivity(db, row);
-  if (table === 'deliverables' && row.status === 'done' && cur.status !== 'done') out.activity = await logDelivery(db, row);
+  if (table === 'deliverables' && row.status === 'done' && cur.status !== 'done') {
+    out.activity = await logDelivery(db, row);
+    await doneLinkedTasks(db, row.id, row.delivered_at || shToday()).run();
+  }
   return json(out);
 }
 
@@ -197,37 +188,154 @@ async function schedule(db, id, input) {
   const stmts = [db.prepare('UPDATE projects SET launch_at = ?, updated_at = ? WHERE id = ?').bind(T, t, id)];
 
   if (input.mode === 'shift') {
-    const [tasks, delivs] = await Promise.all([
+    const [tasks, delivs, pends] = await Promise.all([
       db.prepare('SELECT id, offset_days FROM tasks WHERE project_id = ? AND deleted_at IS NULL AND done = 0 AND offset_days IS NOT NULL').bind(id).all(),
-      db.prepare("SELECT id, offset_days FROM deliverables WHERE project_id = ? AND deleted_at IS NULL AND status != 'done' AND offset_days IS NOT NULL").bind(id).all()
+      db.prepare("SELECT id, offset_days FROM deliverables WHERE project_id = ? AND deleted_at IS NULL AND status != 'done' AND offset_days IS NOT NULL").bind(id).all(),
+      db.prepare("SELECT id, offset_days, remind_offset FROM pendings WHERE project_id = ? AND deleted_at IS NULL AND status = 'waiting' AND offset_days IS NOT NULL").bind(id).all()
     ]);
     for (const r of tasks.results) stmts.push(db.prepare('UPDATE tasks SET due_at = ?, updated_at = ? WHERE id = ?').bind(nodeDate(T, r.offset_days, weekend), t, r.id));
     for (const r of delivs.results) stmts.push(db.prepare('UPDATE deliverables SET due_at = ?, updated_at = ? WHERE id = ?').bind(nodeDate(T, r.offset_days, weekend), t, r.id));
+    for (const r of pends.results) stmts.push(db.prepare('UPDATE pendings SET need_by = ?, remind_from = ?, updated_at = ? WHERE id = ?')
+      .bind(nodeDate(T, r.offset_days, weekend), r.remind_offset == null ? null : nodeDate(T, r.remind_offset, weekend), t, r.id));
     await db.batch(stmts);
-    return scheduleResult(db, id, { shifted: tasks.results.length + delivs.results.length });
+    return scheduleResult(db, id, { shifted: tasks.results.length + delivs.results.length + pends.results.length });
   }
 
   // apply：节点由页面传来（数据库里的模板或内置的通用示例都走这一条），这里重新校验一遍
   const items = JSON.parse(clean('timelines', { name: 'x', items: input.items }).items);
   const maxSort = (await db.prepare('SELECT MAX(sort_order) AS m FROM tasks WHERE project_id = ?').bind(id).first())?.m ?? -1;
+  // 三种节点：我要做的 → 待办；要交的 → 交付物（不再另生成一条同名待办）；等别人给的 → 待确认（带最晚日期和开始催的日期）
   items.forEach((n, i) => {
     const due = nodeDate(T, n.offset_days, weekend);
-    stmts.push(db.prepare(`INSERT INTO tasks (project_id, title, due_at, done, sort_order, source, offset_days, milestone, created_at, updated_at)
-      VALUES (?, ?, ?, 0, ?, 'timeline', ?, ?, ?, ?)`).bind(id, n.title, due, maxSort + 1 + i, n.offset_days, n.is_milestone ? 1 : 0, t, t));
-    if (n.deliverable_type) stmts.push(db.prepare(`INSERT INTO deliverables (project_id, name, type, status, due_at, offset_days, sort_order, created_at, updated_at)
-      VALUES (?, ?, ?, 'todo', ?, ?, ?, ?, ?)`).bind(id, n.deliverable_name || null, n.deliverable_type, due, n.offset_days, i, t, t));
+    if (n.kind === 'deliverable') {
+      stmts.push(db.prepare(`INSERT INTO deliverables (project_id, name, type, status, due_at, offset_days, sort_order, created_at, updated_at)
+        VALUES (?, ?, ?, 'todo', ?, ?, ?, ?, ?)`).bind(id, n.deliverable_name || null, n.deliverable_type, due, n.offset_days, i, t, t));
+    } else if (n.kind === 'wait') {
+      const from = n.remind_offset == null ? null : nodeDate(T, n.remind_offset, weekend);
+      stmts.push(db.prepare(`INSERT INTO pendings (project_id, question, ask_whom, status, blocking, need_by, remind_from, offset_days, remind_offset, source, nudge_count, created_at, updated_at)
+        VALUES (?, ?, ?, 'waiting', ?, ?, ?, ?, ?, 'timeline', 0, ?, ?)`).bind(id, n.title, n.ask_whom || null, n.blocking ? 1 : 0, due, from, n.offset_days, n.remind_offset ?? null, t, t));
+    } else {
+      stmts.push(db.prepare(`INSERT INTO tasks (project_id, title, due_at, done, sort_order, source, offset_days, milestone, created_at, updated_at)
+        VALUES (?, ?, ?, 0, ?, 'timeline', ?, ?, ?, ?)`).bind(id, n.title, due, maxSort + 1 + i, n.offset_days, n.is_milestone ? 1 : 0, t, t));
+    }
   });
   await db.batch(stmts);   // 一个事务：任何一条失败整批回滚
   return scheduleResult(db, id, { created: items.length });
 }
-async function scheduleResult(db, id, extra) {
-  const [p, tasks, delivs] = await db.batch([
+// 一个项目的全部子记录（排期、回填、拆解之后页面整体替换这个项目的数据）
+async function subtree(db, id) {
+  const [p, tasks, delivs, pends, decs, wins] = await db.batch([
     db.prepare('SELECT * FROM projects WHERE id = ?').bind(id),
-    db.prepare('SELECT * FROM tasks WHERE project_id = ? AND deleted_at IS NULL').bind(id),
-    db.prepare('SELECT * FROM deliverables WHERE project_id = ? AND deleted_at IS NULL').bind(id)
+    db.prepare('SELECT * FROM tasks WHERE project_id = ? AND deleted_at IS NULL ORDER BY IFNULL(sort_order, 1e18), id').bind(id),
+    db.prepare('SELECT * FROM deliverables WHERE project_id = ? AND deleted_at IS NULL ORDER BY IFNULL(sort_order, 1e18), id').bind(id),
+    db.prepare('SELECT * FROM pendings WHERE project_id = ? AND deleted_at IS NULL ORDER BY id').bind(id),
+    db.prepare('SELECT * FROM decisions WHERE project_id = ? AND deleted_at IS NULL ORDER BY id').bind(id),
+    db.prepare('SELECT * FROM wins WHERE project_id = ? AND deleted_at IS NULL ORDER BY id').bind(id)
   ]);
-  return json({ project: parseRow('projects', p.results[0]), tasks: tasks.results.map(r => parseRow('tasks', r)),
-    deliverables: delivs.results.map(r => parseRow('deliverables', r)), ...extra });
+  return { project: parseRow('projects', p.results[0]), tasks: tasks.results.map(r => parseRow('tasks', r)),
+    deliverables: delivs.results.map(r => parseRow('deliverables', r)), pendings: pends.results, decisions: decs.results, wins: wins.results.map(r => parseRow('wins', r)) };
+}
+async function scheduleResult(db, id, extra) {
+  return json({ ...(await subtree(db, id)), ...extra });
+}
+
+/* ---------- 回填：AI 收工汇报里的【回填工作台】，页面解析好、你确认过的一组更新，一次性写进去（一个事务） ---------- */
+async function applyOps(db, pid, input) {
+  const p = await getRow(db, 'projects', pid);
+  if (!p) return json({ error: '这个项目不存在或已删除' }, 404);
+  const ops = Array.isArray(input.ops) ? input.ops.slice(0, 100) : [];
+  if (!ops.length) throw new Invalid('没有要更新的内容');
+  const t = now(), today = shToday(), stmts = [];
+  const add = (table, data) => { const cols = Object.keys(data); stmts.push(db.prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).bind(...cols.map(c => data[c]))); };
+  const set = (table, id, data) => { const cols = Object.keys(data); if (cols.length) stmts.push(db.prepare(`UPDATE ${table} SET ${cols.map(c => `${c} = ?`).join(', ')} WHERE id = ?`).bind(...cols.map(c => data[c]), id)); };
+  let lastAi = (() => { try { return JSON.parse(p.last_ai || '[]'); } catch { return []; } })();
+  for (const [i, o] of ops.entries()) {
+    try {
+      switch (o?.op) {
+        case 'project': {
+          const d = clean('projects', o.data || {}, true); delete d.archived_at;
+          set('projects', pid, { ...d, updated_at: t }); break;
+        }
+        case 'deliverable': {
+          if (o.id) {
+            const cur = await getRow(db, 'deliverables', Number(o.id));
+            if (!cur || cur.project_id !== pid) throw new Invalid('这件交付物不在这个项目里');
+            const d = clean('deliverables', o.data || {}, true); delete d.project_id;
+            if (d.status === 'done' && cur.status !== 'done') {
+              d.delivered_at = d.delivered_at || cur.delivered_at || today;
+              stmts.push(doneLinkedTasks(db, cur.id, d.delivered_at));
+              add('activities', { project_id: pid, type: 'deliver', summary: `交付：${[d.name || cur.name || cur.type, d.version || cur.version].filter(Boolean).join(' ')}`.slice(0, 500), happened_at: d.delivered_at, created_at: t, updated_at: t });
+            }
+            set('deliverables', cur.id, { ...d, updated_at: t });
+          } else {
+            const d = clean('deliverables', { ...(o.data || {}), project_id: pid });
+            if (d.status === 'done') d.delivered_at = d.delivered_at || today;
+            add('deliverables', { ...d, created_at: t, updated_at: t });
+          }
+          break;
+        }
+        case 'pending': {
+          const d = clean('pendings', { ...(o.data || {}), project_id: pid });
+          add('pendings', { ...d, asked_at: d.asked_at || today, source: d.source || 'backfill', created_at: t, updated_at: t }); break;
+        }
+        case 'answer': {
+          const cur = await getRow(db, 'pendings', Number(o.id));
+          if (!cur || cur.project_id !== pid) throw new Invalid('这条待确认不在这个项目里');
+          const d = clean('pendings', { answer: o.answer, answered_at: o.date || today }, true);
+          if (!d.answer) throw new Invalid('答复内容不能空');
+          set('pendings', cur.id, { ...d, status: 'answered', updated_at: t });
+          add('activities', { project_id: pid, type: 'feedback', summary: `已答复：${cur.question}`.slice(0, 500), content: `问：${cur.question}\n答：${d.answer}`, happened_at: d.answered_at, created_at: t, updated_at: t });
+          break;
+        }
+        case 'decision': {
+          const d = clean('decisions', { ...(o.data || {}), project_id: pid, decided_at: o.data?.decided_at || today });
+          add('decisions', { ...d, created_at: t, updated_at: t }); break;
+        }
+        case 'win': {
+          const d = clean('wins', { ...(o.data || {}), project_id: pid, happened_at: o.data?.happened_at || today });
+          if (d.deliverable_id) { const dv = await getRow(db, 'deliverables', d.deliverable_id); if (!dv || dv.project_id !== pid) d.deliverable_id = null; }
+          add('wins', { ...d, created_at: t, updated_at: t }); break;
+        }
+        case 'activity': {
+          const d = clean('activities', { ...(o.data || {}), project_id: pid, happened_at: o.data?.happened_at || today });
+          add('activities', { ...d, created_at: t, updated_at: t });
+          if (d.type === 'ai' && d.tool && !lastAi.includes(d.tool)) lastAi = [d.tool, ...lastAi].slice(0, 10);
+          break;
+        }
+        default: throw new Invalid('不认识的更新');
+      }
+    } catch (e) {
+      if (e instanceof Invalid) throw new Invalid(`第 ${i + 1} 项：${e.message}`);
+      throw e;
+    }
+  }
+  if (JSON.stringify(lastAi) !== (p.last_ai || '[]')) set('projects', pid, { last_ai: JSON.stringify(lastAi), updated_at: t });
+  await db.batch(stmts);   // 一个事务：任何一条失败整批回滚
+  return json({ ...(await subtree(db, pid)), applied: ops.length });
+}
+
+/* ---------- 收集箱「AI 拆完贴回来」：一次建好项目、交付物、待确认，并把这条收集标成已处理 ---------- */
+async function intake(db, inboxId, input) {
+  const item = await getRow(db, 'inbox', inboxId);
+  if (!item) return json({ error: '这条收集不存在或已删除' }, 404);
+  const pdata = clean('projects', input.project || {});
+  // 先全部校验一遍，再写
+  const delivs = (Array.isArray(input.deliverables) ? input.deliverables : []).slice(0, 30).map(d => clean('deliverables', { ...d, project_id: 1 }));
+  const pends = (Array.isArray(input.pendings) ? input.pendings : []).slice(0, 60).map(x => clean('pendings', { ...x, project_id: 1 }));
+  const p = await insert(db, 'projects', stamp('projects', pdata, true));
+  const t = now(), today = shToday();
+  try {
+    const stmts = [];
+    const add = (table, data) => { const cols = Object.keys(data); stmts.push(db.prepare(`INSERT INTO ${table} (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).bind(...cols.map(c => data[c]))); };
+    delivs.forEach((d, i) => add('deliverables', { ...d, project_id: p.id, sort_order: i, created_at: t, updated_at: t }));
+    pends.forEach(x => add('pendings', { ...x, project_id: p.id, asked_at: x.asked_at || today, source: 'inbox', created_at: t, updated_at: t }));
+    stmts.push(db.prepare('UPDATE inbox SET processed_at = ?, converted_to = ?, updated_at = ? WHERE id = ?').bind(t, `project:${p.id}`, t, inboxId));
+    await db.batch(stmts);
+  } catch (e) {
+    await db.prepare('DELETE FROM projects WHERE id = ?').bind(p.id).run();   // 子记录没写进去：把刚建的项目也撤掉，不留半截
+    throw e;
+  }
+  return json({ ...(await subtree(db, p.id)), item: parseRow('inbox', await db.prepare('SELECT * FROM inbox WHERE id = ?').bind(inboxId).first()) });
 }
 
 /* ---------- 待确认：催一下 / 已答复（同时写进项目时间线） ---------- */
@@ -274,13 +382,18 @@ async function convertInbox(db, id, input) {
   return json({ item, created, kind: table });
 }
 
-/* ---------- 初始化包：只新增选项、模板、清单、链接，不覆盖已有；先预览再导入 ---------- */
+/* ---------- 初始化包：只新增选项、模板、清单、链接；先预览再导入。
+   已有同名模板 / 清单但内容不同的（包更新过，或你自己改过）列进 plan.changed，只有页面勾选了才覆盖 ---------- */
+const REPLACEABLE = { timelines: ['kind', 'items'], checklists: ['applies_to', 'items'], prompt_templates: ['tool', 'scene', 'body'] };
+const REPLACE_LABEL = { timelines: '时间表模板', checklists: '检查清单', prompt_templates: '提示词模板' };
 async function initPack(db, input) {
   const pack = input.pack;
   if (!pack || pack.app !== 'cosmoswong-desk-init') throw new Invalid('这不是工作台的初始化包（文件里 app 应该是 cosmoswong-desk-init）');
-  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [] };
+  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [], changed: [] };
   const stmts = [];
   const t = now();
+  const replace = new Set(Array.isArray(input.replace) ? input.replace.map(String) : []);
+  let replaced = 0;
 
   // 选项：在「当前生效的清单」（页面传来，含没改过的默认值）后面追加没有的。
   // 类型（kinds）每项是 {name, color}，其余是文字；按名字比较
@@ -300,15 +413,32 @@ async function initPack(db, input) {
     stmts.push(db.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)').bind(key, JSON.stringify(value), t));
   }
 
-  const existing = async (table, col) => new Set((await db.prepare(`SELECT ${col} AS v FROM ${table} WHERE deleted_at IS NULL`).all()).results.map(r => String(r.v).trim().toLowerCase()));
+  // 数据库里的 JSON 列是字符串，先还原成数组再过一遍 clean，和包里的按同一种写法比
+  const unjson = (table, c, v) => (JSON_COLS[table] || []).includes(c) && typeof v === 'string' ? (() => { try { return JSON.parse(v); } catch { return v; } })() : v;
   const addRows = async (table, key, list, col, label) => {
-    const have = await existing(table, col);
+    const rows = (await db.prepare(`SELECT * FROM ${table} WHERE deleted_at IS NULL`).all()).results;
+    const have = new Map(rows.map(r => [String(r[col]).trim().toLowerCase(), r]));
+    const cmp = REPLACEABLE[table];
     for (const [i, raw] of (Array.isArray(list) ? list : []).entries()) {
       let data;
       try { data = clean(table, raw); } catch (e) { throw new Invalid(`初始化包里「${key}」第 ${i + 1} 条：${e.message}`); }
       const k = String(data[col]).trim().toLowerCase();
-      if (have.has(k)) continue;
-      have.add(k);
+      if (have.has(k)) {
+        const old = have.get(k);
+        have.set(k, null);   // 包里同名的再出现一次：不再处理
+        if (!old || !cmp) continue;
+        let before = {};
+        try { before = clean(table, Object.fromEntries([col, ...cmp].map(c => [c, unjson(table, c, old[c])]))); } catch { /* 旧数据过不了现在的校验：当作内容不同 */ }
+        if (cmp.every(c => (before[c] ?? null) === (data[c] ?? null))) continue;
+        const id = `${table}:${old[col]}`;
+        plan.changed.push({ id, kind: REPLACE_LABEL[table], name: old[col] });
+        if (replace.has(id)) {
+          stmts.push(db.prepare(`UPDATE ${table} SET ${cmp.map(c => `${c} = ?`).join(', ')}, updated_at = ? WHERE id = ?`).bind(...cmp.map(c => data[c] ?? null), t, old.id));
+          replaced++;
+        }
+        continue;
+      }
+      have.set(k, null);
       plan[key].push(label(data));
       stamp(table, data, true);
       const cols = Object.keys(data);
@@ -322,7 +452,7 @@ async function initPack(db, input) {
 
   const count = Object.values(plan.options).reduce((a, v) => a + v.length, 0) + plan.timelines.length + plan.checklists.length + plan.prompt_templates.length + plan.links.length;
   if (input.apply && stmts.length) await db.batch(stmts);
-  return json({ plan, count, applied: !!input.apply && stmts.length > 0 });
+  return json({ plan, count, replaced: input.apply ? replaced : 0, applied: !!input.apply && stmts.length > 0 });
 }
 
 /* ---------- 全量备份 / 恢复 ---------- */
@@ -355,7 +485,7 @@ async function restoreAll(db, input) {
 }
 
 /* ---------- 读取 ---------- */
-const LOAD = ['projects', 'deliverables', 'tasks', 'pendings', 'ideas', 'wins', 'inbox', 'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views'];
+const LOAD = ['projects', 'deliverables', 'tasks', 'pendings', 'decisions', 'ideas', 'wins', 'inbox', 'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views'];
 async function bootstrap(db) {
   // 顺手清理超过撤销期的软删除（项目的子记录靠外键级联一起删）
   const cutoff = new Date(Date.now() - UNDO_HOURS * 3600e3).toISOString();
@@ -404,6 +534,8 @@ async function route(req, env, parts) {
   if (res === 'pendings' && id && action === 'nudge' && m === 'POST') return nudge(db, id, await body(req));
   if (res === 'pendings' && id && action === 'answer' && m === 'POST') return answer(db, id, await body(req));
   if (res === 'inbox' && id && action === 'convert' && m === 'POST') return convertInbox(db, id, await body(req));
+  if (res === 'inbox' && id && action === 'intake' && m === 'POST') return intake(db, id, await body(req));
+  if (res === 'projects' && id && action === 'apply' && m === 'POST') return applyOps(db, id, await body(req));
 
   const table = RES[res];
   if (!table) return json({ error: '没有这个接口' }, 404);
