@@ -44,7 +44,7 @@
         ${done.length ? (act ? `<details class="done-fold" ${D.pq ? 'open' : ''}><summary>已交付 ${done.length} 个</summary><div class="pcards">${done.map(card).join('')}</div></details>` : `<div class="pcards">${done.map(card).join('')}</div>`) : ''}</section>`;
     }).join('');
     el.innerHTML = `<div class="page projects">
-      <div class="ptools"><input class="filter" type="search" data-pfilter data-keep-focus="pq" value="${esc(D.pq || '')}" placeholder="筛选：项目名、待确认、拍板的口径…" aria-label="筛选项目"><span class="muted small">按省份分组；已交付的折起来了，点开就能看到上次做了什么。</span></div>
+      <div class="ptools"><input class="filter" type="search" data-pfilter data-keep-focus="pq" value="${esc(D.pq || '')}" placeholder="筛选：项目名、待确认、拍板的口径…" aria-label="筛选项目"><span class="muted small hint-text">按省份分组；已交付的折起来了，点开就能看到上次做了什么。</span></div>
       ${groups ? `<div class="pgroups">${groups}</div>` : (D.state.projects.length ? '<p class="empty-state">没有符合条件的项目。</p>'
         : `<div class="empty-state"><div class="big-i">${D.icon('folders')}</div><p>还没有项目。</p><p>把业务方的需求粘进收集箱，让 AI 拆完贴回来；或者直接新建一个。</p><p><button type="button" class="btn" data-new-project>＋ 新建项目</button></p></div>`)}
       ${archived.length ? `<details class="done-fold"><summary>已归档 ${archived.length} 个</summary><div class="pcards">${archived.map(card).join('')}</div></details>` : ''}
@@ -82,7 +82,7 @@
   function settledBlock(p) {
     const list = D.settledOf(p.id);
     const dropped = D.pendingsOf(p.id).filter(x => x.status === 'dropped');
-    return sec('settled', '已拍板的口径', `<p class="muted small">业务方的答复和你自己的决定都在这里，生成开工提示词时每个 AI 都会看到，免得几个 AI 各按各的记录走。</p>
+    return sec('settled', '已拍板的口径', `<p class="muted small hint-text">业务方的答复和你自己的决定都在这里，生成开工提示词时每个 AI 都会看到，免得几个 AI 各按各的记录走。</p>
       <ul class="settled">${list.map(x => `<li data-settled="${x.kind}:${x.ref.id}"><span class="sd">${esc(x.date ? D.fmtDate(x.date) : '')}</span><span class="sw">${esc(x.kind === 'decision' ? x.who + '定' : x.who + '答复')}</span><span class="st-text">${esc(x.text)}</span>${x.kind === 'decision' ? '<button type="button" class="x" data-dec-del aria-label="删除">×</button>' : '<button type="button" class="icon" data-pmore-settled title="编辑或重新打开" aria-label="更多">⋯</button>'}</li>`).join('') || '<li class="muted">还没有。</li>'}</ul>
       <form class="add-row" data-dec-add><input name="content" maxlength="1000" placeholder="＋ 记一条拍板的，如：以 Claude 版为底稿，Codex 版不再推进" aria-label="拍板的内容">
         <select name="source" aria-label="谁定的">${D.selectOpts(['我', '领导', '业务方', '设计师', '搭建同事', '开发'], '我')}</select><input name="date" type="date" value="${D.today()}" aria-label="日期"><button class="tb">记下</button></form>

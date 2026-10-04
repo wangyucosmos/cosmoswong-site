@@ -1028,6 +1028,11 @@ a.repo:hover { transform: translateY(-2px); border-color: var(--accent-line); bo
 .sk-glass i:nth-child(3) { left: 70%; top: 10%; width: 25%; height: 80%; border-radius: 12px; background: rgba(255, 255, 255, .6); box-shadow: inset 0 1px 0 #fff; }
 @media (max-width: 760px) { .skin-pick { grid-template-columns: 1fr; } .sk { height: 70px; } }
 @keyframes pulse { 50% { box-shadow: 0 0 0 6px transparent; } }
+/* 左上角图标：和主页一样的 CW 彩虹渐变（/favicon.svg），三种风格都用它，盖掉各风格原来给「台」字画的底色 */
+.logo.cw { background: none !important; color: inherit !important; padding: 0; overflow: hidden; box-shadow: 0 6px 16px rgba(124, 58, 237, .28), 0 2px 6px rgba(236, 72, 153, .18) !important; }
+.logo.cw img { width: 100%; height: 100%; display: block; }
+:root[data-theme=dark] .logo.cw { box-shadow: 0 6px 22px rgba(124, 58, 237, .45), 0 0 0 1px rgba(255, 255, 255, .08) !important; }
+
 /* 演示页（/desk-demo）顶部提示条 */
 .demo-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 36px; font-size: 12.5px; color: var(--muted); background: color-mix(in srgb, var(--accent-soft) 70%, var(--panel)); border-bottom: 1px solid var(--line); }
 .demo-bar .db-tag { font-weight: 700; font-size: 11.5px; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 1px 7px; }

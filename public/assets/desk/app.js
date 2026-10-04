@@ -1,5 +1,5 @@
 /* 我的工作台 · 启动、登录、左侧导航、页头、路由（URL hash）、快捷键、主题。
-   v3：左侧导航 6 项（今天 / 项目 / 收集箱 / 资源 / 素材库 / 记录）+ 设置；页头每页一套（今天是问候语）；
+   v3：左侧导航（v5.1 起顺序：今天 / 项目 / 收集箱 / 知识库 / 素材库 / 资源 / 记录，知识库和素材库挨着）+ 设置；页头每页一套（今天是问候语）；
    切换页面时卡片依次浮现；手机上是底部 5 个按钮（今天 / 项目 / ＋收集 / 资源 / 更多）。
    v5：三种风格（经典 / 精密 / 玻璃，theme.js 写到 <html data-skin>），内容一样、只是画法不同；
    精密和玻璃的左栏多一块「进行中的项目」（经典风格里藏起来）；左下角不再显示提效。 */
@@ -13,8 +13,8 @@
     { id: 'projects', kind: 'projects', name: '项目', icon: 'folders' },
     { id: 'inbox', kind: 'inbox', name: '收集箱', icon: 'inbox' },
     { id: 'kb', kind: 'kb', name: '知识库', icon: 'book' },
-    { id: 'resources', kind: 'resources', name: '资源', icon: 'grid' },
     { id: 'assets', kind: 'assets', name: '素材库', icon: 'image' },
+    { id: 'resources', kind: 'resources', name: '资源', icon: 'grid' },
     { id: 'records', kind: 'records', name: '记录', icon: 'chart' }
   ];
   const SETTINGS = { id: 'settings', kind: 'settings', name: '设置', icon: 'settings' };

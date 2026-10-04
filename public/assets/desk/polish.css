@@ -1,0 +1,139 @@
+/* 我的工作台 v5.1「精修」：三种风格共用的一层细节，目标是安静、有层次、少一点后台味。
+   原则：① 次要操作平时藏起来，鼠标移上去才出现（触屏照常显示）；② 颜色只用来表示急不急，其余一律中性灰；
+   ③ 能看的地方是「看」的样子，点进去才是输入框；④ 字号拉开层次：标题小而重、正文清楚、说明最淡；⑤ 说明文字不常驻。
+   全部挂在 :root.polish 上（theme.js 写的），不写不带前缀的规则。 */
+
+/* ---------- 文字层次与颜色克制 ---------- */
+:root.polish .card-box h3, :root.polish .psec > h3, :root.polish .psec > summary h3 { font-size: 13px; font-weight: 600; letter-spacing: .01em; color: var(--muted); }
+:root.polish .ch .more, :root.polish .card-box h3 .more { font-size: 12px; }
+:root.polish .gcount { font-size: 12px; }
+:root.polish .hint-text { display: none; }
+:root.polish .trow .t1, :root.polish .wq { font-size: 14px; font-weight: 500; letter-spacing: -.005em; }
+:root.polish .trow .t2, :root.polish .wmeta { font-size: 12px; color: var(--faint); }
+:root.polish .trow .t2 .proj, :root.polish .wmeta .link-btn, :root.polish .up .link-btn, :root.polish .up .it .link-btn { color: var(--faint) !important; border: 0 !important; padding: 0 !important; background: none !important; font-size: 12px; }
+:root.polish .trow .t2 .proj:hover, :root.polish .wmeta .link-btn:hover { color: var(--text) !important; text-decoration: none; }
+:root.polish .trow .pill, :root.polish .wrow > .pill { background: none !important; padding: 0 !important; font-size: 12px; font-weight: 500; color: var(--faint); font-variant-numeric: tabular-nums; }
+:root.polish .trow.late .pill, :root.polish .wrow > .pill.bad { color: var(--danger) !important; }
+:root.polish .wrow > .pill.warn { color: var(--warn) !important; }
+:root.polish .trow.done .pill { color: var(--faint) !important; }
+:root.polish .blk { background: none !important; color: var(--danger) !important; padding: 0 !important; margin-right: 8px; font-size: 11.5px; font-weight: 600; }
+:root.polish .blk::before { content: "●"; font-size: 8px; margin-right: 4px; vertical-align: 2px; }
+/* 头像：平时是中性灰，只有急的才有颜色 */
+:root.polish .wrow .av { width: 28px; height: 28px; font-size: 12px; background: var(--hover) !important; color: var(--muted) !important; box-shadow: none !important; }
+:root.polish .wrow.lvl-danger .av { background: var(--danger-soft) !important; color: var(--danger) !important; }
+:root.polish .wrow.lvl-warn .av { background: var(--warn-soft) !important; color: var(--warn) !important; }
+
+/* ---------- 行：更从容，次要操作悬停才出现 ---------- */
+:root.polish .trow { padding: 12px 2px; }
+:root.polish .wrow { padding: 12px 2px; align-items: flex-start; }
+:root.polish .tlist > .trow + .trow, :root.polish .wlist > .wrow + .wrow { border-top-color: color-mix(in srgb, var(--line) 70%, transparent); }
+@media (hover: hover) {
+  /* 浮在行的右下角，不占位置；鼠标移上去 / 键盘移进来才显出来（opacity，不是 display:none，点击不会扑空） */
+  :root.polish .wrow { position: relative; }
+  :root.polish .wrow .wact { position: absolute; right: 0; bottom: 6px; margin: 0; padding: 4px; border-radius: 12px; background: var(--panel); box-shadow: var(--shadow-pop); opacity: 0; transform: translateY(4px); pointer-events: none; transition: opacity .18s, transform .22s var(--ease); z-index: 2; }
+  :root[data-skin=glass].polish .wrow .wact { background: rgba(255, 255, 255, .92); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  :root[data-skin=glass][data-theme=dark].polish .wrow .wact { background: rgba(40, 42, 54, .92); }
+  :root.polish .wrow:hover .wact, :root.polish .wrow:focus-within .wact { opacity: 1; transform: none; pointer-events: auto; }
+  :root.polish .settled li .x, :root.polish .settled li .icon, :root.polish .tasks li .x, :root.polish .ditem [data-dmore] { opacity: 0; transition: opacity .15s; }
+  :root.polish .settled li:hover .x, :root.polish .settled li:hover .icon, :root.polish .tasks li:hover .x, :root.polish .ditem:hover [data-dmore] { opacity: 1; }
+}
+:root.polish .wact .btn.sm { padding: 3px 10px !important; font-size: 12px; }
+
+/* ---------- 「加一条」：一行安静的输入，项目选择是个小标签，有字了才出现「添加」 ---------- */
+:root.polish .today-add { display: flex; gap: 8px; align-items: center; margin-top: 10px; padding: 4px; border-radius: 12px; background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--line); }
+:root.polish .today-add input[name=title] { flex: 1; border: 0 !important; background: transparent !important; box-shadow: none !important; padding: 8px 10px !important; }
+:root.polish .today-add select { flex: 0 0 auto; max-width: 180px; height: 30px; padding: 0 26px 0 10px !important; border-radius: 8px !important; border: 0 !important; background-color: var(--hover) !important; font-size: 12.5px; color: var(--muted); }
+:root.polish .today-add .tb { opacity: 0; pointer-events: none; transition: opacity .15s; }
+:root.polish .today-add:has(input[name=title]:not(:placeholder-shown)) .tb { opacity: 1; pointer-events: auto; }
+:root.polish .today-add:focus-within { box-shadow: inset 0 0 0 1px var(--accent-line), 0 0 0 3px var(--accent-soft); background: var(--panel); }
+/* 所有下拉框：自己画箭头，不用系统那个 */
+:root.polish select { -webkit-appearance: none; appearance: none; padding-right: 28px !important; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E") !important; background-repeat: no-repeat !important; background-position: right 10px center !important; }
+:root.polish input[type=date] { font-variant-numeric: tabular-nums; }
+:root.polish input[type=date]::-webkit-calendar-picker-indicator { opacity: .45; cursor: pointer; }
+:root.polish .add-row, :root.polish .sub-add, :root.polish .link-add { opacity: .85; }
+:root.polish .add-row:focus-within, :root.polish .sub-add:focus-within { opacity: 1; }
+
+/* ---------- 交付物：平时是「看」的样子，鼠标移上去 / 点进去才是输入框 ---------- */
+:root.polish .ditem { padding: 12px 14px; transition: background .2s, box-shadow .2s; }
+:root.polish .ditem input:not([type=checkbox]) { border-color: transparent !important; background: transparent !important; box-shadow: none !important; padding-left: 4px !important; padding-right: 4px !important; transition: background .15s, border-color .15s; }
+:root.polish .ditem .dname-in { font-weight: 600; font-size: 14px; }
+:root.polish .ditem:hover input:not([type=checkbox]), :root.polish .ditem input:not([type=checkbox]):focus { border-color: var(--line-2) !important; background: var(--panel) !important; }
+:root.polish .ditem input:focus { box-shadow: 0 0 0 3px var(--accent-soft) !important; }
+:root.polish .ditem .pickbtn { border-color: transparent; background: transparent; }
+:root.polish .ditem:hover .pickbtn { border-color: var(--line-2); }
+/* 「我手改的，AI 不得改动」跟着底稿走：填了底稿就一直显示，没填底稿时只在编辑这一行时显示 */
+:root.polish .ditem:not(:has(:is(input, select, textarea):focus)):not(:has([data-df=base]:not(:placeholder-shown))) .drow3 .check:has(input:not(:checked)) { display: none; }
+:root.polish .ditem:not(:has(:is(input, select, textarea):focus)):not(:has([data-df=base]:not(:placeholder-shown))) .drow3:not(:has([data-deliver])):not(:has(input:checked)) { display: none; }
+:root.polish .ditem .drow3 [data-deliver] { margin-left: auto; }
+/* 「标成已交付」放在「底稿 / 位置」那一行的右边：不单独占一行，位置也不会因为展开收起而移动 */
+:root.polish .ditem { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 14px; align-items: center; }
+:root.polish .ditem .drow { grid-column: 1 / -1; }
+:root.polish .ditem .drow2 { grid-column: 1; grid-row: 2; margin-top: 6px; }
+:root.polish .ditem .drow3 { grid-column: 2; grid-row: 2; margin-top: 6px; justify-content: flex-end; }
+:root.polish .ditem .drow3 [data-deliver] { padding: 4px 12px; font-size: 12.5px; }
+@media (max-width: 760px) { :root.polish .ditem { grid-template-columns: 1fr; } :root.polish .ditem .drow3 { grid-column: 1; grid-row: 3; justify-content: space-between; } }
+/* 空的「底稿 / 位置」不藏（藏起来再展开会让点击扑空），只是淡成一行 */
+:root.polish .ditem .drow2 { font-size: 12px; color: var(--faint); gap: 4px 12px; }
+:root.polish .ditem .drow2 input { font-size: 12.5px; }
+:root.polish .ditem .drow2 input:placeholder-shown { color: var(--faint); }
+:root.polish .ditem .drow2 input::placeholder { color: color-mix(in srgb, var(--faint) 70%, transparent); }
+:root.polish .ditem.done { opacity: .62; }
+
+/* ---------- 卡片与留白 ---------- */
+:root.polish .card-box { padding: 22px 24px; }
+:root.polish .psec { padding: 20px 22px; }
+:root.polish .bento, :root.polish .page, :root.polish .bento > .stack { gap: 20px; }
+:root.polish .idle li { background: transparent; box-shadow: none !important; padding: 8px 4px; border-radius: 0; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); font-size: 13px; color: var(--muted); }
+:root.polish .idle li .i { color: var(--faint); }
+:root.polish .idle li .tb { background: none; border: 0; box-shadow: none; color: var(--accent); padding: 2px 4px; }
+:root.polish .sub-h { margin-top: 20px; }
+:root.polish .up { background: transparent; box-shadow: none !important; border-radius: 0; padding: 10px 2px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+:root.polish .ups { gap: 0; }
+:root.polish .mo { box-shadow: none; }
+:root.polish .ask-launch { font-size: 13px; }
+
+/* ---------- 玻璃：壁纸淡一点、玻璃厚一点，颜色只留给要紧的 ---------- */
+:root.polish[data-skin=glass] { --panel: rgba(255, 255, 255, .7); --panel-2: rgba(255, 255, 255, .5); --side: rgba(255, 255, 255, .62); }
+:root.polish[data-skin=glass][data-theme=dark] { --panel: rgba(34, 36, 46, .66); --panel-2: rgba(255, 255, 255, .05); --side: rgba(28, 30, 40, .6); }
+:root.polish[data-skin=glass] body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: -1; background: rgba(245, 246, 250, .35); }
+:root.polish[data-skin=glass][data-theme=dark] body::before { background: rgba(6, 7, 11, .3); }
+:root.polish[data-skin=glass] .ci { background: none !important; color: var(--accent) !important; box-shadow: none !important; width: auto; height: auto; }
+:root.polish[data-skin=glass] .ck .box { border-color: rgba(118, 118, 128, .35); }
+:root.polish[data-skin=glass] .trow.late .ck .box { border-color: color-mix(in srgb, var(--danger) 60%, transparent); }
+:root.polish[data-skin=glass] .tb { box-shadow: none; background: var(--hover); color: var(--text); }
+:root.polish[data-skin=glass] .card-box h3 { color: var(--text); }
+
+/* ---------- 精密：更像 Linear——行更紧、分隔线贴着文字开始 ---------- */
+:root.polish[data-skin=precise] .card-box { padding: 16px 18px; }
+:root.polish[data-skin=precise] .card-box h3 { color: var(--text); font-size: 12.5px; }
+:root.polish[data-skin=precise] .trow, :root.polish[data-skin=precise] .wrow { padding: 10px 2px; }
+:root.polish[data-skin=precise] .trow .t1, :root.polish[data-skin=precise] .wq { font-size: 13.5px; }
+
+@media (max-width: 760px) { :root.polish .today-add select { max-width: 120px; } }
+
+/* ---------- 项目页：各处「添加」平时只露一个输入框，点进去才展开其余选项 ---------- */
+/* 在输入框里（或已经打了字）才展开其余选项；点按钮不算，免得一点就展开、按钮被挤走点空。（打了字就一直展开到提交，Safari 点按钮不给按钮焦点也不会点空）；鼠标经过不展开，下面的内容不会跳 */
+:root.polish .pend-add:not(:has(:is(input, select, textarea):focus)):not(:has(input[name=question]:not(:placeholder-shown))):not(:has(.batch:not([hidden]))) .add-row > :not(input[name=question]):not([data-batch-toggle]),
+:root.polish [data-dec-add]:not(:has(:is(input, select, textarea):focus)):not(:has([name=content]:not(:placeholder-shown))) > :not([name=content]),
+:root.polish [data-task-add]:not(:has(:is(input, select, textarea):focus)):not(:has([name=title]:not(:placeholder-shown))) > :not([name=title]),
+:root.polish [data-act-add]:not(:has(:is(input, select, textarea):focus)):not(:has([name=summary]:not(:placeholder-shown))) > :not([name=summary]),
+:root.polish [data-deliv-add]:not(:has(:is(input, select, textarea):focus)):not(:has([name=name]:not(:placeholder-shown))) > :not([name=name]) { display: none !important; }
+:root.polish .pend-add [data-batch-toggle] { font-size: 12px; color: var(--faint); }
+:root.polish :is(.pend-add .add-row input[name=question], [data-dec-add] [name=content], [data-task-add] [name=title], [data-act-add] [name=summary], [data-deliv-add] [name=name]) { background: transparent !important; border: 1px dashed var(--line-2) !important; box-shadow: none !important; }
+:root.polish :is(.pend-add, [data-dec-add], [data-task-add], [data-act-add], [data-deliv-add]):focus-within :is(input[name=question], [name=content], [name=title], [name=summary], [name=name]) { border-style: solid !important; background: var(--panel) !important; }
+:root.polish [data-deliv-add] [name=name]::placeholder { color: var(--faint); }
+/* AI 交接：工具名是主按钮（中性），其余是文字按钮 */
+:root.polish .kick .btn.ghost { background: var(--panel-2) !important; color: var(--text) !important; border-color: var(--line) !important; box-shadow: none !important; font-weight: 600; }
+:root.polish .kick .btn.ghost:hover { border-color: var(--accent-line) !important; color: var(--accent) !important; }
+:root.polish .ai-more .tb { background: none !important; border-color: transparent !important; box-shadow: none !important; color: var(--muted) !important; padding: 4px 6px; }
+:root.polish .ai-more .tb:hover { color: var(--accent) !important; }
+:root.polish .kick > .muted.small { flex-basis: 100%; }
+/* 相关笔记：标题正文色、摘要只留一行 */
+:root.polish .notes li { background: transparent !important; box-shadow: none !important; padding: 8px 2px; border-radius: 0; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+:root.polish .notes li:first-child { border-top: 0; }
+:root.polish .notes .link-btn { color: var(--text); font-weight: 600; }
+:root.polish .notes .link-btn:hover { color: var(--accent); }
+:root.polish .notes small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--faint); }
+/* 已拍板的口径：谁定的是小标签色，不是链接蓝 */
+:root.polish .settled .sw { color: var(--muted); font-weight: 500; }
+:root.polish .settled li { border-bottom-color: color-mix(in srgb, var(--line) 70%, transparent); }

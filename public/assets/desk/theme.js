@@ -17,6 +17,7 @@
     el.dataset.theme = dark ? 'dark' : 'light';
     el.dataset.themePref = pref;
     el.dataset.skin = getSkin();
+    el.classList.add('polish');   // v5.1 精修（polish.css）。要回到精修前的样子，删掉这一行即可
   };
   apply();
   mq && mq.addEventListener && mq.addEventListener('change', apply);

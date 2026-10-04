@@ -307,7 +307,7 @@
     if (!A.supported || !A.files.length) return '';
     const list = D.assetSuggest(p, 8);
     D.assetLists.proj = list;
-    return { n: list.length, pinned: A.refsOf(p.id).length, html: list.length ? `<p class="muted small">钉住的在前（点开大图 →「设为项目参考」），后面是按省份、名字、去年同期推荐的。</p><div class="thumbs proj-thumbs">${list.map((x, i) => thumb(x, i, 'proj')).join('')}</div>`
+    return { n: list.length, pinned: A.refsOf(p.id).length, html: list.length ? `<p class="muted small hint-text">钉住的在前（点开大图 →「设为项目参考」），后面是按省份、名字、去年同期推荐的。</p><div class="thumbs proj-thumbs">${list.map((x, i) => thumb(x, i, 'proj')).join('')}</div>`
       : '<p class="muted small">素材库里没找到明显相关的图。点开任意一张大图，可以「设为这个项目的参考」。</p>' };
   };
 
