@@ -197,8 +197,8 @@
     return `<p><b>状态：</b>${state} <button type="button" class="tb" data-gh-refresh>${D.icon('refresh', 'sm')}重新检查</button></p>
       <details class="sub" ${s && !s.configured ? 'open' : ''}><summary>怎么连接（一次就好，约 5 分钟）</summary><ol class="steps">
         <li>打开 GitHub → 右上角头像 → Settings → Developer settings → Personal access tokens → <b>Fine-grained tokens</b> → Generate new token。</li>
-        <li>名字随便填（比如「我的工作台」），有效期选 1 年；Repository access 选 <b>Only select repositories</b>，勾上你的知识库和要看的代码仓库。</li>
-        <li>Permissions → Repository permissions：<b>Contents 选 Read and write</b>（只读也行，但那样不能回写进度、存草稿），<b>Pull requests 选 Read-only</b>，其余不动。生成后复制令牌。</li>
+        <li>名字随便填（比如「我的工作台」），有效期选 1 年。<b>Repository access 选 Only select repositories</b>（不要选 All repositories），在下拉框里勾上你的知识库和要看的代码仓库。</li>
+        <li>Permissions 那块点右边的 <b>「+ Add permissions」</b>，在弹出的列表里勾上 <b>Contents</b> 和 <b>Pull requests</b>；关掉列表后，把 <b>Contents 那行改成 Read and write</b>（只读也行，但那样不能回写进度、存草稿），Pull requests 保持 Read-only。自动多出来的 Metadata（Read-only）不用管。点 Generate token，复制令牌（页面关了就看不到了）。</li>
         <li>在电脑终端里到站点目录，运行 <code>npx wrangler@4 secret put GITHUB_TOKEN</code>，粘贴令牌回车。令牌只存在网站后台，页面上看不到。</li>
         <li>回到这里点「重新检查」。</li></ol></details>
       <h4>要看的仓库 <small class="muted">${c.repos.length} 个</small></h4><p class="muted small">${c.repos.map(r => esc(r.label || r.repo)).join('、') || '还没配置（从初始化包导入）'}</p>
