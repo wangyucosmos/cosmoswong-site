@@ -68,14 +68,13 @@
     const open = D.pref.get('settings.open', {});
     const want = D.pref.get('settings.jump', null);
     const sec = (id, title, body, hint = '') => `<details class="card-box set" data-sec="${id}" id="set-${id}" ${open[id] || want === id ? 'open' : ''}><summary><h3>${title}</h3>${hint ? `<span class="muted small">${hint}</span>` : ''}</summary>${body}</details>`;
-    const baseTypes = [...new Set([...c.deliverable_types, ...Object.keys(c.baselines)])];
     el.innerHTML = `<div class="page settings">
-      ${sec('look', '外观', `<div class="theme-pick" role="group" aria-label="外观">${[['auto', 'a', '跟随系统', '白天浅色、晚上深色'], ['light', 'l', '浅色', '清爽：白卡片、青绿色'], ['dark', 'd', '深色', '精致：深底、紫蓝微光']].map(([k, c, t, d]) => `<button type="button" data-theme-set="${k}" class="${(window.DESK_THEME?.get() || 'auto') === k ? 'on' : ''}"><span class="sw ${c}"><i></i><i></i></span><b>${t}</b><span class="muted small">${d}</span></button>`).join('')}</div>
-        <p class="muted small">只记在这台设备的浏览器里；左下角也能随时切换。系统开了「减少动态效果」时，页面动效会自动关掉。</p>`, '跟随系统 / 浅色 / 深色')}
+      ${sec('look', '风格与外观', `<h4 class="set-h">风格 <small class="muted">内容一样，只是展现方式不同</small></h4>
+        <div class="skin-pick" role="group" aria-label="风格">${[['classic', '经典', '现在这一版：白卡片、青绿色；深色是紫蓝微光'], ['precise', '精密', '像 Linear、Vercel 这类专业工具：细线、紧凑、数字对齐，顶部是交付节点轨道'], ['glass', '玻璃', '像苹果的 macOS / iOS：毛玻璃、彩色图标、大圆角，焦点是三个圆环']].map(([k, t, d]) => `<button type="button" data-skin-set="${k}" class="${(window.DESK_THEME?.getSkin() || 'classic') === k ? 'on' : ''}" aria-pressed="${(window.DESK_THEME?.getSkin() || 'classic') === k}"><span class="sk sk-${k}"><i></i><i></i><i></i></span><b>${t}</b><span class="muted small">${d}</span></button>`).join('')}</div>
+        <h4 class="set-h">深浅色</h4>
+        <div class="theme-pick" role="group" aria-label="外观">${[['auto', 'a', '跟随系统', '白天浅色、晚上深色'], ['light', 'l', '浅色', '清爽：白卡片、青绿色'], ['dark', 'd', '深色', '精致：深底、紫蓝微光']].map(([k, c, t, d]) => `<button type="button" data-theme-set="${k}" class="${(window.DESK_THEME?.get() || 'auto') === k ? 'on' : ''}"><span class="sw ${c}"><i></i><i></i></span><b>${t}</b><span class="muted small">${d}</span></button>`).join('')}</div>
+        <p class="muted small">只记在这台设备的浏览器里；深浅色在左下角也能随时切换，⌘K 里输入「风格」也能换。系统开了「减少动态效果」时，页面动效会自动关掉。</p>`, `${{ classic: '经典', precise: '精密', glass: '玻璃' }[window.DESK_THEME?.getSkin() || 'classic']} · ${{ auto: '跟随系统', light: '浅色', dark: '深色' }[window.DESK_THEME?.get() || 'auto']}`)}
       ${sec('provinces', '省份', `<p class="muted small">名单随时可以改。新建项目、项目列表分组都按这里的顺序。</p>${rowsEditor('provinces', c.provinces.map(name => ({ name })), [{ key: 'name', label: '省份' }])}`, c.provinces.length ? `${c.provinces.length} 个` : '还没填')}
-      ${sec('baselines', '提效基准', `<p class="muted small">每类交付物「以前不用 AI 大概要多少分钟」。标成已交付时自动带出来，你只填「这次用了多久」。第一次交某类东西时会顺手问一次。</p>
-        <form class="opt-editor" data-setting="baselines"><div class="base-grid">${baseTypes.map(t => `<label class="lbl inline"><span>${esc(t)}</span><input type="number" min="0" max="100000" name="b" data-type="${esc(t)}" value="${esc(c.baselines[t] ?? '')}" class="w80"> 分钟</label>`).join('')}</div>
-        <div class="row end"><button class="btn sm">保存</button></div></form>`, `${Object.keys(c.baselines).length} 类已填`)}
       ${sec('timelines', '时间表模板', `<p class="muted small">项目页「排期」和新建项目时用。内置一个通用示例（开工 T−7 / 交付 T−1 / 上线 T），不能改；你自己的模板在下面。</p>
         ${D.state.timelines.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${t.items.length} 个节点${t.kind ? ' · ' + esc(t.kind) : ''}</span></summary>${tlForm(t)}</details>`).join('')}
         <details class="sub"><summary class="add">＋ 新建时间表模板</summary>${tlForm(null)}</details>`, `${D.state.timelines.length} 个`)}

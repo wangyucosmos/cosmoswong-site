@@ -10,10 +10,12 @@
 <meta name="theme-color" content="#0a0b0e" media="(prefers-color-scheme: dark)">
 <title>我的工作台</title>
 <!-- 独立应用页：不走主站导航/页脚注入（tools/build_pages.mjs 的页面清单里没有它），不进 sitemap。数据只经 /api/desk 读写。
-     v3：浅色 = 样稿 A，深色 = 样稿 B；theme.js 要最先加载，先定主题再画页面。 -->
+     v3：浅色 = 样稿 A，深色 = 样稿 B；theme.js 要最先加载，先定主题再画页面。
+     v5：三种风格（经典 / 精密 / 玻璃），skins.css 只在 <html data-skin=precise|glass> 时生效，经典风格完全不受影响。 -->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <script src="/assets/desk/theme.js?v=20261004152315"></script>
 <link rel="stylesheet" href="/assets/desk/desk.css?v=20261004152315">
+<link rel="stylesheet" href="/assets/desk/skins.css?v=20261004152315">
 </head>
 <body>
 <form id="login" class="login" novalidate>
@@ -95,6 +97,11 @@
   <div id="pushprog-body"></div></div>
 </dialog>
 
+<dialog id="sheet" class="dlg wide" aria-labelledby="sheet-title">
+  <div class="dlg-in"><header class="dlg-head"><h2 id="sheet-title"></h2><button type="button" class="icon" data-sheet-close aria-label="关闭">✕</button></header>
+  <div id="sheet-body"></div></div>
+</dialog>
+
 <dialog id="confirm" class="dlg small" aria-labelledby="confirm-text">
   <div class="dlg-in"><p id="confirm-text"></p>
     <div class="row end"><button type="button" id="confirm-cancel" class="btn sm ghost">取消</button><button type="button" id="confirm-ok" class="btn sm danger">确认删除</button></div></div>
@@ -107,6 +114,7 @@
 <script src="/assets/desk/md.js?v=20261004152315"></script>
 <script src="/assets/desk/ai.js?v=20261004152315"></script>
 <script src="/assets/desk/waiting.js?v=20261004152315"></script>
+<script src="/assets/desk/dash.js?v=20261004152315"></script>
 <script src="/assets/desk/today.js?v=20261004152315"></script>
 <script src="/assets/desk/projects.js?v=20261004152315"></script>
 <script src="/assets/desk/inbox.js?v=20261004152315"></script>

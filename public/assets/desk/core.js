@@ -186,7 +186,9 @@
 
   /* ---------- 提示条（可带撤销按钮） ---------- */
   D.toast = (msg, opts = {}) => {
-    const box = D.$('#toasts');
+    let box = D.$('#toasts');
+    // 提示条的容器可能跟着某个弹窗被重画掉了（比如看大图时换下一张）：没了就重新建一个
+    if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.className = 'toasts'; box.setAttribute('aria-live', 'polite'); }
     // 弹窗（dialog）在浏览器顶层，提示条要放进最上面那个弹窗里，否则会被盖住、撤销按钮点不到
     const top = [...document.querySelectorAll('dialog[open]')].pop() || document.body;
     if (box.parentElement !== top) top.append(box);

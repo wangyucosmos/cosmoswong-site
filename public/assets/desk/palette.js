@@ -15,13 +15,15 @@
     const ops = [
       ['新建项目', 'plus', () => D.newProject.open(), 'n'], ['收集一条', 'inbox', () => D.capture.open(), 'c'], ['今天收工', 'moon', () => { D.app.show('today'); setTimeout(() => D.wrapup.open(), 50); }],
       ['深色模式', 'moon', () => { window.DESK_THEME?.set('dark'); D.render(true); }], ['浅色模式', 'sun', () => { window.DESK_THEME?.set('light'); D.render(true); }],
-      ['外观跟随系统', 'monitor', () => { window.DESK_THEME?.set('auto'); D.render(true); }], ['填提效基准', 'bolt', () => { D.pref.set('settings.jump', 'baselines'); D.app.show('settings'); }]
+      ['外观跟随系统', 'monitor', () => { window.DESK_THEME?.set('auto'); D.render(true); }],
+      ['风格：经典', 'sparkle', () => D.setSkin('classic')], ['风格：精密（Linear / Vercel 那种）', 'sparkle', () => D.setSkin('precise')], ['风格：玻璃（苹果那种）', 'sparkle', () => D.setSkin('glass')],
+      ['生成周报', 'file', () => D.weekly.open()], ['一次催完', 'message', () => D.nudgeAll.open()]
     ];
     add('页面', pages.filter(([, n]) => has(q, n)).map(([id, n, ic]) => ({ icon: ic, title: n, sub: '跳转', run: go(id) })));
     if (!q) {
       const recent = S.projects.filter(p => !p.archived_at && D.projOk(p.id)).sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || '')).slice(0, 5);
       add('最近的项目', recent.map(p => ({ icon: 'folders', title: p.title, sub: [D.statusOf(p.status).label, p.province].filter(Boolean).join(' · '), run: () => D.app.openProject(p.id) })));
-      add('操作', ops.slice(0, 3).map(([t, ic, run, k]) => ({ icon: ic, title: t, sub: k ? `快捷键 ${k}` : '', run })));
+      add('操作', [...ops.slice(0, 3), ops[9]].map(([t, ic, run, k]) => ({ icon: ic, title: t, sub: k ? `快捷键 ${k}` : '', run })));
       return out;
     }
     add('项目', S.projects.filter(p => has(q, p.title, p.province, p.summary, p.next_action)).slice(0, 6)
@@ -37,9 +39,9 @@
     add('本机', (S.resources || []).filter(r => has(q, r.label, r.group_name, r.path, r.province)).slice(0, 6)
       .map(r => ({ icon: { folder: 'folder', tool: 'tool', doc: 'file' }[r.kind] || 'folder', title: r.label, sub: '回车复制路径', run: () => D.copyPath(r) })));
     add('笔记', (D.kbSearch ? D.kbSearch(q, 6) : []).map(n => ({ icon: 'book', title: n.title, sub: n.path.split('/').slice(0, -1).join('/') || '知识库', run: () => D.kbOpen(n.path) })));
-    const files = D.assets?.files || [];
+    const files = D.assets?.visible ? D.assets.visible() : [];
     const hits = files.filter(f => f.path.toLowerCase().includes(q)).slice(0, 6);
-    add('素材', hits.map((f, i) => ({ icon: 'image', title: f.name, sub: `${f.g} · ${f.t}`, run: () => D.assetsOpen?.(hits, i) })));
+    add('素材', hits.map((f, i) => ({ icon: 'image', title: f.name, sub: [f.g, f.act, f.t].filter(Boolean).join(' · '), run: () => D.assetsOpen?.(hits, i) })));
     add('收集箱', S.inbox.filter(i => !i.processed_at && has(q, i.content)).slice(0, 3)
       .map(i => ({ icon: 'inbox', title: D.firstLine(i.content, 40), sub: i.source || '', run: go('inbox') })));
     add('操作', ops.filter(([t]) => has(q, t)).map(([t, ic, run, k]) => ({ icon: ic, title: t, sub: k ? `快捷键 ${k}` : '', run })));

@@ -1,7 +1,8 @@
 /* 我的工作台 · 项目（v2）
    - 项目列表：按省份分组的卡片，已交付的折起来（不再是可配置列的表格和看板）
    - 项目页：一页从上往下读——下一步 → 待确认 → 已拍板的口径 → 交付物 → 待办；右边是 AI 交接（点工具名就复制开工提示词、比稿、回填）、排期、动态、资料
-   - 交付时顺手记用时（每类交付物「以前大概要多久」只问一次）；交付前检查只提醒，不拦着 */
+   - v5：不再问用时（交付日期、版本本来就记着，「记录 → 交付记录」里能看）；交付前检查只提醒，不拦着
+   - v5：项目页加「开工包」（dash.js）和「参考素材」（素材库里钉住的 + 推荐的） */
 (() => {
   const D = window.DESK;
   const { esc } = D;
@@ -202,12 +203,19 @@
       <div class="fgrid">${F('标签（逗号分隔）', `<input data-f="tags" value="${esc((p.tags || []).join(', '))}">`, 'wide')}${F('备注', `<textarea data-f="notes" rows="3" maxlength="5000">${esc(p.notes || '')}</textarea>`, 'wide')}</div>`, { folded: true });
   }
 
+  // 素材库里钉住的参考图 + 推荐的（素材库没连上就不显示）
+  function refBlock(p) {
+    const r = D.assetsProjectBlock?.(p); if (!r) return '';
+    return sec('refs', '参考素材', r.html, { folded: !r.n, extra: r.n ? ` <span class="gcount">${r.pinned ? `钉住 ${r.pinned} · ` : ''}${r.n}</span>` : '' });
+  }
+  // 以前记过用时的项目才显示（v5 起不再问用时）
   function winBlock(p) {
     const list = D.state.wins.filter(w => w.project_id === p.id).sort((a, b) => b.happened_at.localeCompare(a.happened_at));
+    if (!list.length) return '';
     const saved = list.reduce((a, w) => a + (D.saved(w) || 0), 0);
-    return sec('wins', '提效', `${list.length ? `<ul class="winlist">${list.map(w => `<li data-win="${w.id}"><span>${esc(D.fmtDate(w.happened_at))}</span><span class="grow">${esc(w.task)}</span><span class="muted">${esc(D.fmtMinutes(w.before_minutes))} → ${esc(D.fmtMinutes(w.after_minutes))}</span><b>${esc(D.fmtMinutes(D.saved(w)))}</b></li>`).join('')}</ul>`
-      : '<p class="muted">交付时填一下「这次用了多久」，这里就会有记录。</p>'}<button type="button" class="tb" data-win-add>＋ 记一条</button>`,
-      { folded: true, extra: list.length ? ` <span class="gcount">省了 ${esc(D.fmtMinutes(saved))}</span>` : '' });
+    return sec('wins', '用时记录', `${list.length ? `<ul class="winlist">${list.map(w => `<li data-win="${w.id}"><span>${esc(D.fmtDate(w.happened_at))}</span><span class="grow">${esc(w.task)}</span><span class="muted">${esc(D.fmtMinutes(w.before_minutes))} → ${esc(D.fmtMinutes(w.after_minutes))}</span><b>${esc(D.fmtMinutes(D.saved(w)))}</b></li>`).join('')}</ul>`
+      : ''}<button type="button" class="tb" data-win-add>＋ 记一条</button>`,
+      { folded: true, extra: ` <span class="gcount">省了 ${esc(D.fmtMinutes(saved))}</span>` });
   }
 
   // 上线倒计时小圆环：离上线越近圈越满（按 30 天算满）
@@ -224,6 +232,7 @@
       <div class="phead">
         <input class="ptitle" data-f="title" value="${esc(p.title)}" maxlength="120" aria-label="项目名">
         <button type="button" class="pickbtn" data-pick="status" title="状态">${D.statusChip(p.status)} ▾</button>
+        <button type="button" class="btn sm ghost" data-kickpack="${p.id}" title="上次类似的项目、相关笔记、参考素材，一页看完，一键复制给 AI">${D.icon('layers', 'sm')}开工包</button>
         <button type="button" class="icon" data-pmenu aria-label="更多操作">⋯</button></div>
       <div class="pmeta">
         <button type="button" class="pickbtn slim" data-pick="province">${esc(p.province || '全国 / 没填省份')} ▾</button>
@@ -236,7 +245,7 @@
       ${p.summary ? `<p class="psum">${esc(p.summary)}</p>` : ''}
       <div class="pgrid">
         <div class="pcol">${nowBlock(p)}${pendBlock(p)}${settledBlock(p)}${delivBlock(p)}${taskBlock(p)}</div>
-        <div class="pcol">${aiBlock(p)}${notesBlock(p)}${scheduleBlock(p)}${actBlock(p)}${infoBlock(p)}${winBlock(p)}</div>
+        <div class="pcol">${aiBlock(p)}${notesBlock(p)}${refBlock(p)}${scheduleBlock(p)}${actBlock(p)}${infoBlock(p)}${winBlock(p)}</div>
       </div></div>`;
   };
 
@@ -265,48 +274,29 @@
     D.patch('projects', p.id, { launch_at: v }).catch(() => {});
   };
 
-  /* ================= 标成已交付：一句确认 + 这次用了多久（顺手记提效） ================= */
+  /* ================= 标成已交付：一句确认（v5 起不问用时；交付日期和版本自动记着） ================= */
   D.deliver = d => new Promise(resolve => {
-    const p = D.project(d.project_id), c = D.cfg(), base = c.baselines[d.type];
-    const tools = [...new Set([...(p?.last_ai || []), ...c.ai_tools.filter(x => x !== '我自己')])];
     const lists = D.checklistsFor(d.type);
     const dlg = D.$('#deliver');
     D.$('#deliver-title').textContent = `「${D.delivLabel(d)}」标成已交付`;
     D.$('#deliver-form').innerHTML = `
       <label class="check big"><input type="checkbox" name="checked"> 已让 AI 跑过交付前检查（Word 类也逐页看过）</label>
       ${lists.length ? `<details class="muted small"><summary>看一眼检查清单</summary>${lists.map(cl => `<p><b>${esc(cl.name)}</b></p><ul>${(cl.items || []).map(i => `<li>${esc(i)}</li>`).join('')}</ul>`).join('')}</details>` : ''}
-      <div class="wsec"><h4>顺手记一下用时 <small class="muted">（可以不填）</small></h4>
-        <div class="row wrap"><label class="lbl inline">这次实际用了<input type="number" name="after" min="0" max="100000" class="w80"> 分钟</label>
-          <label class="lbl inline">以前大概要<input type="number" name="before" min="0" max="100000" class="w80" value="${esc(base ?? '')}"> 分钟</label></div>
-        <p class="muted small">${base != null ? `「以前大概要多久」是你之前填的「${esc(d.type)}」基准，在「设置 → 提效基准」里能改。` : `「${esc(d.type)}」第一次记：填一次「以前大概要多久」，以后自动带出来。`}</p>
-        <div class="checks">${tools.map(t => `<label><input type="checkbox" name="tools" value="${esc(t)}" ${(p?.last_ai || []).includes(t) ? 'checked' : ''}> ${esc(t)}</label>`).join('')}</div>
-        <label class="check"><input type="checkbox" name="ok"> 可以上作品集（上站前要脱敏）</label></div>
+      <p class="muted small">交付日期${d.version ? `和版本（${esc(d.version)}）` : ''}会自动记下，在「记录 → 交付记录」里能看到。</p>
       <div class="row end"><button type="button" class="btn sm ghost" data-dlv-cancel>取消</button><button type="submit" class="btn sm">标成已交付</button></div>`;
     const f = D.$('#deliver-form');
     let done = false;
     const finish = v => { if (done) return; done = true; dlg.close(); resolve(v); };
     f.onsubmit = async e => {
       e.preventDefault();
-      const after = f.after.value === '' ? null : Number(f.after.value), before = f.before.value === '' ? null : Number(f.before.value);
       const btn = f.querySelector('[type=submit]'); btn.disabled = true;
-      try {
-        await D.patch('deliverables', d.id, { status: 'done', checked: f.checked.checked ? 1 : 0 });
-        if (after != null) {
-          await D.create('wins', { happened_at: D.today(), project_id: d.project_id, deliverable_id: d.id, task: `${p ? p.title + '：' : ''}${D.delivLabel(d)}`.slice(0, 200),
-            task_type: d.type, tools: [...f.querySelectorAll('[name=tools]:checked')].map(x => x.value), before_minutes: before, after_minutes: after, portfolio_ok: f.ok.checked ? 1 : 0 });
-        }
-        if (before != null && base == null) {
-          const b = { ...c.baselines, [d.type]: before };
-          await D.api('PUT', '/settings/baselines', { value: b }); D.state.settings.baselines = b;
-        }
-        D.toast(after != null && before != null ? `已交付，这次省了 ${D.fmtMinutes(before - after)}` : '已交付');
-        finish(true);
-      } catch (err) { D.fail(err); btn.disabled = false; }
+      try { await D.patch('deliverables', d.id, { status: 'done', checked: f.checked.checked ? 1 : 0 }); D.toast('已交付'); finish(true); }
+      catch (err) { D.fail(err); btn.disabled = false; }
     };
     f.querySelector('[data-dlv-cancel]').onclick = () => finish(false);
     dlg.oncancel = () => finish(false);
     dlg.showModal();
-    f.after.focus();
+    f.querySelector('[type=submit]').focus();
   });
 
   /* ================= 回填：把 AI 的收工汇报贴回来 ================= */

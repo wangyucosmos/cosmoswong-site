@@ -1,5 +1,5 @@
-/* 我的工作台 · 今天（默认首页）。v3：便当格布局（样稿 A / B）
-   现在要做（逾期 + 今天，勾掉的留在下面划线；空闲时列出「顺手的事」）｜在等谁｜月度节奏｜接下来两周（14 天日历条 + 最近几天的事）｜提效｜常用｜素材库
+/* 我的工作台 · 今天（默认首页）。v3：便当格布局（样稿 A / B）；v5：最上面是「焦点」仪表盘（dash.js），去掉了提效卡（不再问用时）
+   焦点｜现在要做（逾期 + 今天，勾掉的留在下面划线；空闲时列出「顺手的事」）｜在等谁（可一次催完）｜月度节奏｜接下来两周（14 天日历条 + 最近几天的事）｜素材（焦点项目可能用得上的）｜AI 进度｜常用
    「今天」按 Asia/Shanghai 算；已交付 / 暂缓 / 观望的项目不进这一页（月度节奏除外：它就是用来看观望的月份的）。 */
 (() => {
   const D = window.DESK;
@@ -37,15 +37,12 @@
   }
   // 空闲时可以顺手做的事
   function idleList(today) {
-    const out = [], dow = D.dow(today), c = D.cfg();
+    const out = [], dow = D.dow(today);
     const week = D.isoWeek(today);
     if (!D.state.ideas.some(i => i.week === week && i.status !== 'draft')) out.push(`<li>${D.icon('bulb')}<span class="grow">本周玩法创意还没提交${dow === 0 || dow >= 4 ? `<b class="warn-text">（已经${D.wk(today)}了）</b>` : ''}</span><button type="button" class="tb" data-goto="records" data-seg="ideas">去写</button></li>`);
     const inboxN = D.state.inbox.filter(i => !i.processed_at).length;
     if (inboxN) out.push(`<li>${D.icon('inbox')}<span class="grow">收集箱还有 ${inboxN} 条没处理</span><button type="button" class="tb" data-goto="inbox">去处理</button></li>`);
-    const since = D.addDays(today, -30);
-    const noTime = D.state.deliverables.filter(d => d.status === 'done' && d.delivered_at >= since && !D.state.wins.some(w => w.deliverable_id === d.id)).slice(0, 2);
-    for (const d of noTime) out.push(`<li>${D.icon('clock')}<span class="grow">「${esc(D.delivLabel(d))}」交付了还没记用时</span><button type="button" class="tb" data-open-project="${d.project_id}" data-tab="wins">去记</button></li>`);
-    if (!Object.keys(c.baselines).length) out.push(`<li>${D.icon('bolt')}<span class="grow">提效基准还没填：每类交付物以前大概要多久</span><button type="button" class="tb" data-goto="settings" data-sec="baselines">去填</button></li>`);
+    if (dow >= 4 || dow === 0) out.push(`<li>${D.icon('file')}<span class="grow">周报：按这周勾掉的、交付的拼好了，改两句就能交</span><button type="button" class="tb" data-weekly-open>生成</button></li>`);
     return out.slice(0, 4);
   }
   function nowCard(today) {
@@ -76,7 +73,8 @@
     const all = D.state.pendings.filter(x => x.status === 'waiting' && D.projOk(x.project_id));
     const later = all.filter(x => D.pendState(x).later).sort((a, b) => (a.remind_from || '').localeCompare(b.remind_from || ''));
     const waits = D.sortWaiting(all.filter(x => !D.pendState(x).later));
-    return { n: waits.length, html: `<section class="card-box lift">${head('clock', '在等谁', '<span class="more">按最晚日期排</span>')}
+    const due = D.nudgeDue ? D.nudgeDue().length : 0;
+    return { n: waits.length, html: `<section class="card-box lift">${head('clock', '在等谁', due >= 2 ? `<button type="button" class="more link-btn" data-nudge-all>${D.icon('message', 'sm')} 一次催完 ${due} 件</button>` : '<span class="more">按最晚日期排</span>')}
       ${waits.length ? `<ul class="wlist">${waits.map(x => D.pendingRow(x)).join('')}</ul>` : '<p class="muted">现在没有要催的事。</p>'}
       ${later.length ? `<details class="later-box"><summary>还没到催的时候（${later.length}）</summary><ul class="wlist">${later.map(x => D.pendingRow(x)).join('')}</ul></details>` : ''}
     </section>` };
@@ -130,8 +128,7 @@
       <div class="legend"><span><i></i>要交的 ${cnt.deliv}</span><span><i class="k-wait"></i>等别人给 ${cnt.wait}</span>${launch ? `<span><i class="k-launch"></i>上线 ${esc(D.fmtDate(launch))}</span>` : ''}</div></section>`;
   }
 
-  /* ---------- 提效 ---------- */
-  // 左下角和记录页共用：最能说明问题的一条（平均降幅最大的交付物类型）
+  /* ---------- 提效（v5 起今天页和左下角都不再显示，只留给「记录 → 用时记录」用） ---------- */
   D.bestWin = () => {
     const rows = (D.winByType ? D.winByType(D.state.wins) : []).filter(r => r.n && r.before > 0);
     if (!rows.length) return null;
@@ -139,26 +136,6 @@
     const pct = Math.round((1 - r.after / r.before) * 100);
     return { big: `−${pct}%`, text: `${r.type}用时：从 ${D.fmtMinutes(Math.round(r.before / r.n))} 降到 ${D.fmtMinutes(Math.round(r.after / r.n))}，共 ${r.count} 次` };
   };
-  function winsCard(today) {
-    const wins = D.state.wins;
-    if (!wins.length) return `<section class="card-box s5 lift">${head('bolt', '提效')}
-      <p class="muted">交付时记一下这次用了多久，这里就会算出你省了多少时间，攒成作品集里的数字。</p>
-      <div class="row"><button type="button" class="btn sm ghost" data-goto="settings" data-sec="baselines">先填提效基准</button></div></section>`;
-    const q0 = `${today.slice(0, 4)}-${String(Math.floor((Number(today.slice(5, 7)) - 1) / 3) * 3 + 1).padStart(2, '0')}-01`;
-    const qSaved = wins.filter(w => w.happened_at >= q0).reduce((a, w) => a + (D.saved(w) || 0), 0);
-    const months = D.winMonthly(wins, 8);
-    let acc = 0; const pts = months.map(m => (acc += Math.max(0, m.saved)));
-    const max = Math.max(...pts, 1), W = 300, H = 58;
-    const xy = pts.map((v, i) => [Math.round(i / (pts.length - 1) * W), Math.round(H - 4 - v / max * (H - 10))]);
-    const line = xy.map((p, i) => `${i ? 'L' : 'M'}${p[0]} ${p[1]}`).join(' ');
-    const rows = D.winByType(wins).filter(r => r.n).slice(0, 2);
-    const hrs = Math.round(qSaved / 6) / 10;
-    return `<section class="card-box s5 lift">${head('bolt', '提效', '<button type="button" class="more link-btn" data-goto="records" data-seg="wins">全部记录</button>')}
-      <div class="bignum"><span data-count="${hrs}">${hrs}</span><small>小时</small><em>本季度省下</em></div>
-      <svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="ar" d="${line} L${W} ${H} L0 ${H}Z"/><path class="ln" pathLength="1" d="${line}"/></svg>
-      <div class="kv">${rows.map(r => `<div>${esc(r.type)}<b>${esc(D.fmtMinutes(Math.round(r.before / r.n)))} → ${esc(D.fmtMinutes(Math.round(r.after / r.n)))}</b></div>`).join('')}</div></section>`;
-  }
-
   /* ---------- 常用 ---------- */
   function commonCard(span) {
     const pinned = [...D.state.links.filter(l => l.pinned).map(x => ({ t: 'link', x })), ...(D.state.resources || []).filter(r => r.pinned).map(x => ({ t: 'res', x }))];
@@ -172,18 +149,18 @@
     const today = D.today(), c = D.cfg();
     const welcome = c.welcome_done ? '' : `<section class="card-box welcome">${head('hand', '每天这样用')}
       <ol>
-        <li>早上先看<b>「现在要做」</b>：红色是逾期的，做完直接勾掉；要交的东西勾掉时，顺手记一下这次用了多久。</li>
+        <li>早上先看最上面的<b>焦点</b>：离上线还有几天、今天该做什么；再看<b>「现在要做」</b>，红色是逾期的，做完直接勾掉。</li>
         <li><b>「在等谁」</b>按最晚哪天要排好了，快到期的标橙、过期的标红。点「催一下」会拼好一句客气话，复制去微信发。</li>
         <li>业务方发来新需求，按 <kbd>c</kbd> 粘进收集箱；让 AI 拆完，把它输出的【新建项目】那段贴回来，项目、交付物、待确认一次建好。</li>
-        <li>给 AI 派活：打开项目 → 点工具名，开工提示词就复制好了。AI 干完把汇报整段贴回「回填」，下一步、待确认、交付、用时自动更新。</li>
+        <li>给 AI 派活：打开项目 → 点「开工包」或工具名，提示词就复制好了。AI 干完把汇报整段贴回「回填」，下一步、待确认、交付自动更新。</li>
         <li>按 <kbd>⌘</kbd> <kbd>K</kbd> 什么都能搜：项目、待办、网址、本机文件夹、素材图。</li>
       </ol>
       <div class="row"><button type="button" class="btn sm" data-welcome-done>知道了，不再显示</button><span class="muted small">快捷键：<kbd>⌘K</kbd> 搜索 <kbd>c</kbd> 收集 <kbd>n</kbd> 新项目 <kbd>t</kbd> 回到今天</span></div>
     </section>`;
-    const now = nowCard(today), wait = waitCard(), ac = D.assetsCard ? D.assetsCard() : '';
+    const now = nowCard(today), wait = waitCard(), ac = D.assetsCard ? D.assetsCard('s5') : '';
     el.innerHTML = `<div class="page today">
-      <div class="bento">${welcome}<div class="stack s7">${now.html}</div><div class="stack s5">${wait.html}${monthsCard(today)}</div>${agendaCard(today)}${winsCard(today)}${D.ghCards ? D.ghCards() : ''}${commonCard(ac ? 's5' : 's12')}${ac}</div>
-      <div class="wrap-bar"><button type="button" class="btn" data-wrapup>${D.icon('moon', 'sm')}今天收工</button></div></div>`;
+      <div class="bento">${welcome}${D.dashCard ? D.dashCard() : ''}<div class="stack s7">${now.html}</div><div class="stack s5">${wait.html}${monthsCard(today)}</div>${agendaCard(today)}${ac || commonCard('s5')}${D.ghCards ? D.ghCards() : ''}${ac ? commonCard('s12') : ''}</div>
+      <div class="wrap-bar"><button type="button" class="btn ghost" data-weekly-open>${D.icon('file', 'sm')}生成周报</button><button type="button" class="btn" data-wrapup>${D.icon('moon', 'sm')}今天收工</button></div></div>`;
   };
 
   D.todayEvents = (main, getView) => {

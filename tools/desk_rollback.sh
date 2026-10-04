@@ -1,17 +1,17 @@
 #!/bin/bash
-# 把 /desk 我的工作台回退到旧版：desk-v2（2026-10-04 的 v2：4 个标签、未换皮肤）或 desk-v1（第一版：9 个视图）。
-# 数据不用回退：v2、v3 的迁移（migrations/desk/0002、0003）只加不删，旧版代码照样能读写这份数据。
+# 把 /desk 我的工作台回退到旧版：desk-v4（2026-10-04 的 v4：只有一种风格、今天页带提效卡）、desk-v2（4 个标签、未换皮肤）或 desk-v1（第一版：9 个视图）。
+# 数据不用回退：v2、v3 的迁移（migrations/desk/0002、0003）只加不删，旧版代码照样能读写这份数据；v5 没有改数据库。
 #
 # 用法（在站点目录）：
-#   tools/desk_rollback.sh desk-v2 --dry-run   只在本地把 /desk 的代码换成旧版（不改数据库、不部署、不提交），先看看
-#   tools/desk_rollback.sh desk-v2 --yes       正式回退：换代码 →（回到 v1 时把 v1 不认识的两个状态改回去）→ 部署 → 提交推送
+#   tools/desk_rollback.sh desk-v4 --dry-run   只在本地把 /desk 的代码换成旧版（不改数据库、不部署、不提交），先看看
+#   tools/desk_rollback.sh desk-v4 --yes       正式回退：换代码 →（回到 v1 时把 v1 不认识的两个状态改回去）→ 部署 → 提交推送
 #
 # 只动 /desk 自己的三处：public/desk.html、public/assets/desk/、src/desk/。主站其他页面、导航、/kol、/subs 都不受影响。
 # 回退后记得改站点 AGENTS.md 的「/desk」一节和知识库「个人主页.md」里的说明。
 set -euo pipefail
 cd "$(dirname "$0")/.."
 TAG="${1:-}"; MODE="${2:-}"
-case "$TAG" in desk-v1|desk-v2) ;; *) echo "用法：tools/desk_rollback.sh desk-v2|desk-v1 --dry-run|--yes"; exit 1;; esac
+case "$TAG" in desk-v1|desk-v2|desk-v4) ;; *) echo "用法：tools/desk_rollback.sh desk-v4|desk-v2|desk-v1 --dry-run|--yes"; exit 1;; esac
 [ "$MODE" = "--yes" ] || [ "$MODE" = "--dry-run" ] || { echo "用法：tools/desk_rollback.sh $TAG --dry-run|--yes"; exit 1; }
 export PATH=/Library/Developer/CommandLineTools/usr/bin:$PATH   # 本机 /usr/bin/git 会因 Xcode 许可协议报错；deploy.sh 也要用它取提交日期
 git rev-parse -q --verify "$TAG" >/dev/null || git fetch -q origin tag "$TAG"

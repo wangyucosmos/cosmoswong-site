@@ -1,7 +1,8 @@
 /* 我的工作台 · 知识库（v4）：在工作台里看、搜你的笔记。
    两种来源：① 这台 Mac 的 Chrome：选一次本地知识库文件夹，网页直接读（照 .gitignore 跳过不进仓库的文件，如密钥版、联系人，内容不离开电脑）；
    ② 其他设备（手机等）：通过网站后台的 GitHub 只读令牌读私有仓库（要先连接 GitHub）。
-   文件夹句柄和笔记缓存只存在本机浏览器的 IndexedDB（desk-kb），不进 D1。 */
+   文件夹句柄和笔记缓存只存在本机浏览器的 IndexedDB（desk-kb），不进 D1。
+   v5：读笔记开头的 type / tags 做筛选；目录可以按「最近改过」排；路径里带「草稿」的笔记标成草稿（橙色），和正式笔记分开。 */
 (() => {
   const D = window.DESK;
   const { esc } = D;
@@ -37,7 +38,11 @@
 
   /* ---------- 读取 ---------- */
   const titleOf = (text, name) => { const fm = text.match(/^---\n[\s\S]*?^title:\s*(.+)$[\s\S]*?\n---/m); if (fm) return fm[1].trim().replace(/^["']|["']$/g, ''); const h = text.match(/^#\s+(.+)$/m); return h ? h[1].trim() : name.replace(/\.md$/i, ''); };
-  const decorate = f => Object.assign(f, { name: f.path.split('/').pop(), dir: f.path.split('/').slice(0, -1).join('/'), title: titleOf(f.text || '', f.path.split('/').pop()), low: ((f.text || '') + '\n' + f.path).toLowerCase() });
+  // 笔记开头的 type: xxx 和 tags: [a, b] / tags: a, b
+  const fmOf = text => { const m = /^---\n([\s\S]*?)\n---/.exec(text || ''); if (!m) return {}; const type = /^type:\s*(.+)$/m.exec(m[1]); const tags = /^tags:\s*\[?([^\]\n]*)\]?$/m.exec(m[1]);
+    return { type: type ? type[1].trim().replace(/^["']|["']$/g, '') : '', tags: tags ? tags[1].split(/[,，]/).map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean) : [] }; };
+  const decorate = f => Object.assign(f, { name: f.path.split('/').pop(), dir: f.path.split('/').slice(0, -1).join('/'), title: titleOf(f.text || '', f.path.split('/').pop()), low: ((f.text || '') + '\n' + f.path).toLowerCase(),
+    draft: /草稿/.test(f.path), ...fmOf(f.text) });
   async function walk(dir, prefix, stack, out) {
     const entries = [];
     for await (const [name, h] of dir.entries()) entries.push([name, h]);
@@ -162,12 +167,13 @@
 
   /* ---------- 页面 ---------- */
   D.kbSub = () => K.source === 'local' ? `「${esc(K.rootName)}」· ${K.files.length} 篇笔记 · 直接读这台电脑上的文件，内容不上传` : K.source === 'github' ? `从 GitHub 读 · ${K.files.length} 篇笔记` : '在工作台里看、搜你的笔记';
+  const kbItem = cur => f => `<button type="button" class="kbf${f.path === cur ? ' on' : ''}${f.draft ? ' draft' : ''}" data-kb-open="${esc(f.path)}" title="${esc(f.path)}">${D.icon('file', 'sm')}<span>${esc(f.title)}</span>${f.draft ? '<em class="dtag">草稿</em>' : f.type ? `<em class="ttag">${esc(f.type)}</em>` : ''}</button>`;
   const tree = (files, cur) => {
     const groups = new Map();
     for (const f of files) { const top = f.path.includes('/') ? f.path.split('/')[0] : ''; if (!groups.has(top)) groups.set(top, []); groups.get(top).push(f); }
     const open = D.pref.get('kb.open', {});
     return [...groups.entries()].sort((a, b) => (a[0] === '') - (b[0] === '') || a[0].localeCompare(b[0], 'zh')).map(([g, fs]) => {
-      const items = fs.map(f => `<button type="button" class="kbf${f.path === cur ? ' on' : ''}" data-kb-open="${esc(f.path)}" title="${esc(f.path)}">${D.icon('file', 'sm')}<span>${esc(f.title)}</span></button>`).join('');
+      const items = fs.map(kbItem(cur)).join('');
       if (!g) return `<div class="kbg root">${items}</div>`;
       const isOpen = open[g] ?? (cur || '').startsWith(g + '/');
       return `<details class="kbg" data-kbg="${esc(g)}" ${isOpen ? 'open' : ''}><summary>${D.icon('folder', 'sm')}<span>${esc(g)}</span><small>${fs.length}</small></summary>${items}</details>`;
@@ -188,13 +194,25 @@
     if (!K.files.length && !K.scanning) { el.innerHTML = `<div class="page">${connectHero()}</div>`; return; }
     const q = D.kq || '', cur = view.path || '';
     const f = cur ? K.files.find(x => x.path === cur) : null;
-    const results = q ? D.kbSearch(q, 60) : null;
+    const kf = { type: '', tag: '', sort: 'tree', ...D.pref.get('kb.f', {}) };
+    const types = [...K.files.reduce((m, x) => x.type ? m.set(x.type, (m.get(x.type) || 0) + 1) : m, new Map()).entries()].sort((a, b) => b[1] - a[1]);
+    const tags = [...K.files.reduce((m, x) => { (x.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)); return m; }, new Map()).entries()].sort((a, b) => b[1] - a[1]).slice(0, 14);
+    const pool = K.files.filter(x => (!kf.type || (kf.type === '草稿' ? x.draft : x.type === kf.type)) && (!kf.tag || (x.tags || []).includes(kf.tag)));
+    const filtering = kf.type || kf.tag || kf.sort === 'recent';
+    let results = q ? D.kbSearch(q, 60) : null;
+    if (results && (kf.type || kf.tag)) { const ok = new Set(pool.map(x => x.path)); results = results.filter(r => ok.has(r.path)); }
+    const listView = filtering && !q ? [...pool].sort((a, b) => kf.sort === 'recent' ? (b.mtime || 0) - (a.mtime || 0) : a.path.localeCompare(b.path, 'zh')) : null;
+    const drafts = K.files.filter(x => x.draft).length;
+    const kfBar = `<div class="kb-f"><select data-kbf="type" aria-label="类型"><option value="">全部类型</option>${drafts ? `<option value="草稿" ${kf.type === '草稿' ? 'selected' : ''}>草稿（${drafts}）</option>` : ''}${types.map(([t, n]) => `<option value="${esc(t)}" ${kf.type === t ? 'selected' : ''}>${esc(t)}（${n}）</option>`).join('')}</select>
+      <select data-kbf="sort" aria-label="排序"><option value="tree" ${kf.sort !== 'recent' ? 'selected' : ''}>按文件夹</option><option value="recent" ${kf.sort === 'recent' ? 'selected' : ''}>最近改过</option></select></div>
+      ${tags.length ? `<div class="kb-tags">${tags.map(([t]) => `<button type="button" class="fchip-t${kf.tag === t ? ' on' : ''}" data-kbtag="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}`;
     const side = `<aside class="kb-side card-box">
       <input class="filter" type="search" data-kfilter data-keep-focus="kq" value="${esc(q)}" placeholder="搜笔记标题和正文…" aria-label="搜笔记">
       <div class="kb-src muted small">${K.source === 'local' ? `${D.icon('monitor', 'sm')} 本机「${esc(K.rootName)}」` : `${D.icon('globe', 'sm')} GitHub`} · ${K.files.length} 篇${K.scanning ? ' · 正在读取…' : ''}
         <span class="grow"></span>${K.source === 'local' ? `<button type="button" class="icon" data-kb-rescan title="重新读取">${D.icon('refresh', 'sm')}</button><button type="button" class="icon" data-kb-forget title="断开">${D.icon('x', 'sm')}</button>` : `<button type="button" class="icon" data-kb-github title="重新读取">${D.icon('refresh', 'sm')}</button>`}</div>
       ${K.error ? `<p class="warn small">${esc(K.error)}</p>` : ''}
-      <nav class="kb-tree">${results ? (results.length ? results.map(r => `<button type="button" class="kbr${r.path === cur ? ' on' : ''}" data-kb-open="${esc(r.path)}"><b>${D.mdHighlight(esc(r.title), q)}</b><small>${D.mdHighlight(esc(r.snippet), q)}</small><em>${esc(r.path)}</em></button>`).join('') : '<p class="muted small pad">没搜到。</p>') : tree(K.files, cur)}</nav></aside>`;
+      ${kfBar}
+      <nav class="kb-tree">${listView ? (listView.length ? listView.map(kbItem(cur)).join('') : '<p class="muted small pad">没有符合条件的笔记。</p>') : results ? (results.length ? results.map(r => `<button type="button" class="kbr${r.path === cur ? ' on' : ''}" data-kb-open="${esc(r.path)}"><b>${D.mdHighlight(esc(r.title), q)}</b><small>${D.mdHighlight(esc(r.snippet), q)}</small><em>${esc(r.path)}</em></button>`).join('') : '<p class="muted small pad">没搜到。</p>') : tree(K.files, cur)}</nav></aside>`;
     let main;
     if (!f) {
       const recent = [...K.files].filter(x => x.mtime).sort((a, b) => b.mtime - a.mtime).slice(0, 8);
@@ -227,10 +245,12 @@
   /* ---------- 事件 ---------- */
   D.kbEvents = main => {
     main.addEventListener('input', e => { if (D.current?.kind === 'kb' && e.target.matches('[data-kfilter]')) { D.kq = e.target.value.trim(); D.render(true); } });
+    main.addEventListener('change', e => { const s = e.target.closest('[data-kbf]'); if (s && D.current?.kind === 'kb') { const f = D.pref.get('kb.f', {}); f[s.dataset.kbf] = s.value; D.pref.set('kb.f', f); D.render(true); } });
     main.addEventListener('toggle', e => { if (e.target.matches?.('details[data-kbg]')) { const o = D.pref.get('kb.open', {}); o[e.target.dataset.kbg] = e.target.open; D.pref.set('kb.open', o); } }, true);
   };
   document.addEventListener('click', async e => {
     if (e.target.closest('[data-kb-connect]')) return connect();
+    const tg = e.target.closest('[data-kbtag]'); if (tg) { const f = D.pref.get('kb.f', {}); f.tag = f.tag === tg.dataset.kbtag ? '' : tg.dataset.kbtag; D.pref.set('kb.f', f); return D.render(true); }
     if (e.target.closest('[data-kb-resume]')) return resume();
     if (e.target.closest('[data-kb-rescan]')) return scan();
     if (e.target.closest('[data-kb-forget]')) return forget();

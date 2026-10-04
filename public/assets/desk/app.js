@@ -1,6 +1,8 @@
 /* 我的工作台 · 启动、登录、左侧导航、页头、路由（URL hash）、快捷键、主题。
    v3：左侧导航 6 项（今天 / 项目 / 收集箱 / 资源 / 素材库 / 记录）+ 设置；页头每页一套（今天是问候语）；
-   切换页面时卡片依次浮现；手机上是底部 5 个按钮（今天 / 项目 / ＋收集 / 资源 / 更多）。 */
+   切换页面时卡片依次浮现；手机上是底部 5 个按钮（今天 / 项目 / ＋收集 / 资源 / 更多）。
+   v5：三种风格（经典 / 精密 / 玻璃，theme.js 写到 <html data-skin>），内容一样、只是画法不同；
+   精密和玻璃的左栏多一块「进行中的项目」（经典风格里藏起来）；左下角不再显示提效。 */
 (() => {
   const D = window.DESK;
   const { esc, $ } = D;
@@ -116,14 +118,16 @@
     };
   }
   const navBtn = (v, cur, b) => { const x = b[v.id];
-    return `<button type="button" class="nav${cur === v.id ? ' on' : ''}" data-id="${v.id}" ${cur === v.id ? 'aria-current="page"' : ''} title="${esc(v.name)}">${D.icon(v.icon)}<span class="lb-t">${esc(v.name)}</span>${x ? `<span class="n ${x.cls || ''}" title="${esc(x.title)}">${x.n}</span>` : ''}</button>`; };
+    return `<button type="button" class="nav${cur === v.id ? ' on' : ''}" data-id="${v.id}" ${cur === v.id ? 'aria-current="page"' : ''} title="${esc(v.name)}"><span class="ni">${D.icon(v.icon)}</span><span class="lb-t">${esc(v.name)}</span>${x ? `<span class="n ${x.cls || ''}" title="${esc(x.title)}">${x.n}</span>` : ''}</button>`; };
   function renderSide() {
     const b = badges(), cur = D.current?.kind === 'project' ? 'projects' : D.current?.kind === 'kb' ? 'kb' : D.current?.id;
-    $('#tabs').innerHTML = VIEWS.map(v => navBtn(v, cur, b)).join('') + '<div class="sep"></div>' + navBtn(SETTINGS, cur, b);
-    const best = D.bestWin?.();
+    const projs = D.dashProjects ? D.dashProjects().slice(0, 6) : [];
+    const curPid = D.current?.kind === 'project' ? D.current.pid : null;
+    const side = projs.length ? `<div class="side-proj"><div class="side-h">进行中的项目<button type="button" class="icon" data-new-project title="新建项目" aria-label="新建项目">${D.icon('plus', 'sm')}</button></div>${projs.map(p => { const st = D.projStats(p);
+      return `<button type="button" class="sp${curPid === p.id ? ' on' : ''}" data-open-project="${p.id}" title="${esc(p.title)}">${D.pie(st.deliv)}<span class="spt">${esc(p.title)}</span><span class="spd${st.days != null && st.days <= 3 && st.days >= 0 ? ' hot' : ''}">${esc(D.tLabel(p))}</span></button>`; }).join('')}</div>` : '';
+    $('#tabs').innerHTML = VIEWS.map(v => navBtn(v, cur, b)).join('') + side + '<div class="sep"></div>' + navBtn(SETTINGS, cur, b);
     const pref = window.DESK_THEME?.get() || 'auto';
-    $('#side-foot').innerHTML = `${best ? `<button type="button" class="win-card" data-goto="records" data-seg="wins" title="去看提效记录"><b>${esc(best.big)}</b>${esc(best.text)}</button>` : ''}
-      <div class="theme-seg" role="group" aria-label="外观">${[['auto', 'monitor', '跟随系统'], ['light', 'sun', '浅色'], ['dark', 'moon', '深色']].map(([k, ic, t]) => `<button type="button" data-theme-set="${k}" class="${pref === k ? 'on' : ''}" title="${t}" aria-label="${t}" aria-pressed="${pref === k}">${D.icon(ic)}</button>`).join('')}</div>`;
+    $('#side-foot').innerHTML = `<div class="theme-seg" role="group" aria-label="外观">${[['auto', 'monitor', '跟随系统'], ['light', 'sun', '浅色'], ['dark', 'moon', '深色']].map(([k, ic, t]) => `<button type="button" data-theme-set="${k}" class="${pref === k ? 'on' : ''}" title="${t}" aria-label="${t}" aria-pressed="${pref === k}">${D.icon(ic)}</button>`).join('')}</div>`;
     renderBottom(b, cur);
   }
   function renderBottom(b, cur) {
@@ -163,8 +167,8 @@
       case 'resources': return { title: '资源', sub: '网页、本机文件夹、小工具、文档，都在这一页；本机的点一下就复制路径' };
       case 'assets': return { title: '素材库', sub: D.assetsSub ? D.assetsSub() : '' };
       case 'kb': return { title: '知识库', sub: D.kbSub ? D.kbSub() : '' };
-      case 'records': return { title: '记录', sub: '提效记录攒作品集，玩法创意每周一个' };
-      case 'settings': return { title: '设置', sub: '选项、模板、提效基准、外观和数据' };
+      case 'records': return { title: '记录', sub: '交付过什么、改了几版，玩法创意每周一个' };
+      case 'settings': return { title: '设置', sub: '风格与外观、选项、模板、知识库和数据' };
       default: return { title: '' };
     }
   }
@@ -209,6 +213,14 @@
   }
   D.on('render', force => { if ($('#app').hidden || !D.current) return; renderSide(); renderMain(force, false); });
 
+  /* ---------- 换风格：先淡出、换、再淡入（浏览器支持就用 View Transitions） ---------- */
+  D.setSkin = v => {
+    if ((window.DESK_THEME?.getSkin() || 'classic') === v) return;
+    const go = () => { window.DESK_THEME?.setSkin(v); renderSide(); renderMain(true, false); };
+    if (document.startViewTransition && !reduced()) document.startViewTransition(go); else go();
+    D.toast(`已换成「${{ classic: '经典', precise: '精密', glass: '玻璃' }[v] || v}」风格`, { icon: 'sparkle' });
+  };
+
   /* ---------- 庆祝一下（今天的事全做完时） ---------- */
   D.confetti = (x = innerWidth / 2, y = innerHeight / 3) => {
     if (reduced()) return;
@@ -245,6 +257,8 @@
       const m = e.target.closest('[data-more]'); if (m) return openMore(m);
       const th = e.target.closest('[data-theme-set]');
       if (th) { window.DESK_THEME?.set(th.dataset.themeSet); renderSide(); if (D.current?.kind === 'settings') renderMain(true); return; }
+      const sk = e.target.closest('[data-skin-set]');
+      if (sk) { D.setSkin(sk.dataset.skinSet); return; }
     });
     $('#tabs').addEventListener('click', e => { const t = e.target.closest('.nav[data-id]'); if (t) show(t.dataset.id); });
     // 系统切换深浅色时，左下角的主题按钮也跟着刷新
