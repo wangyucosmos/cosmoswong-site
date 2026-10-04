@@ -27,7 +27,7 @@ const sql = [];
 const ins = (table, row) => sql.push(`INSERT INTO ${table} (${Object.keys(row).join(',')}) VALUES (${Object.values(row).map(q).join(',')});`);
 const T = { created_at: now, updated_at: now };
 
-for (const t of ['activities', 'decisions', 'deliverables', 'tasks', 'pendings', 'wins', 'ideas', 'inbox', 'projects', 'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views', 'settings']) sql.push(`DELETE FROM ${t};`);
+for (const t of ['activities', 'decisions', 'deliverables', 'tasks', 'pendings', 'wins', 'ideas', 'inbox', 'projects', 'timelines', 'checklists', 'prompt_templates', 'links', 'resources', 'saved_views', 'settings']) sql.push(`DELETE FROM ${t};`);
 sql.push(`DELETE FROM sqlite_sequence;`);
 
 /* ---------- 设置与模板（虚构） ---------- */
@@ -52,7 +52,12 @@ ins('checklists', { name: '示例 Word 检查', applies_to: J(['策划案', '客
 ins('prompt_templates', { name: '示例开工（Codex）', tool: 'Codex', scene: '开工', body: '【示例】先读你自己的项目说明，再开始。\n项目：{{project}}（{{province}}）\n这次要做：{{todo}}\n交付物：\n{{deliverables}}\n已拍板的口径：\n{{pendings_answered}}\n还没确认：\n{{pendings_open}}', ...T });
 ins('prompt_templates', { name: '示例收工', tool: null, scene: '收工', body: '项目 {{project}} 收工，请汇报做了什么、下一步是什么。', ...T });
 [['示例工具', '示例设计工具', 'https://example.com/design'], ['示例工具', '示例原型工具', 'https://example.com/proto'], ['示例站点', '示例后台', 'https://example.com/admin'], ['示例站点', '示例发布站', 'https://example.org/h5']]
-  .forEach(([g, label, url], i) => ins('links', { group_name: g, label, url, sort_order: i, ...T }));
+  .forEach(([g, label, url], i) => ins('links', { group_name: g, label, url, pinned: i < 3 ? 1 : 0, sort_order: i, ...T }));
+// v3 资源：本机文件夹 / 小工具 / 文档（路径全是虚构的示例）
+[['folder', '示例分组', '示例客服文档文件夹', '~/示例文件夹/客服文档', null, 1], ['folder', '示例分组', '示例切图文件夹', '~/示例文件夹/切图', null, 0],
+ ['tool', '示例小工具', '示例图片处理工具', '~/示例文件夹/工具/图片处理', '把静态图做成动图', 1], ['doc', null, '示例省份 A 客服文档 V1', '~/示例文件夹/示例省份A/客服文档V1.docx', null, 0],
+ ['doc', null, '示例省份 B 活动规则', '~/示例文件夹/示例省份B/活动规则.docx', null, 0]]
+  .forEach(([kind, g, label, path, note, pinned], i) => ins('resources', { kind, group_name: g, label, path, note, province: kind === 'doc' ? (label.includes('A') ? '示例省份 A' : '示例省份 B') : null, pinned, sort_order: i, ...T }));
 
 /* ---------- 项目 ---------- */
 // [id, 名称, 省份, 状态, 上线(天), 暂定, 截止(天), 下一步, 最近经手]
