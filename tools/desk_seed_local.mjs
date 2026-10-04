@@ -33,6 +33,10 @@ sql.push(`DELETE FROM sqlite_sequence;`);
 /* ---------- 设置与模板（虚构） ---------- */
 ins('settings', { key: 'provinces', value: J(['示例省份 A', '示例省份 B', '示例省份 C']), updated_at: now });
 ins('settings', { key: 'baselines', value: J({ 客服文档: 240, 活动规则: 120 }), updated_at: now });
+// v4 GitHub 连接：仓库名全是虚构的（本地测试配合假 GitHub，见 AGENTS.md）
+ins('settings', { key: 'github', value: J({ repos: [{ repo: 'demo/kb', label: '示例知识库' }, { repo: 'demo/work', label: '示例工作仓库' }, { repo: 'demo/site', label: '示例网站' }],
+  progress: [{ repo: 'demo/work', path: '进度.md', label: '示例工作看板' }, { repo: 'demo/kb', path: '个人主页/进度.md', label: '示例个人主页' }],
+  drafts: { repo: 'demo/kb', dir: '_草稿-工作台' }, kb: [{ repo: 'demo/kb', prefix: '' }, { repo: 'demo/work', prefix: '示例工作' }] }), updated_at: now });
 // 时间表：三种节点（我要做的 / 要交的 / 等别人给）
 const TL = [
   { offset_days: -15, title: '开工：理需求、列待确认', kind: 'task', is_milestone: true },
