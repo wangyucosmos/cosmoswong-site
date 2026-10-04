@@ -74,6 +74,10 @@
         <h4 class="set-h">深浅色</h4>
         <div class="theme-pick" role="group" aria-label="外观">${[['auto', 'a', '跟随系统', '白天浅色、晚上深色'], ['light', 'l', '浅色', '清爽：白卡片、青绿色'], ['dark', 'd', '深色', '精致：深底、紫蓝微光']].map(([k, c, t, d]) => `<button type="button" data-theme-set="${k}" class="${(window.DESK_THEME?.get() || 'auto') === k ? 'on' : ''}"><span class="sw ${c}"><i></i><i></i></span><b>${t}</b><span class="muted small">${d}</span></button>`).join('')}</div>
         <p class="muted small">只记在这台设备的浏览器里；深浅色在左下角也能随时切换，⌘K 里输入「风格」也能换。系统开了「减少动态效果」时，页面动效会自动关掉。</p>`, `${{ classic: '经典', precise: '精密', glass: '玻璃' }[window.DESK_THEME?.getSkin() || 'classic']} · ${{ auto: '跟随系统', light: '浅色', dark: '深色' }[window.DESK_THEME?.get() || 'auto']}`)}
+      ${D.DEMO ? '' : sec('share', '分享给别人看', `<p class="muted small">给想看作品集的人发这两个链接：演示版不用密码，数据全是虚构的，对方的改动只存在他自己的浏览器里，碰不到你的真实数据。</p>
+        <div class="share-list">${[['演示版', '/desk-demo', '可以直接点着用：今天、项目、开工包、三种风格都能试'], ['案例介绍', '/workbench', '为什么做、怎么设计、怎么和 AI 一起做出来的']].map(([t, p, d]) => `<div class="share-row"><div class="sr-t"><b>${t}</b><span class="mono">${esc(location.origin + p)}</span><small class="muted">${d}</small></div>
+          <div class="row-btns"><button type="button" class="btn sm" data-share-copy="${p}">${D.icon('copy', 'sm')}复制链接</button><a class="btn sm ghost" href="${p}" target="_blank" rel="noopener">${D.icon('external', 'sm')}打开</a></div></div>`).join('')}</div>
+        <div class="row wrap"><button type="button" class="tb" data-share-intro>${D.icon('message', 'sm')}复制一段带链接的介绍（发微信用）</button></div>`, '演示版 · 案例页')}
       ${sec('provinces', '省份', `<p class="muted small">名单随时可以改。新建项目、项目列表分组都按这里的顺序。</p>${rowsEditor('provinces', c.provinces.map(name => ({ name })), [{ key: 'name', label: '省份' }])}`, c.provinces.length ? `${c.provinces.length} 个` : '还没填')}
       ${sec('timelines', '时间表模板', `<p class="muted small">项目页「排期」和新建项目时用。内置一个通用示例（开工 T−7 / 交付 T−1 / 上线 T），不能改；你自己的模板在下面。</p>
         ${D.state.timelines.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${t.items.length} 个节点${t.kind ? ' · ' + esc(t.kind) : ''}</span></summary>${tlForm(t)}</details>`).join('')}
@@ -231,6 +235,9 @@
     });
     main.addEventListener('click', async e => {
       if (!on()) return;
+      const sc = e.target.closest('[data-share-copy]');
+      if (sc) return D.copy(location.origin + sc.dataset.shareCopy, '链接');
+      if (e.target.closest('[data-share-intro]')) return D.copy(`这是我用 AI 给自己搭的工作台，管活动策划项目里的口径、交付和在等谁。\n演示版（不用登录，数据都是虚构的，可以随便点）：${location.origin}/desk-demo\n设计思路和制作过程：${location.origin}/workbench`, '介绍');
       const form = e.target.closest('form');
       if (e.target.closest('[data-add-row]')) {
         const box = form.querySelector('.opt-rows, .tl-rows');

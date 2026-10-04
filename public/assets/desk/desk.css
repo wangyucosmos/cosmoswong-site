@@ -1033,6 +1033,12 @@ a.repo:hover { transform: translateY(-2px); border-color: var(--accent-line); bo
 .logo.cw img { width: 100%; height: 100%; display: block; }
 :root[data-theme=dark] .logo.cw { box-shadow: 0 6px 22px rgba(124, 58, 237, .45), 0 0 0 1px rgba(255, 255, 255, .08) !important; }
 
+/* 设置 → 分享给别人看 */
+.share-list { display: grid; gap: 10px; margin: 10px 0 12px; }
+.share-row { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border-radius: var(--r-md); background: var(--panel-2); box-shadow: inset 0 0 0 1px var(--line); flex-wrap: wrap; }
+.share-row .sr-t { flex: 1 1 260px; min-width: 0; display: grid; gap: 2px; }
+.share-row .sr-t span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
+
 /* 演示页（/desk-demo）顶部提示条 */
 .demo-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 36px; font-size: 12.5px; color: var(--muted); background: color-mix(in srgb, var(--accent-soft) 70%, var(--panel)); border-bottom: 1px solid var(--line); }
 .demo-bar .db-tag { font-weight: 700; font-size: 11.5px; color: var(--accent-ink); background: var(--accent); border-radius: 6px; padding: 1px 7px; }
