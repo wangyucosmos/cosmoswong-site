@@ -216,7 +216,7 @@
   /* ---------- 换风格：先淡出、换、再淡入（浏览器支持就用 View Transitions） ---------- */
   D.setSkin = v => {
     if ((window.DESK_THEME?.getSkin() || 'classic') === v) return;
-    const go = () => { window.DESK_THEME?.setSkin(v); renderSide(); renderMain(true, false); };
+    const go = () => { window.DESK_THEME?.setSkin(v); renderSide(); renderMain(true, false); D.emit('skin', v); };
     if (document.startViewTransition && !reduced()) document.startViewTransition(go); else go();
     D.toast(`已换成「${{ classic: '经典', precise: '精密', glass: '玻璃' }[v] || v}」风格`, { icon: 'sparkle' });
   };

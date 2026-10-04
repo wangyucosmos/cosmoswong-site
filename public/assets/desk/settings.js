@@ -114,6 +114,12 @@
       <section class="card-box"><h3>账户</h3><p class="muted small">登录会保持 30 天。在别人的电脑上用完记得退出。</p>
         <button type="button" class="btn sm danger" data-s="logout">退出登录</button></section>
     </div>`;
+    // 演示页：不能改密码；「退出登录」换成「重置演示数据」
+    if (D.DEMO) {
+      el.querySelector('#set-password')?.remove();
+      const lo = el.querySelector('[data-s=logout]');
+      if (lo) { lo.removeAttribute('data-s'); lo.setAttribute('data-demo-reset', ''); lo.textContent = '重置演示数据'; const box = lo.closest('section'); box.querySelector('h3').textContent = '演示数据'; box.querySelector('p').textContent = '这是演示页：数据全是虚构的，你的改动只存在这个浏览器里。重置会恢复成最初的示例数据。'; }
+    }
     el.querySelectorAll('.opt-editor .opt-rows').forEach(box => D.sortable(box, '.opt-row', () => {}, { axis: 'y', handle: '.grip' }));
     el.querySelectorAll('.tl-rows').forEach(box => D.sortable(box, '.tl-edit-row', () => {}, { axis: 'y', handle: '.grip' }));
     if (want) { D.pref.set('settings.jump', null); requestAnimationFrame(() => D.$('#set-' + want)?.scrollIntoView({ block: 'start' })); }
@@ -142,9 +148,12 @@
   D.io = {
     async backup(silentName) {
       try {
-        const r = await fetch('/api/desk/backup', { credentials: 'same-origin', headers: { 'x-desk-request': '1' } });
-        if (!r.ok) throw new Error('备份下载失败');
-        D.download(silentName || `我的工作台备份-${D.today()}.json`, await r.text(), 'application/json');
+        const text = D.DEMO ? JSON.stringify(await D.api('GET', '/backup'), null, 1) : await (async () => {   // 演示页的数据在浏览器里，不走服务器
+          const r = await fetch('/api/desk/backup', { credentials: 'same-origin', headers: { 'x-desk-request': '1' } });
+          if (!r.ok) throw new Error('备份下载失败');
+          return r.text();
+        })();
+        D.download(silentName || `我的工作台备份-${D.today()}.json`, text, 'application/json');
         if (!silentName) D.toast('已下载全量备份');
         return true;
       } catch (e) { D.fail(e); return false; }

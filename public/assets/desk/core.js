@@ -3,6 +3,8 @@
    写法照 /kol 的 core.js（同一套弹层、下拉、提示条、拖动排序），但不共用文件，两个工作台互不影响。 */
 (() => {
   const D = window.DESK = {};
+  // 演示页（/desk-demo，<html data-demo="1">）：数据由 demo.js 在浏览器里模拟，界面偏好、本机缓存都另存一份，碰不到真实工作台
+  D.DEMO = document.documentElement.dataset.demo === '1';
 
   /* ---------- 基础工具 ---------- */
   D.$ = (s, root = document) => root.querySelector(s);
@@ -164,8 +166,8 @@
 
   /* ---------- 界面偏好（localStorage，读写都包 try/catch） ---------- */
   D.pref = {
-    get(key, def) { try { const v = localStorage.getItem('desk.' + key); return v == null ? def : JSON.parse(v); } catch { return def; } },
-    set(key, val) { try { localStorage.setItem('desk.' + key, JSON.stringify(val)); } catch { /* 无痕模式等写不进去，忽略 */ } }
+    get(key, def) { try { const v = localStorage.getItem((D.DEMO ? 'deskdemo.' : 'desk.') + key); return v == null ? def : JSON.parse(v); } catch { return def; } },
+    set(key, val) { try { localStorage.setItem((D.DEMO ? 'deskdemo.' : 'desk.') + key, JSON.stringify(val)); } catch { /* 无痕模式等写不进去，忽略 */ } }
   };
 
   /* ---------- 接口 ---------- */

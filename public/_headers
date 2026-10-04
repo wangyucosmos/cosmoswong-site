@@ -26,6 +26,13 @@
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
+# /desk-demo 我的工作台演示版：不用登录，数据全是虚构的、只在访客自己的浏览器里（demo.js 模拟接口）。
+# 和 /desk 同一套页面代码，所以 CSP 一样（素材库演示图同样走 blob:）；不收录，从作品集 / 案例页 /workbench 的链接进来
+/desk-demo
+  X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable

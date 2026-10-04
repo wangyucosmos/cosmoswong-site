@@ -14,14 +14,15 @@
   const MAX_FILES = 30000;
   // 文件夹名里带这些字的算对应类型；一张图可以同时属于几类。「切图」排最后：它说的是做到哪一步，不是图里画的什么
   const TYPE_RULES = [['弹窗', /弹窗/], ['主KV', /kv|主视觉/i], ['头图', /头图|banner|横幅/i], ['长图', /长图/], ['原型', /原型/], ['图标', /图标|icon/i], ['海报', /海报|易拉宝/], ['截图', /截图|拨测/], ['切图', /切图/]];
-  const A = D.assets = { supported: typeof window.showDirectoryPicker === 'function', root: null, rootName: '', perm: 'none', files: [], scanning: false, scannedAt: null, error: '', limit: 120, stars: new Set(), refs: {} };
+  // 演示页：没有真实文件夹，用浏览器私有存储（OPFS）里生成的示例图片，所以只要浏览器能写 OPFS 就算支持
+  const A = D.assets = { supported: typeof window.showDirectoryPicker === 'function' || (D.DEMO && typeof navigator.storage?.getDirectory === 'function' && typeof window.FileSystemFileHandle?.prototype?.createWritable === 'function'), root: null, rootName: '', perm: 'none', files: [], scanning: false, scannedAt: null, error: '', limit: 120, stars: new Set(), refs: {} };
   const handles = new Map();   // 相对路径 → 文件句柄（这次打开期间）
   const urls = new Map();      // 缩略图 object URL
 
   /* ---------- 本机浏览器里的小仓库（IndexedDB）：文件夹句柄、扫描结果、缩略图 ---------- */
   let dbp = null;
   const idb = () => dbp ||= new Promise((res, rej) => {
-    const r = indexedDB.open('desk-assets', 1);
+    const r = indexedDB.open(D.DEMO ? 'desk-demo-assets' : 'desk-assets', 1);
     r.onupgradeneeded = () => { r.result.createObjectStore('kv'); r.result.createObjectStore('thumbs'); };
     r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
   });
@@ -112,13 +113,13 @@
     A.scanning = false; D.render();
   }
   // 选文件夹：点按钮弹出选择框，或者从访达把文件夹拖到素材库页面上（h 就是拖进来的那个）
-  async function connect(h) {
+  async function connect(h, { silent = false } = {}) {
     if (!A.supported) return D.toast('这个浏览器不支持读本机文件夹，请用电脑上的 Chrome 或 Edge 打开', { error: true });
     if (!h) { try { h = await window.showDirectoryPicker({ id: 'desk-assets', mode: 'read' }); } catch { return; } }   // 取消了
     if (h.kind !== 'directory') return D.toast('拖进来的是文件，请拖整个文件夹', { error: true });
     A.root = h; A.rootName = h.name; A.perm = 'granted'; A.files = []; A.limit = 120;
     await kvSet('root', h);
-    D.toast(`已连接「${h.name}」，正在扫描图片…`, { icon: 'image' });
+    if (!silent) D.toast(`已连接「${h.name}」，正在扫描图片…`, { icon: 'image' });
     await scan();
   }
   async function resume() {
@@ -172,9 +173,15 @@
     bmp.close?.();
     return cv.convertToBlob ? cv.convertToBlob({ type: 'image/webp', quality: .82 }) : new Promise(r => cv.toBlob(r, 'image/webp', .82));
   }
-  async function thumbUrl(f) {
+  // 同一张图同时被要两次（今天页 + 弹窗、页面重画）时只做一次：否则第二次会覆盖缓存，第一次拿到的图地址就失效了，缩略图变空白
+  const inflight = new Map();
+  function thumbUrl(f) {
     const key = `${f.path}|${f.mtime}`;
-    if (urls.has(key)) return urls.get(key);
+    if (urls.has(key)) return Promise.resolve(urls.get(key));
+    if (!inflight.has(key)) inflight.set(key, makeUrl(f, key).finally(() => inflight.delete(key)));
+    return inflight.get(key);
+  }
+  async function makeUrl(f, key) {
     let blob = await tx('thumbs', 'readonly', s => s.get(key)).catch(() => null);
     if (!blob) {
       try { blob = await limited(() => makeThumb(f)); } catch { blob = await fileOf(f.path); }
@@ -194,7 +201,12 @@
       ios[ctx].unobserve(en.target);
       const f = list[Number(en.target.dataset.thumb)]; if (!f) return;
       const u = await thumbUrl(f).catch(() => '');
-      if (u && en.target.isConnected) { en.target.onload = () => en.target.classList.add('ok'); en.target.src = u; }
+      if (!u || !en.target.isConnected) return;
+      // 同一张图可能被两次懒加载（页面重画时又挂了一次观察）：已经是这个地址、已经加载完的，直接显示，不等 load 事件
+      const img = en.target, show = () => img.classList.add('ok');
+      img.addEventListener('load', show, { once: true });
+      if (img.getAttribute('src') !== u) img.src = u;
+      if (img.complete && img.naturalWidth) show(); else img.decode?.().then(show, () => {});   // decode() 兜底：load 事件偶尔会错过
     }), { rootMargin: '300px' });
     root.querySelectorAll(`img[data-thumb][data-tctx="${ctx}"]`).forEach(img => ios[ctx].observe(img));
   };

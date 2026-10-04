@@ -13,7 +13,7 @@
 
   /* ---------- 本机浏览器里的小仓库 ---------- */
   let dbp = null;
-  const idb = () => dbp ||= new Promise((res, rej) => { const r = indexedDB.open('desk-kb', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
+  const idb = () => dbp ||= new Promise((res, rej) => { const r = indexedDB.open(D.DEMO ? 'desk-demo-kb' : 'desk-kb', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
   const tx = async (mode, fn) => { const db = await idb(); return new Promise((res, rej) => { const t = db.transaction('kv', mode), req = fn(t.objectStore('kv')); t.oncomplete = () => res(req?.result); t.onerror = () => rej(t.error); }); };
   const kvGet = k => tx('readonly', s => s.get(k)).catch(() => null);
   const kvSet = (k, v) => tx('readwrite', s => s.put(v, k)).catch(() => {});
@@ -108,7 +108,10 @@
     const r = await D.api('GET', `/gh/file?repo=${encodeURIComponent(f.repo)}&path=${encodeURIComponent(f.repoPath)}`);
     f.text = r.text; decorate(f); return f.text;
   }
+  // 演示页：直接用 demo.js 里的示例笔记（虚构），不读本机文件夹
+  K.loadDemo = notes => { K.files = notes.map(n => decorate({ ...n })).sort((a, b) => a.path.localeCompare(b.path, 'zh')); K.source = 'demo'; K.rootName = '示例知识库'; K.scannedAt = Date.now(); D.render(); };
   D.on('ready', async () => {
+    if (D.DEMO && D.demoNotes) return K.loadDemo(D.demoNotes());
     if (K.supported) {
       const root = await kvGet('root');
       if (root) {
@@ -129,7 +132,8 @@
     const hit = [...kb].sort((a, b) => b.prefix.length - a.prefix.length).find(k => !k.prefix || path === k.prefix || path.startsWith(k.prefix + '/'));
     return hit ? { repo: hit.repo, branch: hit.branch || 'main', path: hit.prefix ? path.slice(hit.prefix.length + 1) : path } : null;
   };
-  const ghUrl = path => { const r = D.kbRepoOf(path); return r ? `https://github.com/${r.repo}/blob/${encodeURIComponent(r.branch)}/${r.path.split('/').map(encodeURIComponent).join('/')}` : ''; };
+  const ghUrl = path => { if (D.DEMO) return '';   // 演示里的仓库是虚构的，不给链接
+    const r = D.kbRepoOf(path); return r ? `https://github.com/${r.repo}/blob/${encodeURIComponent(r.branch)}/${r.path.split('/').map(encodeURIComponent).join('/')}` : ''; };
 
   /* ---------- 搜索（⌘K、知识库页、项目页的相关笔记都用） ---------- */
   // 摘要用纯文字：去掉 Markdown 符号
@@ -166,7 +170,7 @@
   D.kbOpen = path => D.app.show('kb/' + path.split('/').map(encodeURIComponent).join('/'));
 
   /* ---------- 页面 ---------- */
-  D.kbSub = () => K.source === 'local' ? `「${esc(K.rootName)}」· ${K.files.length} 篇笔记 · 直接读这台电脑上的文件，内容不上传` : K.source === 'github' ? `从 GitHub 读 · ${K.files.length} 篇笔记` : '在工作台里看、搜你的笔记';
+  D.kbSub = () => K.source === 'demo' ? `示例知识库（虚构）· ${K.files.length} 篇笔记` : K.source === 'local' ? `「${esc(K.rootName)}」· ${K.files.length} 篇笔记 · 直接读这台电脑上的文件，内容不上传` : K.source === 'github' ? `从 GitHub 读 · ${K.files.length} 篇笔记` : '在工作台里看、搜你的笔记';
   const kbItem = cur => f => `<button type="button" class="kbf${f.path === cur ? ' on' : ''}${f.draft ? ' draft' : ''}" data-kb-open="${esc(f.path)}" title="${esc(f.path)}">${D.icon('file', 'sm')}<span>${esc(f.title)}</span>${f.draft ? '<em class="dtag">草稿</em>' : f.type ? `<em class="ttag">${esc(f.type)}</em>` : ''}</button>`;
   const tree = (files, cur) => {
     const groups = new Map();
@@ -208,8 +212,8 @@
       ${tags.length ? `<div class="kb-tags">${tags.map(([t]) => `<button type="button" class="fchip-t${kf.tag === t ? ' on' : ''}" data-kbtag="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : ''}`;
     const side = `<aside class="kb-side card-box">
       <input class="filter" type="search" data-kfilter data-keep-focus="kq" value="${esc(q)}" placeholder="搜笔记标题和正文…" aria-label="搜笔记">
-      <div class="kb-src muted small">${K.source === 'local' ? `${D.icon('monitor', 'sm')} 本机「${esc(K.rootName)}」` : `${D.icon('globe', 'sm')} GitHub`} · ${K.files.length} 篇${K.scanning ? ' · 正在读取…' : ''}
-        <span class="grow"></span>${K.source === 'local' ? `<button type="button" class="icon" data-kb-rescan title="重新读取">${D.icon('refresh', 'sm')}</button><button type="button" class="icon" data-kb-forget title="断开">${D.icon('x', 'sm')}</button>` : `<button type="button" class="icon" data-kb-github title="重新读取">${D.icon('refresh', 'sm')}</button>`}</div>
+      <div class="kb-src muted small">${K.source === 'demo' ? `${D.icon('book', 'sm')} 示例知识库` : K.source === 'local' ? `${D.icon('monitor', 'sm')} 本机「${esc(K.rootName)}」` : `${D.icon('globe', 'sm')} GitHub`} · ${K.files.length} 篇${K.scanning ? ' · 正在读取…' : ''}
+        <span class="grow"></span>${K.source === 'demo' ? '' : K.source === 'local' ? `<button type="button" class="icon" data-kb-rescan title="重新读取">${D.icon('refresh', 'sm')}</button><button type="button" class="icon" data-kb-forget title="断开">${D.icon('x', 'sm')}</button>` : `<button type="button" class="icon" data-kb-github title="重新读取">${D.icon('refresh', 'sm')}</button>`}</div>
       ${K.error ? `<p class="warn small">${esc(K.error)}</p>` : ''}
       ${kfBar}
       <nav class="kb-tree">${listView ? (listView.length ? listView.map(kbItem(cur)).join('') : '<p class="muted small pad">没有符合条件的笔记。</p>') : results ? (results.length ? results.map(r => `<button type="button" class="kbr${r.path === cur ? ' on' : ''}" data-kb-open="${esc(r.path)}"><b>${D.mdHighlight(esc(r.title), q)}</b><small>${D.mdHighlight(esc(r.snippet), q)}</small><em>${esc(r.path)}</em></button>`).join('') : '<p class="muted small pad">没搜到。</p>') : tree(K.files, cur)}</nav></aside>`;

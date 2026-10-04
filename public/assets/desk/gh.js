@@ -102,7 +102,7 @@
     try {
       const r = await D.api('PUT', '/gh/file', { repo: cfg.drafts.repo, path, text, message: `docs: 收集箱草稿「${title}」（来自我的工作台）` });
       await D.patch('inbox', item.id, { processed_at: new Date().toISOString(), converted_to: 'kb' });
-      D.toast('已存进知识库草稿', { icon: 'book', action: '在 GitHub 看', onAction: () => r.html_url && window.open(D.safeUrl(r.html_url), '_blank', 'noopener,noreferrer') });
+      D.toast('已存进知识库草稿', { icon: 'book', ...(D.DEMO ? {} : { action: '在 GitHub 看', onAction: () => r.html_url && window.open(D.safeUrl(r.html_url), '_blank', 'noopener,noreferrer') }) });
       load(true);
     } catch (e) { D.fail(e); }
   };
