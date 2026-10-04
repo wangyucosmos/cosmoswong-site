@@ -10,13 +10,14 @@
     { id: 'today', kind: 'today', name: '今天', icon: 'sun' },
     { id: 'projects', kind: 'projects', name: '项目', icon: 'folders' },
     { id: 'inbox', kind: 'inbox', name: '收集箱', icon: 'inbox' },
+    { id: 'kb', kind: 'kb', name: '知识库', icon: 'book' },
     { id: 'resources', kind: 'resources', name: '资源', icon: 'grid' },
     { id: 'assets', kind: 'assets', name: '素材库', icon: 'image' },
     { id: 'records', kind: 'records', name: '记录', icon: 'chart' }
   ];
   const SETTINGS = { id: 'settings', kind: 'settings', name: '设置', icon: 'settings' };
   // 这些页面里有输入框：正在输入时，后台数据刷新不重画（免得光标跳走、打了一半的字没了）
-  const FORM_PAGES = ['settings', 'inbox', 'today', 'records', 'project', 'resources'];
+  const FORM_PAGES = ['settings', 'inbox', 'today', 'records', 'project', 'resources', 'kb'];
   const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   let inApp = false;   // 是不是从工作台里点过来的（项目页「← 项目」用浏览器后退还是直接去项目列表）
 
@@ -71,6 +72,7 @@
   function viewOf(id) {
     const m = /^p\/(\d+)(?:\/(\w+))?$/.exec(id || '');
     if (m) return { id: `p/${m[1]}`, kind: 'project', pid: Number(m[1]), sec: m[2] };
+    if (/^kb\/./.test(id || '')) return { id, kind: 'kb', path: id.slice(3) };
     return id === 'settings' ? SETTINGS : VIEWS.find(v => v.id === id) || VIEWS[0];
   }
   function show(id) { const h = '#' + id; if (location.hash === h) route(); else location.hash = h; }
@@ -116,7 +118,7 @@
   const navBtn = (v, cur, b) => { const x = b[v.id];
     return `<button type="button" class="nav${cur === v.id ? ' on' : ''}" data-id="${v.id}" ${cur === v.id ? 'aria-current="page"' : ''} title="${esc(v.name)}">${D.icon(v.icon)}<span class="lb-t">${esc(v.name)}</span>${x ? `<span class="n ${x.cls || ''}" title="${esc(x.title)}">${x.n}</span>` : ''}</button>`; };
   function renderSide() {
-    const b = badges(), cur = D.current?.kind === 'project' ? 'projects' : D.current?.id;
+    const b = badges(), cur = D.current?.kind === 'project' ? 'projects' : D.current?.kind === 'kb' ? 'kb' : D.current?.id;
     $('#tabs').innerHTML = VIEWS.map(v => navBtn(v, cur, b)).join('') + '<div class="sep"></div>' + navBtn(SETTINGS, cur, b);
     const best = D.bestWin?.();
     const pref = window.DESK_THEME?.get() || 'auto';
@@ -125,7 +127,7 @@
     renderBottom(b, cur);
   }
   function renderBottom(b, cur) {
-    const more = ['inbox', 'assets', 'records', 'settings'].includes(cur);
+    const more = ['inbox', 'kb', 'assets', 'records', 'settings'].includes(cur);
     const x = b.today;
     $('#bottombar').innerHTML = `
       <button type="button" data-goto="today" class="${cur === 'today' ? 'on' : ''}">${D.icon('sun')}今天${x ? `<span class="badge ${x.cls || ''}">${x.n}</span>` : ''}</button>
@@ -135,8 +137,8 @@
       <button type="button" data-more class="${more ? 'on' : ''}">${D.icon('menu')}更多${b.inbox ? '<span class="badge amber">' + b.inbox.n + '</span>' : ''}</button>`;
   }
   function openMore(anchor) {
-    const b = badges(), cur = D.current?.kind === 'project' ? 'projects' : D.current?.id;
-    const el = D.popover(anchor, `<div class="sheet-more">${['inbox', 'assets', 'records'].map(id => navBtn(VIEWS.find(v => v.id === id), cur, b)).join('')}${navBtn(SETTINGS, cur, b)}</div>`, { cls: 'sheet' });
+    const b = badges(), cur = D.current?.kind === 'project' ? 'projects' : D.current?.kind === 'kb' ? 'kb' : D.current?.id;
+    const el = D.popover(anchor, `<div class="sheet-more">${['inbox', 'kb', 'assets', 'records'].map(id => navBtn(VIEWS.find(v => v.id === id), cur, b)).join('')}${navBtn(SETTINGS, cur, b)}</div>`, { cls: 'sheet' });
     el.addEventListener('click', e => { const n = e.target.closest('.nav[data-id]'); if (n) { D.closePopover(); show(n.dataset.id); } });
   }
 
@@ -160,6 +162,7 @@
       case 'inbox': { const n = S.inbox.filter(i => !i.processed_at).length; return { title: '收集箱', sub: n ? `还有 ${n} 条没处理` : '都处理完了' }; }
       case 'resources': return { title: '资源', sub: '网页、本机文件夹、小工具、文档，都在这一页；本机的点一下就复制路径' };
       case 'assets': return { title: '素材库', sub: D.assetsSub ? D.assetsSub() : '' };
+      case 'kb': return { title: '知识库', sub: D.kbSub ? D.kbSub() : '' };
       case 'records': return { title: '记录', sub: '提效记录攒作品集，玩法创意每周一个' };
       case 'settings': return { title: '设置', sub: '选项、模板、提效基准、外观和数据' };
       default: return { title: '' };
@@ -174,7 +177,7 @@
   }
 
   /* ---------- 主区 ---------- */
-  const RENDER = () => ({ today: D.renderToday, projects: D.renderProjects, project: D.renderProject, inbox: D.renderInbox, records: D.renderRecords, settings: D.renderSettings, resources: D.renderResources, assets: D.renderAssets });
+  const RENDER = () => ({ today: D.renderToday, projects: D.renderProjects, project: D.renderProject, inbox: D.renderInbox, records: D.renderRecords, settings: D.renderSettings, resources: D.renderResources, assets: D.renderAssets, kb: D.renderKb });
   function renderMain(force, enter) {
     const view = D.current; if (!view) return;
     const main = $('#main'), el = $('#view');
@@ -226,7 +229,7 @@
     const main = $('#main');
     D.todayEvents(main, getView); D.projectEvents(main); D.projectsListEvents(main); D.inboxEvents(main, getView);
     D.ideasEvents(main, getView); D.winsEvents(main, getView); D.recordsEvents(main); D.settingsEvents(main);
-    D.resourcesEvents?.(main); D.assetsEvents?.(main);
+    D.resourcesEvents?.(main); D.assetsEvents?.(main); D.kbEvents?.(main);
     document.addEventListener('click', e => {
       const g = e.target.closest('[data-goto]');
       if (g) {

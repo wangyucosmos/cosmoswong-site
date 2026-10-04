@@ -182,7 +182,7 @@
     </section>`;
     const now = nowCard(today), wait = waitCard(), ac = D.assetsCard ? D.assetsCard() : '';
     el.innerHTML = `<div class="page today">
-      <div class="bento">${welcome}<div class="stack s7">${now.html}</div><div class="stack s5">${wait.html}${monthsCard(today)}</div>${agendaCard(today)}${winsCard(today)}${commonCard(ac ? 's5' : 's12')}${ac}</div>
+      <div class="bento">${welcome}<div class="stack s7">${now.html}</div><div class="stack s5">${wait.html}${monthsCard(today)}</div>${agendaCard(today)}${winsCard(today)}${D.ghCards ? D.ghCards() : ''}${commonCard(ac ? 's5' : 's12')}${ac}</div>
       <div class="wrap-bar"><button type="button" class="btn" data-wrapup>${D.icon('moon', 'sm')}今天收工</button></div></div>`;
   };
 

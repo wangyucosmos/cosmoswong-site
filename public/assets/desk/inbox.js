@@ -78,13 +78,14 @@
     if (k === 'project') { const p = D.project(id); return p ? `→ 项目 <button type="button" class="link-btn" data-open-project="${p.id}">${esc(p.title)}</button>` : '→ 项目（已删除）'; }
     if (k === 'task') { const t = D.find('tasks', id); return t ? `→ 待办「${esc(t.title)}」` : '→ 待办（已删除）'; }
     if (k === 'pending') { const x = D.find('pendings', id); return x ? `→ 待确认「${esc(x.question)}」` : '→ 待确认（已删除）'; }
+    if (k === 'kb') return '→ 存进了知识库草稿';
     return '已处理';
   };
   const itemHtml = (i, done) => `<li class="iitem" data-inbox="${i.id}">
     <div class="imeta"><span class="tag">${esc(i.source || '其他')}</span><span class="muted">${esc(when(i.created_at))}</span>${done ? `<span class="muted">${convertedLabel(i.converted_to)}</span>` : ''}</div>
     <div class="itext">${esc(i.content)}</div>
     <div class="iact">${done ? '' : `<button type="button" class="tb" data-intake>${D.icon('sparkle', 'sm')} ① 复制给 AI 拆</button><button type="button" class="btn sm" data-intake-paste>${D.icon('download', 'sm')} ② AI 拆完贴回来</button>
-      <span class="sep"></span><button type="button" class="btn sm ghost" data-conv="project">直接转成项目</button><button type="button" class="btn sm ghost" data-conv="task">转成待办</button><button type="button" class="btn sm ghost" data-conv="pending">转成待确认</button>`}
+      <span class="sep"></span><button type="button" class="btn sm ghost" data-conv="project">直接转成项目</button><button type="button" class="btn sm ghost" data-conv="task">转成待办</button><button type="button" class="btn sm ghost" data-conv="pending">转成待确认</button><button type="button" class="btn sm ghost" data-kb-draft>${D.icon('book', 'sm')}存进知识库草稿</button>`}
       <span class="grow"></span><button type="button" class="link-btn danger" data-idel>删除</button></div></li>`;
 
   D.renderInbox = (view, el) => {
@@ -114,6 +115,7 @@
       if (b.dataset.conv === 'pending') return toPending(b, item);
       if (b.matches('[data-intake]')) return intake(b, item);
       if (b.matches('[data-intake-paste]')) return intakePaste(item);
+      if (b.matches('[data-kb-draft]')) return D.saveDraft(item);
       if (b.matches('[data-idel]')) return D.remove('inbox', item.id, { label: D.firstLine(item.content, 20), text: '删除这条收集？' });
     });
   };

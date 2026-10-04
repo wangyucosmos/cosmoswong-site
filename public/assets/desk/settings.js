@@ -83,6 +83,7 @@
         ${D.state.prompts.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${esc(t.scene || '其他')}${t.tool ? ' · ' + esc(t.tool) : ''}</span></summary>${ptForm(t)}</details>`).join('')}
         ${D.BUILTIN_PROMPTS.map(t => `<details class="sub builtin"><summary><b>${esc(t.name)}</b> <span class="muted small">内置 · ${esc(t.scene)} · 改它会另存成你的模板</span></summary>${ptForm(t)}</details>`).join('')}
         <details class="sub"><summary class="add">＋ 新建提示词模板</summary>${ptForm(null)}</details>`, `${D.state.prompts.length} 个`)}
+      ${sec('github', 'GitHub 与知识库', D.ghSettings ? D.ghSettings() : '', D.ghReady?.() ? '已连接' : '未连接')}
       ${sec('assets', '素材库与资源', `<p class="muted small">常用网址、本机文件夹、小工具、文档都在左边「资源」页管理，钉住的显示在今天页。素材库读的是这台电脑上你选的文件夹，图片不会上传。</p>
         <div class="row wrap"><button type="button" class="btn sm ghost" data-goto="resources">去资源页</button><button type="button" class="btn sm ghost" data-goto="assets">去素材库</button>${D.assets?.root ? `<span class="muted small">已连接「${esc(D.assets.rootName)}」</span><button type="button" class="tb ghost" data-assets-forget>断开</button>` : ''}</div>`, `${D.state.links.length + (D.state.resources || []).length} 个资源`)}
       ${sec('data', '数据：备份、恢复、初始化包', `

@@ -66,7 +66,7 @@
     el.innerHTML = `<div class="page resources">
       <div class="ptools"><input class="filter" type="search" data-rfilter data-keep-focus="rq" value="${esc(q)}" placeholder="筛选：名字、分组、路径…" aria-label="筛选资源">
         <span class="muted small">本机的东西网页打不开，点一下会复制路径；钉住的显示在今天页。</span><span class="grow"></span><button type="button" class="btn sm" data-res-new="web">${D.icon('plus', 'sm')}添加</button></div>
-      ${D.RES_KINDS.map(sec).join('')}</div>`;
+      ${D.ghReposSection ? D.ghReposSection() : ''}${D.RES_KINDS.map(sec).join('')}</div>`;
   };
 
   /* ---------- 添加 / 编辑 ---------- */

@@ -142,13 +142,21 @@
       <input class="todo-in" data-ai-todo value="${esc(st.todo ?? '')}" maxlength="200" placeholder="这次要 AI 做什么，如：按领导意见改原型 V2 的抽奖模块" aria-label="这次要做什么">
       <div class="kick"><span class="muted small">点工具名 → 开工提示词直接复制好：</span>${tools.map(t => `<button type="button" class="btn sm ghost" data-kick="${esc(t)}">${esc(t)}</button>`).join('')}</div>
       <div class="row wrap ai-more"><button type="button" class="tb" data-backfill>${D.icon('download', 'sm')} 贴回 AI 收工汇报</button><button type="button" class="tb" data-compare-start>${D.icon('layers', 'sm')} 比稿</button>
-        <button type="button" class="tb" data-other>其他模板 ▾</button><button type="button" class="tb" data-progress-copy>复制成 进度.md 条目</button></div>
+        <button type="button" class="tb" data-other>其他模板 ▾</button><button type="button" class="tb" data-progress-copy>复制成 进度.md 条目</button>${D.ghReady?.() ? `<button type="button" class="tb" data-progress-push>${D.icon('upload', 'sm')} 回写到 进度.md</button>` : ''}</div>
       ${cmp ? `<div class="cmp"><p><b>比稿中</b>：${esc((cmp.tools || []).join('、'))}${cmp.scope ? `（${esc(cmp.scope)}）` : ''} · ${esc(D.fmtDate(cmp.started_at))} 开始</p>
         <div class="row wrap">${(cmp.tools || []).map(t => `<button type="button" class="btn sm" data-choose="${esc(t)}">选定 ${esc(t)} 版</button>`).join('')}
           <button type="button" class="tb" data-compare-regen>重新复制比稿开工词</button><button type="button" class="link-btn danger small" data-compare-cancel>放弃比稿</button></div>
         ${st.compare ? `<div class="cmp-prompts">${Object.entries(st.compare).map(([t, text]) => `<details><summary>${esc(t)} 的比稿开工词 <button type="button" class="tb slim" data-copy-cmp="${esc(t)}">复制</button></summary><pre class="md-out">${esc(text)}</pre></details>`).join('')}</div>` : ''}</div>` : ''}
       ${st.text ? `<div class="draft"><p class="muted small">${esc(st.label || `已复制给 ${st.tool}`)}：可以在框里改，改完点「再复制一次」。${st.tplName ? ` 模板：<button type="button" class="link-btn small" data-swap-tpl>${esc(st.tplName)} ▾</button>` : ''}</p>
         <textarea data-ai-out rows="10" aria-label="生成的提示词">${esc(st.text)}</textarea><div class="row"><button type="button" class="btn sm" data-recopy>再复制一次</button></div></div>` : ''}`);
+  }
+
+  // 知识库里和这个项目有关的笔记（按省份、项目名里的词找；知识库没接上时给个入口）
+  function notesBlock(p) {
+    if (!D.kb) return '';
+    if (!D.kb.files.length) return sec('notes', '相关笔记', `<p class="muted small">把知识库接进工作台后，这里会自动列出和这个项目有关的规则、上次的记录。</p><button type="button" class="tb" data-goto="kb">${D.icon('book', 'sm')} 去接知识库</button>`, { folded: true });
+    const list = D.kbRelated(p);
+    return sec('notes', '相关笔记', list.length ? `<ul class="notes">${list.map(n => `<li><button type="button" class="link-btn" data-kb-open="${esc(n.path)}">${esc(n.title)}</button><small class="muted">${esc(n.snippet)}</small></li>`).join('')}</ul>` : '<p class="muted small">知识库里没找到明显相关的笔记。</p>', { folded: !list.length, extra: list.length ? ` <span class="gcount">${list.length}</span>` : '' });
   }
 
   function scheduleBlock(p) {
@@ -228,7 +236,7 @@
       ${p.summary ? `<p class="psum">${esc(p.summary)}</p>` : ''}
       <div class="pgrid">
         <div class="pcol">${nowBlock(p)}${pendBlock(p)}${settledBlock(p)}${delivBlock(p)}${taskBlock(p)}</div>
-        <div class="pcol">${aiBlock(p)}${scheduleBlock(p)}${actBlock(p)}${infoBlock(p)}${winBlock(p)}</div>
+        <div class="pcol">${aiBlock(p)}${notesBlock(p)}${scheduleBlock(p)}${actBlock(p)}${infoBlock(p)}${winBlock(p)}</div>
       </div></div>`;
   };
 
@@ -566,6 +574,7 @@
       }
       if (t.closest('[data-backfill]')) return openBackfill(p);
       if (t.closest('[data-progress-copy]')) return D.copy(D.progressEntry(p), ' 进度.md 条目');
+      if (t.closest('[data-progress-push]')) return D.pushProgress(p);
       if (t.closest('[data-compare-start]')) return compareStart(t.closest('[data-compare-start]'), p);
       const ch = t.closest('[data-choose]'); if (ch) return choose(p, ch.dataset.choose);
       const cc = t.closest('[data-copy-cmp]'); if (cc) { e.preventDefault(); return D.copy(aiDraft[p.id].compare[cc.dataset.copyCmp], `给 ${cc.dataset.copyCmp} 的比稿开工词`); }

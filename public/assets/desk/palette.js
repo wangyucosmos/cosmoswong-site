@@ -11,7 +11,7 @@
   function build(q) {
     const S = D.state, out = [];
     const add = (group, items) => { if (items.length) out.push({ group, items }); };
-    const pages = [['today', '今天', 'sun'], ['projects', '项目', 'folders'], ['inbox', '收集箱', 'inbox'], ['resources', '资源', 'grid'], ['assets', '素材库', 'image'], ['records', '记录', 'chart'], ['settings', '设置', 'settings']];
+    const pages = [['today', '今天', 'sun'], ['projects', '项目', 'folders'], ['inbox', '收集箱', 'inbox'], ['kb', '知识库', 'book'], ['resources', '资源', 'grid'], ['assets', '素材库', 'image'], ['records', '记录', 'chart'], ['settings', '设置', 'settings']];
     const ops = [
       ['新建项目', 'plus', () => D.newProject.open(), 'n'], ['收集一条', 'inbox', () => D.capture.open(), 'c'], ['今天收工', 'moon', () => { D.app.show('today'); setTimeout(() => D.wrapup.open(), 50); }],
       ['深色模式', 'moon', () => { window.DESK_THEME?.set('dark'); D.render(true); }], ['浅色模式', 'sun', () => { window.DESK_THEME?.set('light'); D.render(true); }],
@@ -36,6 +36,7 @@
       .map(l => ({ icon: 'globe', title: l.label, sub: l.group_name || '', run: () => { const u = D.safeUrl(l.url); if (u) window.open(u, '_blank', 'noopener,noreferrer'); } })));
     add('本机', (S.resources || []).filter(r => has(q, r.label, r.group_name, r.path, r.province)).slice(0, 6)
       .map(r => ({ icon: { folder: 'folder', tool: 'tool', doc: 'file' }[r.kind] || 'folder', title: r.label, sub: '回车复制路径', run: () => D.copyPath(r) })));
+    add('笔记', (D.kbSearch ? D.kbSearch(q, 6) : []).map(n => ({ icon: 'book', title: n.title, sub: n.path.split('/').slice(0, -1).join('/') || '知识库', run: () => D.kbOpen(n.path) })));
     const files = D.assets?.files || [];
     const hits = files.filter(f => f.path.toLowerCase().includes(q)).slice(0, 6);
     add('素材', hits.map((f, i) => ({ icon: 'image', title: f.name, sub: `${f.g} · ${f.t}`, run: () => D.assetsOpen?.(hits, i) })));
