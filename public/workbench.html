@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="一个运营人和 AI 一起给自己搭的工作台：项目少但每个都很深，把在等谁、拍板的口径、交付节点、几个 AI 的比稿版本一页理清。三种风格可切换，演示版可以直接试用。">
+<title>我的工作台 · 案例 — Cosmos Wong</title>
+<link rel="stylesheet" href="/assets/style.css?v=20261004161940">
+<!-- 案例页：正文手写在这里（不走 data.js），截图在 public/media/workbench-*.webp，全部是演示版的虚构数据。
+     改正文直接改这个文件；骨架（导航 / 页脚 / head 元信息）由 tools/build_pages.mjs 注入，不要手改那几段。 -->
+<style>
+.case { max-width: 980px; margin: 0 auto; }
+.case .lede { font-size: 19px; line-height: 1.75; color: var(--muted); margin: 14px 0 26px; }
+.case .ctas { display: flex; gap: 12px; flex-wrap: wrap; margin: 6px 0 34px; }
+.case .shot { margin: 26px 0 8px; border-radius: 18px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, .45); background: rgba(255, 255, 255, .04); }
+.case .shot img { display: block; width: 100%; height: auto; }
+.case figcaption { font-size: 13px; color: var(--faint); margin: 8px 2px 0; }
+.case h2 { font-size: 26px; margin: 64px 0 14px; letter-spacing: -.01em; }
+.case h3 { font-size: 18px; margin: 30px 0 8px; }
+.case p, .case li { line-height: 1.85; color: rgba(255, 255, 255, .86); }
+.case ul { padding-left: 20px; }
+.case .facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 10px 0 6px; }
+.case .fact { padding: 16px 18px; border-radius: 16px; background: var(--glass); border: 1px solid var(--line); }
+.case .fact b { display: block; font-size: 26px; letter-spacing: -.02em; }
+.case .fact span { font-size: 13px; color: var(--faint); }
+.case .three { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 18px 0; }
+.case .three figure { margin: 0; }
+.case .three .shot { margin: 0; border-radius: 12px; box-shadow: 0 16px 40px rgba(0, 0, 0, .4); }
+.case .three b { display: block; margin: 10px 2px 2px; }
+.case .three span { font-size: 13px; color: var(--faint); line-height: 1.6; display: block; }
+.case .pair { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; align-items: start; }
+.case .pair .shot { margin: 0; }
+.case .phone { max-width: 300px; justify-self: center; border-radius: 34px; border: 8px solid rgba(255, 255, 255, .12); }
+.case .tl { list-style: none; padding: 0; margin: 16px 0; border-left: 2px solid var(--line); }
+.case .tl li { position: relative; padding: 0 0 18px 22px; }
+.case .tl li::before { content: ""; position: absolute; left: -7px; top: 8px; width: 12px; height: 12px; border-radius: 50%; background: linear-gradient(135deg, var(--violet), var(--cyan)); }
+.case .tl b { display: block; }
+.case .tag { display: inline-block; font-size: 12px; padding: 2px 10px; border-radius: 20px; border: 1px solid var(--line); margin: 0 6px 6px 0; color: var(--muted); }
+.case blockquote { margin: 18px 0; padding: 14px 20px; border-left: 3px solid var(--cyan); background: var(--glass); border-radius: 0 14px 14px 0; color: rgba(255, 255, 255, .9); }
+.case .end { margin: 70px 0 30px; padding: 30px; border-radius: 22px; background: var(--glass); border: 1px solid var(--line); text-align: center; }
+@media (max-width: 820px) {
+  .case .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .case .three, .case .pair { grid-template-columns: 1fr; }
+  .case .lede { font-size: 17px; }
+  .case h2 { font-size: 22px; margin-top: 48px; }
+}
+</style>
+
+<!--head:auto-->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#0e0a1a">
+<link rel="canonical" href="https://cosmoswong.com/workbench">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Cosmos Wong">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:url" content="https://cosmoswong.com/workbench">
+<meta property="og:title" content="我的工作台 · 案例 — Cosmos Wong">
+<meta property="og:description" content="一个运营人和 AI 一起给自己搭的工作台：项目少但每个都很深，把在等谁、拍板的口径、交付节点、几个 AI 的比稿版本一页理清。三种风格可切换，演示版可以直接试用。">
+<meta property="og:image" content="https://cosmoswong.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Cosmos Wong · 运营十年 · 游戏 / 活动 / 社群 / 内容">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="我的工作台 · 案例 — Cosmos Wong">
+<meta name="twitter:description" content="一个运营人和 AI 一起给自己搭的工作台：项目少但每个都很深，把在等谁、拍板的口径、交付节点、几个 AI 的比稿版本一页理清。三种风格可切换，演示版可以直接试用。">
+<meta name="twitter:image" content="https://cosmoswong.com/og.png">
+<!--/head:auto-->
+</head>
+<body class="inner" data-page="workbench">
+<!--chrome-top:auto-->
+    <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="top"><div class="wrap"><nav class="nav">
+      <a class="logo" href="/">COSMOS WONG</a>
+      <ul id="menu"><li><a href="/" class="">首页</a></li><li><a href="/portfolio" class="">作品集</a></li><li><a href="/resume" class="">简历</a></li><li><a href="/trips" class="">旅游计划</a></li><li><a href="/tools" class="">工具箱</a></li><li><a href="/knowledge" class="">知识库</a></li><li><a href="/subs" class="">订阅</a></li><li><a href="/kol" class="">KOL 工作台</a></li><li><a href="/desk" class="">我的工作台</a></li><li><a href="https://jianshen.cosmoswong.com" class="">我的健身计划</a></li></ul>
+      <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
+    </nav></div></header><!--/chrome-top:auto-->
+<main class="wrap">
+<article class="case">
+  <div class="page-head"><p class="eyebrow"><a href="/portfolio">作品集</a> / 产品与工具</p>
+    <h1>我的工作台</h1>
+    <p class="lede">我做运营——活动策划、原型、客服文档、规则。同时手上只有几个项目，但每个都很深：一堆还没定的口径、几个 AI 各出的比稿版本、我手改过的底稿、在等别人给的东西。这个工作台是我和 AI 一起给自己搭的，用来把这些理清楚。</p>
+    <div class="ctas"><a class="btn solid" href="/desk-demo">在线试用演示版 →</a><a class="btn glass" href="#how">看设计思路</a></div>
+  </div>
+
+  <figure><div class="shot"><img src="/media/workbench-glass.webp" width="1800" height="1125" alt="我的工作台今天页（玻璃风格）：顶部是焦点仪表盘，下面是现在要做和在等谁"></div>
+    <figcaption>今天页（玻璃风格）。图里和演示版的数据都是虚构的。</figcaption></figure>
+
+  <div class="facts">
+    <div class="fact"><b>1 天</b><span>从第一版到第五版</span></div>
+    <div class="fact"><b>3 种</b><span>风格可切换，内容不变</span></div>
+    <div class="fact"><b>300+</b><span>项自动化测试</span></div>
+    <div class="fact"><b>0</b><span>个前端框架、第三方库</span></div>
+  </div>
+
+  <h2 id="how">为什么不直接用现成的工具</h2>
+  <p>市面上的项目管理工具，擅长的是「管很多条相似的记录」：表格、看板、批量修改、存视图。我的工作正好反过来：项目少，但每个项目里的东西很杂、很容易散——</p>
+  <ul>
+    <li>业务方口头说的口径散在微信里，过两天就不记得哪个定了、哪个没定；</li>
+    <li>让 Claude、Codex 各出一版比稿，选了哪一版、哪一版是我手改过不许 AI 再动的，要靠脑子记；</li>
+    <li>在等谁给什么、最晚哪天要，不催就卡住交付。</li>
+  </ul>
+  <blockquote>第一版我其实照搬了给家人做的另一个工作台（管几十个达人，表格、看板齐全），用了半天就觉得太重——我不需要「管很多条」，我需要「把一个项目理清」。当天推倒重来，这也成了后面所有设计的第一条原则：先看自己的工作长什么样，别照搬工具。</blockquote>
+
+  <h2>它做了什么</h2>
+  <h3>一眼看到今天该做什么</h3>
+  <p>最上面是「焦点」：最近要上线的项目还有几天、今天该做什么、交付到哪一步了、还卡在谁那里。下面是今天到期和逾期的事，勾掉有动画；右边是「在等谁」，按最晚哪天要排好，过期标红，「催一下」会拼好一句客气话，几件事可以合成一段一次催完。</p>
+  <div class="pair">
+    <figure><div class="shot"><img src="/media/workbench-project.webp" width="1800" height="1125" alt="项目页：下一步、在等谁、已拍板的口径、交付物和 AI 交接"></div>
+      <figcaption>项目页：下一步 → 在等谁 → 已拍板的口径 → 交付物（底稿、「我手改的，AI 不得改动」）→ 右边是 AI 交接。</figcaption></figure>
+    <figure><div class="shot phone"><img src="/media/workbench-phone.webp" width="488" height="1055" alt="手机上的今天页"></div>
+      <figcaption>手机上一样能用。</figcaption></figure>
+  </div>
+
+  <h3>把 AI 当同事：开工包和回填</h3>
+  <p>我同时用好几个 AI 工具，最大的问题是它们各按各的记录走。工作台在中间做「交接」：</p>
+  <ul>
+    <li><b>开工包</b>：一个按钮，把这个项目的口径、还在等的、上次类似的项目、知识库里相关的笔记、可以参考的素材，拼成一段交给 AI；</li>
+    <li><b>回填</b>：开工提示词要求 AI 收工时按固定格式写一段汇报，我整段贴回来，工作台识别出要更新的下一步、交付、新的待确认，我勾选确认后一次写进去；</li>
+    <li><b>比稿</b>：几个 AI 各出一版，选定后自动记一条「拍板的口径」，后面每个 AI 开工都会看到。</li>
+  </ul>
+  <figure><div class="shot"><img src="/media/workbench-kickpack.webp" width="1800" height="1125" alt="开工包：上次类似的项目、相关笔记、可以参考的素材"></div>
+    <figcaption>开工包：找到去年同类的项目、知识库里的复盘、素材库里去年同期的图。</figcaption></figure>
+
+  <h3>知识库和素材库，直接读我电脑上的文件</h3>
+  <p>知识库是一个本地文件夹（几个 AI 共用的那份），素材库是各省的切图、弹窗、长图。工作台用浏览器的文件夹访问能力直接读，<b>文件不上传</b>；素材按文件夹名自动分出省份、类型、活动、月份，重复的图折成一张，做新活动时会推荐「去年同期、同省份」的图。</p>
+  <div class="pair">
+    <figure><div class="shot"><img src="/media/workbench-assets.webp" width="1800" height="1125" alt="素材库：按省份、类型、活动、月份筛选"></div><figcaption>素材库</figcaption></figure>
+    <figure><div class="shot"><img src="/media/workbench-kb.webp" width="1800" height="1125" alt="知识库：笔记按类型和标签筛选"></div><figcaption>知识库（精密风格）</figcaption></figure>
+  </div>
+
+  <h2>三种风格，一套内容</h2>
+  <p>我很在意好不好看，所以外观每次都是先出样稿图、挑定了再做。最后留下三种，在设置里随时切换，内容和结构完全一样：</p>
+  <div class="three">
+    <figure><div class="shot"><img src="/media/workbench-classic.webp" width="1800" height="1125" alt="经典风格" loading="lazy"></div><b>经典</b><span>白卡片、青绿点缀、留白多；深色是紫蓝微光。</span></figure>
+    <figure><div class="shot"><img src="/media/workbench-precise.webp" width="1800" height="1125" alt="精密风格（深色）" loading="lazy"></div><b>精密</b><span>参考 Linear、Vercel 这类专业工具：细线、紧凑、数字对齐，顶部是交付节点轨道。</span></figure>
+    <figure><div class="shot"><img src="/media/workbench-glass-dark.webp" width="1800" height="1125" alt="玻璃风格（深色）" loading="lazy"></div><b>玻璃</b><span>贴近苹果 macOS / iOS：毛玻璃、彩色图标、大标题，焦点是三个圆环。</span></figure>
+  </div>
+  <p>做法上，三种风格共用同一份页面代码，换的只是一层「皮」：颜色、圆角、阴影都是变量，另外两种风格的每一条样式都只在自己的风格下生效，碰不到经典那一版。今天页的「焦点」按风格换画法——进度条、节点轨道、圆环，看的是同一组数字。</p>
+
+  <h2>怎么做出来的</h2>
+  <p>需求、取舍、审美判断和验收是我；写代码和测试主要是 Claude Code。我们一天里迭代了五版，每一版都先给方案或样稿，我拍板了再动手：</p>
+  <ol class="tl">
+    <li><b>v1 · 能用</b>照着已有的工作台搭了待办、待确认、排期、提示词模板。用了半天，太重。</li>
+    <li><b>v2 · 按自己的工作重做</b>砍掉表格、看板、批量，改成「一个项目一页从上往下读」；加了「已拍板的口径」「最晚哪天要」「底稿不许 AI 改」。</li>
+    <li><b>v3 · 好看</b>出了三张样稿挑风格；加了资源页、本机素材库、⌘K 搜索、动效。</li>
+    <li><b>v4 · 接上知识库和 GitHub</b>在工作台里看笔记；读几个 AI 共用的进度看板；把收集箱的内容存进知识库草稿；项目进度回写到看板（先给我看改动再提交）。</li>
+    <li><b>v5 · 三种风格 + 工作流</b>焦点仪表盘、周报、一次催完、开工包；素材库重新分类；还有这个演示版和这一页。</li>
+  </ol>
+  <p>几个我坚持的工程习惯：</p>
+  <ul>
+    <li><b>每次大改都留回退</b>：改之前打标记，数据库只加不删，旧版代码照样能读新数据，回退是一条命令。</li>
+    <li><b>真实数据不进代码</b>：代码仓库是公开的，我的省份、项目、仓库名都放在仓库外的「初始化包」里导入；GitHub 令牌只在服务器上，浏览器拿不到；素材和笔记只在本机浏览器里显示。</li>
+    <li><b>每一版都有自动化测试</b>：用真浏览器把每个功能点一遍，三种风格、深浅色、手机宽度都截图检查。</li>
+  </ul>
+  <p><span class="tag">Cloudflare Workers + D1</span><span class="tag">原生 JavaScript（无框架）</span><span class="tag">File System Access API</span><span class="tag">GitHub API</span><span class="tag">Playwright 自动化测试</span><span class="tag">Claude Code</span></p>
+
+  <h2>演示版是怎么回事</h2>
+  <p>真实的工作台要密码，里面是我的工作。为了能给别人看，我做了一个<b>不用登录的演示版</b>：页面和真实版是同一套代码，只是把「服务器」换成了浏览器里的一份模拟（字段校验用的是同一份规则），数据全是虚构的，你的改动只存在你自己的浏览器里，点「重置」就恢复。三种风格都能切，项目、在等谁、开工包、周报、知识库、素材库都能真的用。</p>
+
+  <div class="end"><h2 style="margin-top:0">自己点一点</h2><p>建议从「今天」开始：勾掉一件事、点「一次催完」、打开一个项目点「开工包」，再在上面换个风格。</p>
+    <div class="ctas" style="justify-content:center;margin:18px 0 0"><a class="btn solid" href="/desk-demo">打开演示版 →</a><a class="btn glass" href="/portfolio">回到作品集</a></div></div>
+</article>
+</main>
+
+
+<!--chrome-bottom:auto-->
+    <div class="wrap"><footer>
+      <span>© 2026 Cosmos Wong</span>
+      <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
+    </footer></div>
+    <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
+<script src="/assets/data.js?v=20261004161940"></script>
+<script src="/assets/render.js?v=20261004161940"></script><script src="/assets/app.js?v=20261004161940"></script>
+</body>
+</html>

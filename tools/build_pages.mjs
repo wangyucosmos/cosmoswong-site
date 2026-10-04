@@ -59,6 +59,7 @@ const DYNAMIC = [
 const STATIC = [
   { path: null, file: '404.html' },
   { path: '/subs', file: 'subs.html', nosite: true },   // 密码页：不进 sitemap，页面自带 noindex
+  { path: '/workbench', file: 'workbench.html' },          // 「我的工作台」案例页（正文手写在 html 里，截图在 public/media/）
   ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).sort().map(f => ({
     // 子目录的 index.html 在 auto-trailing-slash 下实际 URL 是 /knowledge/（/knowledge 会 307 过去），canonical 要跟实际一致
     path: f === 'index.html' ? '/knowledge/' : `/knowledge/${f.replace(/\.html$/, '')}`,
