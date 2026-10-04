@@ -1,7 +1,8 @@
 // /api/desk/* 路由。除登录外全部要登录；写操作还要过 csrfOk。数据全在 D1（binding DESK_DB）。
 // 结构照 src/kol/api.js：通用增改删 + 几个带业务逻辑的动作（一键排期、催办、答复、收集箱转换与拆解、回填、初始化包、备份恢复）。
 // v2（2026-10-04）：时间表节点分三种（我做的 / 要交的 / 等别人给）、待确认有「最晚哪天要」、交付不再被检查清单拦、已拍板的口径（decisions）。
-// 数据库只加不删，旧版代码（git 标签 desk-v1）照样能用这份数据。
+// v3（2026-10-04）：资源表（本机文件夹 / 小工具 / 文档）、快捷入口可钉到今天页、初始化包可带历史项目。
+// 数据库只加不删，旧版代码（git 标签 desk-v1 / desk-v2）照样能用这份数据。
 import { json } from '../shared.js';
 import { isAuthed, login, logout, csrfOk, changePassword } from './auth.js';
 import { TABLES, JSON_COLS, Invalid, clean } from './schema.js';
@@ -12,15 +13,15 @@ const UNDO_HOURS = 24;              // 软删除保留 24 小时后清理（页�
 const RES = {
   projects: 'projects', deliverables: 'deliverables', tasks: 'tasks', pendings: 'pendings', activities: 'activities',
   ideas: 'ideas', wins: 'wins', inbox: 'inbox', timelines: 'timelines', checklists: 'checklists',
-  prompts: 'prompt_templates', links: 'links', views: 'saved_views', decisions: 'decisions'
+  prompts: 'prompt_templates', links: 'links', views: 'saved_views', decisions: 'decisions', resources: 'resources'
 };
 const CHILDREN = ['deliverables', 'tasks', 'pendings', 'activities', 'decisions'];   // 跟着项目一起软删除 / 恢复
-const REORDERABLE = ['deliverables', 'tasks', 'links', 'timelines'];
+const REORDERABLE = ['deliverables', 'tasks', 'links', 'timelines', 'resources'];
 // 选项清单类设置（初始化包只往里「新增」）+ 其他偏好
 const OPTION_KEYS = ['kinds', 'provinces', 'deliverable_types', 'ask_whom', 'ai_tools', 'win_task_types', 'inbox_sources'];
 const SETTING_KEYS = [...OPTION_KEYS, 'statuses', 'nudge_days', 'view_order', 'welcome_done', 'wrapup_nag', 'baselines'];
 const BACKUP_TABLES = ['projects', 'deliverables', 'tasks', 'pendings', 'activities', 'decisions', 'ideas', 'wins', 'inbox',
-  'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views', 'settings'];
+  'timelines', 'checklists', 'prompt_templates', 'links', 'resources', 'saved_views', 'settings'];
 
 const now = () => new Date().toISOString();
 // 「今天」一律按 Asia/Shanghai（UTC+8，没有夏令时）算；Worker 跑在 UTC，直接取 UTC 日期会在早上 8 点前差一天
@@ -389,7 +390,7 @@ const REPLACE_LABEL = { timelines: '时间表模板', checklists: '检查清单'
 async function initPack(db, input) {
   const pack = input.pack;
   if (!pack || pack.app !== 'cosmoswong-desk-init') throw new Invalid('这不是工作台的初始化包（文件里 app 应该是 cosmoswong-desk-init）');
-  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [], changed: [] };
+  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [], resources: [], projects: [], changed: [] };
   const stmts = [];
   const t = now();
   const replace = new Set(Array.isArray(input.replace) ? input.replace.map(String) : []);
@@ -449,8 +450,31 @@ async function initPack(db, input) {
   await addRows('checklists', 'checklists', pack.checklists, 'name', d => d.name);
   await addRows('prompt_templates', 'prompt_templates', pack.prompt_templates, 'name', d => d.name);
   await addRows('links', 'links', (pack.links || []).map((l, i) => ({ ...l, sort_order: l.sort_order ?? i })), 'url', d => `${d.group_name ? d.group_name + ' · ' : ''}${d.label}`);
+  await addRows('resources', 'resources', (pack.resources || []).map((r, i) => ({ ...r, sort_order: r.sort_order ?? i })), 'path', d => `${d.group_name ? d.group_name + ' · ' : ''}${d.label}`);
 
-  const count = Object.values(plan.options).reduce((a, v) => a + v.length, 0) + plan.timelines.length + plan.checklists.length + plan.prompt_templates.length + plan.links.length;
+  // 历史项目（v3）：按项目名去重，已有同名的不动；交付物跟着项目一起建
+  const haveTitles = new Set((await db.prepare('SELECT title FROM projects WHERE deleted_at IS NULL').all()).results.map(r => String(r.title).trim().toLowerCase()));
+  for (const [i, raw] of (Array.isArray(pack.projects) ? pack.projects : []).entries()) {
+    let p, ds;
+    try {
+      p = clean('projects', { ...raw, deliverables: undefined });
+      ds = (Array.isArray(raw.deliverables) ? raw.deliverables : []).map(d => { const x = clean('deliverables', { ...d, project_id: 1 }); delete x.project_id; return x; });
+    } catch (e) { throw new Invalid(`初始化包里「历史项目」第 ${i + 1} 个：${e.message}`); }
+    const k = p.title.trim().toLowerCase();
+    if (haveTitles.has(k)) continue;
+    haveTitles.add(k);
+    plan.projects.push(p.title);
+    stamp('projects', p, true);
+    const cols = Object.keys(p);
+    stmts.push(db.prepare(`INSERT INTO projects (${cols.join(', ')}) VALUES (${cols.map(() => '?').join(', ')})`).bind(...cols.map(c => p[c])));
+    for (const d of ds) {
+      stamp('deliverables', d, true);
+      const dc = Object.keys(d);
+      stmts.push(db.prepare(`INSERT INTO deliverables (project_id, ${dc.join(', ')}) VALUES ((SELECT MAX(id) FROM projects WHERE title = ? AND deleted_at IS NULL), ${dc.map(() => '?').join(', ')})`).bind(p.title, ...dc.map(c => d[c])));
+    }
+  }
+
+  const count = Object.values(plan.options).reduce((a, v) => a + v.length, 0) + plan.timelines.length + plan.checklists.length + plan.prompt_templates.length + plan.links.length + plan.resources.length + plan.projects.length;
   if (input.apply && stmts.length) await db.batch(stmts);
   return json({ plan, count, replaced: input.apply ? replaced : 0, applied: !!input.apply && stmts.length > 0 });
 }
@@ -485,14 +509,14 @@ async function restoreAll(db, input) {
 }
 
 /* ---------- 读取 ---------- */
-const LOAD = ['projects', 'deliverables', 'tasks', 'pendings', 'decisions', 'ideas', 'wins', 'inbox', 'timelines', 'checklists', 'prompt_templates', 'links', 'saved_views'];
+const LOAD = ['projects', 'deliverables', 'tasks', 'pendings', 'decisions', 'ideas', 'wins', 'inbox', 'timelines', 'checklists', 'prompt_templates', 'links', 'resources', 'saved_views'];
 async function bootstrap(db) {
   // 顺手清理超过撤销期的软删除（项目的子记录靠外键级联一起删）
   const cutoff = new Date(Date.now() - UNDO_HOURS * 3600e3).toISOString();
   await db.batch([...CHILDREN, ...LOAD.filter(t => !CHILDREN.includes(t) && t !== 'projects'), 'projects']
     .map(t => db.prepare(`DELETE FROM ${t} WHERE deleted_at IS NOT NULL AND deleted_at < ?`).bind(cutoff)));
   const res = await db.batch([
-    ...LOAD.map(t => db.prepare(`SELECT * FROM ${t} WHERE deleted_at IS NULL ORDER BY ${['tasks', 'deliverables', 'links', 'timelines'].includes(t) ? 'IFNULL(sort_order, 1e18), id' : 'id'}`)),
+    ...LOAD.map(t => db.prepare(`SELECT * FROM ${t} WHERE deleted_at IS NULL ORDER BY ${['tasks', 'deliverables', 'links', 'timelines', 'resources'].includes(t) ? 'IFNULL(sort_order, 1e18), id' : 'id'}`)),
     db.prepare('SELECT key, value FROM settings')
   ]);
   const out = {};

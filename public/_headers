@@ -18,9 +18,13 @@
 /kol
   X-Robots-Tag: noindex, nofollow
 
-# /desk 我的工作台：密码页，禁止搜索引擎收录（也不进导航、不进 sitemap）
+# /desk 我的工作台：密码页，禁止搜索引擎收录（主站导航有入口，但不进 sitemap）
+# v3 素材库在浏览器里把本机图片转成 blob: 地址显示（图片不上传），所以这一页的 CSP 多放行 img-src blob:；
+# 这一页没有内联脚本，不需要首页 JSON-LD 的 sha256（build_pages.mjs 只维护上面 /* 那一行）
 /desk
   X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
 /assets/*
   ! Cache-Control

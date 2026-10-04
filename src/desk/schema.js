@@ -11,6 +11,7 @@ export const IDEA_TARGETS = ['value', 'stay', 'both', 'other'];
 export const IDEA_COSTS = ['light', 'mid', 'heavy'];
 export const IDEA_STATUSES = ['draft', 'submitted', 'evaluating', 'adopted', 'rejected'];
 export const TASK_SOURCES = ['manual', 'timeline', 'inbox'];
+export const RESOURCE_KINDS = ['folder', 'tool', 'doc'];
 
 const t = (max, label) => ({ type: 'text', max, label });
 const enumOf = (values, label) => ({ type: 'enum', values, label });
@@ -148,6 +149,18 @@ export const TABLES = {
     group_name: t(30, '分组'),
     label: { ...t(60, '名称'), required: true },
     url: { type: 'url', required: true, label: '链接' },
+    pinned: { type: 'bool', label: '钉到今天页' },
+    sort_order: { type: 'order', label: '排序' }
+  },
+  // v3：资源（本机文件夹 / 本地小工具 / 文档），只存路径，网页不访问
+  resources: {
+    kind: { ...enumOf(RESOURCE_KINDS, '资源类型'), required: true },
+    group_name: t(30, '分组'),
+    label: { ...t(80, '名称'), required: true },
+    path: { ...t(500, '路径'), required: true },
+    province: t(30, '省份'),
+    note: t(300, '说明'),
+    pinned: { type: 'bool', label: '钉到今天页' },
     sort_order: { type: 'order', label: '排序' }
   },
   saved_views: {
