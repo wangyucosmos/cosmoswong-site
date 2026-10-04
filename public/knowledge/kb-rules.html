@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="工作区与知识库怎么分工、开工与收工协议、并行比稿、子文件夹规范">
 <title>五个 AI 共用一个知识库的规则 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20261004152315">
-<link rel="stylesheet" href="/assets/notes.css?v=20261004152315">
+<link rel="stylesheet" href="/assets/style.css?v=20261004161940">
+<link rel="stylesheet" href="/assets/notes.css?v=20261004161940">
 
 <!--head:auto-->
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -306,6 +306,14 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
 <li>Figma、GitHub、HTML、PDF、AI 等必要的产品名、技术名词和缩写可以保留英文，但其余内容仍须使用中文或提供中文解释。</li>
 <li>不得因为平台默认文案、模板字段或源文件使用英文，就直接提交全英文标题或全英文说明；上传前必须补充中文。</li>
 </ul>
+<h2>14. <code>_草稿-工作台/</code>：待整理收件箱（2026-10-04 用户确认）</h2>
+<ul>
+<li><strong>来源</strong>：用户在「我的工作台」（cosmoswong.com/desk）收集箱里点「存进知识库草稿」，网站直接提交到 GitHub 的 <code>_草稿-工作台/</code>（一条一篇，文件名「日期-标题-随机码.md」，frontmatter 带 <code>source: 我的工作台 · 收集箱</code>、<code>tags: [草稿]</code>）。</li>
+<li><strong>性质</strong>：用户随手记的原始想法、业务方的原话，<strong>不是结论</strong>。不能当作业务口径或已确认事实引用；和第 1、2 节「知识库只放确认过的结论」的关系是：这里是唯一允许放未整理内容的位置，等整理。</li>
+<li><strong>开工时</strong>：本地先 <code>git pull</code>（网页是直接提交到 GitHub 的）。如果 <code>_草稿-工作台/</code> 里有和本次任务主题相关的草稿，在第一次回复里列出来，问用户每条怎么处理：① 整理进对应主题的正式文件（然后删掉草稿）；② 先留着；③ 删掉。<strong>用户没答复前不要擅自转正或删除。</strong></li>
+<li><strong>收工时</strong>：处理过草稿的，在「知识库沉淀提醒」里写明转进了哪里、删了哪些。</li>
+<li><strong>删除</strong>：只在用户确认后删（git 历史仍可找回）；只删本次处理过的那几篇，不批量清空。</li>
+</ul>
 
   </article>
 </main>
@@ -316,7 +324,7 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20261004152315"></script>
-<script src="/assets/render.js?v=20261004152315"></script><script src="/assets/app.js?v=20261004152315"></script>
+<script src="/assets/data.js?v=20261004161940"></script>
+<script src="/assets/render.js?v=20261004161940"></script><script src="/assets/app.js?v=20261004161940"></script>
 </body>
 </html>
