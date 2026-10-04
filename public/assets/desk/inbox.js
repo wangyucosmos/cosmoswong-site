@@ -83,7 +83,7 @@
   const itemHtml = (i, done) => `<li class="iitem" data-inbox="${i.id}">
     <div class="imeta"><span class="tag">${esc(i.source || '其他')}</span><span class="muted">${esc(when(i.created_at))}</span>${done ? `<span class="muted">${convertedLabel(i.converted_to)}</span>` : ''}</div>
     <div class="itext">${esc(i.content)}</div>
-    <div class="iact">${done ? '' : `<button type="button" class="tb" data-intake>① 🤖 复制给 AI 拆</button><button type="button" class="btn sm" data-intake-paste>② 📥 AI 拆完贴回来</button>
+    <div class="iact">${done ? '' : `<button type="button" class="tb" data-intake>${D.icon('sparkle', 'sm')} ① 复制给 AI 拆</button><button type="button" class="btn sm" data-intake-paste>${D.icon('download', 'sm')} ② AI 拆完贴回来</button>
       <span class="sep"></span><button type="button" class="btn sm ghost" data-conv="project">直接转成项目</button><button type="button" class="btn sm ghost" data-conv="task">转成待办</button><button type="button" class="btn sm ghost" data-conv="pending">转成待确认</button>`}
       <span class="grow"></span><button type="button" class="link-btn danger" data-idel>删除</button></div></li>`;
 
@@ -139,8 +139,8 @@
           <label class="fld"><span class="fl">省份</span><input name="province" value="${esc(p.province || '')}" maxlength="30" placeholder="全国"></label>
           <div class="fld"><span class="fl">上线日</span><div class="row tight"><input type="date" name="launch_at" value="${esc(p.launch_at || '')}"><label class="check"><input type="checkbox" name="tent" ${p.launch_tentative ? 'checked' : ''}> 暂定</label></div></div>
           <label class="fld wide"><span class="fl">一句话需求</span><textarea name="summary" rows="2" maxlength="2000">${esc(p.summary || '')}</textarea></label></div>
-        <h4>交付物（${r.deliverables.length}）</h4><ul class="bf-list">${r.deliverables.map((d, i) => `<li><label class="check"><input type="checkbox" data-it-d="${i}" checked> 📦 ${esc(d.type)}${d.name ? '：' + esc(d.name) : ''}</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
-        <h4>待确认（${r.pendings.length}）</h4><ul class="bf-list">${r.pendings.map((x, i) => `<li><label class="check"><input type="checkbox" data-it-p="${i}" checked> ⏳ ${esc(x.question)}（问${esc(x.ask_whom || '—')}${x.need_by ? '，最晚 ' + esc(D.fmtDate(x.need_by)) : ''}）</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
+        <h4>交付物（${r.deliverables.length}）</h4><ul class="bf-list">${r.deliverables.map((d, i) => `<li><label class="check"><input type="checkbox" data-it-d="${i}" checked> ${D.icon('box', 'sm')} ${esc(d.type)}${d.name ? '：' + esc(d.name) : ''}</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
+        <h4>待确认（${r.pendings.length}）</h4><ul class="bf-list">${r.pendings.map((x, i) => `<li><label class="check"><input type="checkbox" data-it-p="${i}" checked> ${D.icon('hourglass', 'sm')} ${esc(x.question)}（问${esc(x.ask_whom || '—')}${x.need_by ? '，最晚 ' + esc(D.fmtDate(x.need_by)) : ''}）</label></li>`).join('') || '<li class="muted">没有</li>'}</ul>
         <div class="row end"><button type="button" class="btn sm ghost" data-it-back>返回修改</button><button type="button" class="btn sm" data-it-go>建项目</button></div>`;
       body.querySelector('[data-it-back]').onclick = () => step1(text);
       body.querySelector('[data-it-go]').onclick = async e => {

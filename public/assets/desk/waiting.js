@@ -13,17 +13,28 @@
     const meta = [
       `问${esc(x.ask_whom || '—')}${x.ask_name ? ' · ' + esc(x.ask_name) : ''}`,
       showProject && p ? `<button type="button" class="link-btn" data-open-project="${p.id}" data-tab="pendings">${esc(p.title)}</button>` : '',
-      waiting ? [st.text && `<span class="wdays">${esc(st.text)}</span>`, waited].filter(Boolean).join(' · ') : x.status === 'answered' ? `${esc(D.fmtDate(x.answered_at))} 已答复` : '不需要了',
       nudged
     ].filter(Boolean).join(' · ');
+    // 右边的小标签：一眼看出急不急（细节放在 title 里，鼠标停上去能看到）
+    const d = x.need_by ? D.diffDays(x.need_by, D.today()) : null;
+    const pill = !waiting ? (x.status === 'answered' ? `${D.fmtDate(x.answered_at)} 已答复` : '不需要了')
+      : st.later ? `${D.fmtDate(x.remind_from)} 起催`
+      : d != null ? (d < 0 ? `已过 ${-d} 天` : d === 0 ? '今天就要' : d <= 2 ? `还有 ${d} 天` : `${D.fmtDate(x.need_by)}前`)
+      : waited || '刚问';
+    const pcls = !waiting ? 'ok' : st.level === 'danger' ? 'bad' : st.level === 'warn' ? 'warn' : '';
+    const tip = [st.text, waited].filter(Boolean).join(' · ');
+    // 头像圈：问谁的第一个字（业务方 → 业、领导 → 领）
+    const av = [...String(x.ask_name || x.ask_whom || '？').trim()][0] || '？';
     return `<li class="wrow${st.level ? ' lvl-' + st.level : ''}${waiting ? '' : ' closed'}${st.later ? ' later' : ''}" data-pending="${x.id}">
+      <span class="av" aria-hidden="true">${esc(av)}</span>
       <div class="wmain">
         <div class="wq">${waiting && x.blocking ? '<span class="blk">卡交付</span>' : ''}${esc(x.question)}</div>
-        <div class="wmeta muted">${meta}</div>
+        <div class="wmeta">${meta}</div>
         ${x.answer ? `<div class="wans">答：${esc(x.answer)}</div>` : ''}
+        <div class="wact">${waiting && !st.later ? `<button type="button" class="btn sm ghost" data-nudge>${D.icon('message', 'sm')}催一下</button>` : ''}${waiting ? `<button type="button" class="btn sm ghost ok" data-answer>${D.icon('check', 'sm')}已答复</button>` : ''}
+          <button type="button" class="icon" data-pmore aria-label="更多操作">${D.icon('more')}</button></div>
       </div>
-      <div class="wact">${waiting && !st.later ? '<button type="button" class="btn sm ghost" data-nudge>催一下</button>' : ''}${waiting ? '<button type="button" class="btn sm ghost ok" data-answer>已答复</button>' : ''}
-        <button type="button" class="icon" data-pmore aria-label="更多操作">⋯</button></div>
+      <span class="pill ${pcls} wdays" title="${esc(tip)}">${esc(pill)}</span>
     </li>`;
   };
 

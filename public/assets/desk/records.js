@@ -9,8 +9,8 @@
   D.renderRecords = (view, el) => {
     const seg = D.recSeg();
     el.innerHTML = `<div class="rec-head"><div class="seg" role="tablist" aria-label="记录">
-        <button type="button" data-rec="wins" class="${seg === 'wins' ? 'on' : ''}" aria-selected="${seg === 'wins'}">📈 提效记录</button>
-        <button type="button" data-rec="ideas" class="${seg === 'ideas' ? 'on' : ''}" aria-selected="${seg === 'ideas'}">💡 玩法创意</button></div></div>
+        <button type="button" data-rec="wins" class="${seg === 'wins' ? 'on' : ''}" aria-selected="${seg === 'wins'}">${D.icon('bolt', 'sm')} 提效记录</button>
+        <button type="button" data-rec="ideas" class="${seg === 'ideas' ? 'on' : ''}" aria-selected="${seg === 'ideas'}">${D.icon('bulb', 'sm')} 玩法创意</button></div></div>
       <div class="rec-body"></div>`;
     (seg === 'ideas' ? D.renderIdeas : D.renderWins)(view, el.querySelector('.rec-body'));
   };

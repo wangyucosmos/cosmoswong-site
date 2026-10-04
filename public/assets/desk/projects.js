@@ -22,28 +22,30 @@
     const soon = p.launch_at && st === 'active' && D.diffDays(p.launch_at, D.today()) >= 0 && D.diffDays(p.launch_at, D.today()) <= 7;
     return `<article class="pcard st-${st}" data-open-project="${p.id}" tabindex="0" aria-label="${esc(p.title)}">
       <header><h4>${esc(p.title)}</h4>${D.statusChip(p.status)}</header>
-      ${p.launch_at ? `<p class="pl due ${late ? 'overdue' : soon ? 'soon' : ''}">◆ ${esc(D.launchText(p))}</p>` : '<p class="pl muted">上线日未定</p>'}
-      ${p.next_action ? `<p class="pn">👉 ${esc(p.next_action)}</p>` : ''}
-      <footer>${g.total ? `<span class="prog${g.done === g.total ? ' full' : ''}">📦 ${g.done}/${g.total}</span>` : ''}${w.length ? `<span class="cnt${block ? ' block' : ''}">⏳ 在等 ${w.length}${block ? ' · 卡交付' : ''}</span>` : ''}${nn && st !== 'done' ? `<span class="muted small">下一个：${esc(D.offsetLabel(nn.off))} ${esc(D.firstLine(nn.title, 16))}</span>` : ''}</footer>
+      ${p.launch_at ? `<p class="pl due ${late ? 'overdue' : soon ? 'soon' : ''}">${D.icon('diamond', 'sm')} ${esc(D.launchText(p))}</p>` : st === 'done' ? (p.month ? `<p class="pl muted">${D.icon('calendar', 'sm')} ${esc(p.month.replace('-', ' 年 ').replace(/ 0?(\d+)$/, ' $1'))} 月</p>` : '') : `<p class="pl muted">${D.icon('calendar', 'sm')} 上线日未定</p>`}
+      ${p.next_action ? `<span class="pn">${esc(p.next_action)}</span>` : p.summary && st === 'done' ? `<span class="pn">${esc(D.firstLine(p.summary, 60))}</span>` : ''}
+      <footer>${g.total ? `<span class="prog${g.done === g.total ? ' full' : ''}">${D.icon('box', 'sm')} ${g.done}/${g.total}</span><span class="bar"><i style="width:${Math.round(g.done / g.total * 100)}%"></i></span>` : ''}${w.length ? `<span class="cnt${block ? ' block' : ''}">${D.icon('hourglass', 'sm')} 在等 ${w.length}${block ? ' · 卡交付' : ''}</span>` : ''}${nn && st !== 'done' ? `<span class="muted small">下一个：${esc(D.offsetLabel(nn.off))} ${esc(D.firstLine(nn.title, 16))}</span>` : ''}</footer>
     </article>`;
   }
   D.renderProjects = (view, el) => {
-    const list = D.state.projects.filter(p => D.matchSearchP(p, D.q));
+    const list = D.state.projects.filter(p => D.matchSearchP(p, D.pq));
     const live = list.filter(p => !p.archived_at), archived = list.filter(p => p.archived_at);
     const provs = D.cfg().provinces, keyOf = p => p.province || '';
     const keys = [...provs.filter(v => live.some(p => keyOf(p) === v)), ...[...new Set(live.map(keyOf))].filter(v => v && !provs.includes(v)), ...(live.some(p => !keyOf(p)) ? [''] : [])];
     const groups = keys.map(k => {
       const ps = live.filter(p => keyOf(p) === k).sort((a, b) => ORDER[D.normStatus(a.status)] - ORDER[D.normStatus(b.status)] || (a.launch_at || '9999').localeCompare(b.launch_at || '9999') || a.id - b.id);
       const open = ps.filter(p => D.normStatus(p.status) !== 'done'), done = ps.filter(p => D.normStatus(p.status) === 'done');
-      return `<section class="pgroup"><h3>${k ? esc(k) : '全国 / 没填省份'} <span class="gcount">${open.length}</span></h3>
+      // 这个省现在没有在做的：直接摆出过往项目（来新需求时一眼看到上次做了什么）；有在做的：过往的折起来
+      const act = open.filter(p => ['active', 'live'].includes(D.normStatus(p.status))).length, other = open.length - act;
+      const shown = open.length + (act ? 0 : done.length);
+      return `<section class="pgroup${shown > 2 ? ' wide' : ''}"><h3>${k ? esc(k) : '全国 / 没填省份'} <span class="gcount">${[act ? `进行中 ${act}` : '', other ? `暂缓 / 观望 ${other}` : '', done.length ? `已交付 ${done.length}` : ''].filter(Boolean).join(' · ')}</span></h3>
         ${open.length ? `<div class="pcards">${open.map(card).join('')}</div>` : ''}
-        ${done.length ? `<details class="done-fold" ${D.q ? 'open' : ''}><summary>已交付 ${done.length} 个</summary><div class="pcards">${done.map(card).join('')}</div></details>` : ''}</section>`;
+        ${done.length ? (act ? `<details class="done-fold" ${D.pq ? 'open' : ''}><summary>已交付 ${done.length} 个</summary><div class="pcards">${done.map(card).join('')}</div></details>` : `<div class="pcards">${done.map(card).join('')}</div>`) : ''}</section>`;
     }).join('');
     el.innerHTML = `<div class="page projects">
-      <div class="toolbar"><div class="filters">${D.q ? `<span class="fchip"><button type="button" data-focus-q>搜索：${esc(D.q)}</button><button type="button" class="x" data-clear-q aria-label="清除搜索">×</button></span>` : '<span class="muted small">按省份分组；已交付的折起来了，点开就能看到上次做了什么。</span>'}</div>
-        <div class="tools"><button type="button" class="btn sm" data-new-project>＋ 新建项目</button></div></div>
-      ${groups || (D.state.projects.length ? '<p class="empty-state">没有符合条件的项目。</p>'
-        : '<div class="empty-state"><p>还没有项目。</p><p>把业务方的需求粘进收集箱，让 AI 拆完贴回来；或者直接新建一个。</p><p><button type="button" class="btn" data-new-project>＋ 新建项目</button></p></div>')}
+      <div class="ptools"><input class="filter" type="search" data-pfilter data-keep-focus="pq" value="${esc(D.pq || '')}" placeholder="筛选：项目名、待确认、拍板的口径…" aria-label="筛选项目"><span class="muted small">按省份分组；已交付的折起来了，点开就能看到上次做了什么。</span></div>
+      ${groups ? `<div class="pgroups">${groups}</div>` : (D.state.projects.length ? '<p class="empty-state">没有符合条件的项目。</p>'
+        : `<div class="empty-state"><div class="big-i">${D.icon('folders')}</div><p>还没有项目。</p><p>把业务方的需求粘进收集箱，让 AI 拆完贴回来；或者直接新建一个。</p><p><button type="button" class="btn" data-new-project>＋ 新建项目</button></p></div>`)}
       ${archived.length ? `<details class="done-fold"><summary>已归档 ${archived.length} 个</summary><div class="pcards">${archived.map(card).join('')}</div></details>` : ''}
     </div>`;
   };
@@ -59,12 +61,12 @@
   function nowBlock(p) {
     const nn = D.nextNode(p.id), st = D.normStatus(p.status);
     const ask = st === 'active' && p.launch_at && p.launch_at < D.today();
-    return `${ask ? `<div class="ask-launch" data-launch-ask="${p.id}"><span>⚠ ${p.launch_tentative ? '暂定' : '原定'} ${esc(D.fmtDate(p.launch_at))} 上线，已经过了：上线了吗？</span>
+    return `${ask ? `<div class="ask-launch" data-launch-ask="${p.id}"><span>${D.icon('rocket', 'sm')} ${p.launch_tentative ? '暂定' : '原定'} ${esc(D.fmtDate(p.launch_at))} 上线，已经过了：上线了吗？</span>
         <span class="row-btns"><button type="button" class="btn sm" data-launched>已上线</button><button type="button" class="btn sm ghost" data-reschedule>改期</button></span></div>` : ''}
-      ${st === 'watch' ? '<p class="hint">👀 观望中：不一定是你做，这个项目的事不会出现在「今天」。轮到你做了，把状态改成「进行中」。</p>' : ''}
+      ${st === 'watch' ? `<p class="hint">${D.icon('eye', 'sm')} 观望中：不一定是你做，这个项目的事不会出现在「今天」。轮到你做了，把状态改成「进行中」。</p>` : ''}
       <section class="psec now"><label class="fl" for="p-next">下一步（写成能直接动手的一句话）</label>
         <input id="p-next" data-f="next_action" value="${esc(p.next_action || '')}" maxlength="300" placeholder="如：周二前把原型 V2 发群">
-        ${nn ? `<p class="muted small nn">📍 下一个节点：<b>${esc(D.offsetLabel(nn.off))} ${D.KIND_ICON[nn.kind]} ${esc(nn.title)}</b>（${esc(D.fmtDate(nn.date))} ${D.wk(nn.date)}${nn.date < D.today() ? `，已过 ${D.diffDays(D.today(), nn.date)} 天` : ''}）</p>` : ''}
+        ${nn ? `<p class="muted small nn">${D.icon('target', 'sm')} 下一个节点：<b>${esc(D.offsetLabel(nn.off))} ${D.KIND_ICON[nn.kind]} ${esc(nn.title)}</b>（${esc(D.fmtDate(nn.date))} ${D.wk(nn.date)}${nn.date < D.today() ? `，已过 ${D.diffDays(D.today(), nn.date)} 天` : ''}）</p>` : ''}
       </section>`;
   }
 
@@ -98,13 +100,15 @@
           <button type="button" class="pickbtn slim" data-dpick="type" title="类型">${esc(d.type)}</button>
           <input class="dver" data-df="version" value="${esc(d.version || '')}" placeholder="版本" maxlength="20" aria-label="版本">
           <button type="button" class="tb slim" data-ddue title="截止日">${d.offset_days != null ? `<small class="muted">${esc(D.offsetLabel(d.offset_days))}</small> ` : ''}<span class="due ${r.cls}">${esc(r.text || '截止日')}</span></button>
-          ${d.status !== 'done' ? '<button type="button" class="btn sm" data-deliver>标成已交付</button>' : ''}
-          <button type="button" class="icon" data-dmore aria-label="更多">⋯</button>
+          <button type="button" class="icon" data-dmore aria-label="更多">${D.icon('more')}</button>
         </div>
         <div class="drow2">
-          <label class="lbl inline">底稿<input data-df="base" value="${esc(d.base || '')}" maxlength="200" placeholder="哪一版、谁做的，如：Figma 手改版 3" aria-label="当前底稿"></label>
-          <label class="check" title="写进提示词：这一版是你手改的，AI 只能改你指定的地方，其余原样保留"><input type="checkbox" data-dcheck="base_locked" ${d.base_locked ? 'checked' : ''}> 我手改的，AI 不得改动</label>
+          <label class="lbl inline grow">底稿<input data-df="base" value="${esc(d.base || '')}" maxlength="200" placeholder="哪一版、谁做的，如：Figma 手改版 3" aria-label="当前底稿"></label>
           <label class="lbl inline grow">位置<input data-df="file_hint" value="${esc(d.file_hint || '')}" maxlength="300" placeholder="文件名或文件夹" aria-label="文件位置"></label>
+        </div>
+        <div class="drow3">
+          <label class="check" title="写进提示词：这一版是你手改的，AI 只能改你指定的地方，其余原样保留"><input type="checkbox" data-dcheck="base_locked" ${d.base_locked ? 'checked' : ''}> 我手改的，AI 不得改动</label>
+          ${d.status !== 'done' ? `<button type="button" class="btn sm" data-deliver>${D.icon('check', 'sm')}标成已交付</button>` : ''}
         </div>
       </li>`;
     }).join('') || '<li class="muted">还没有交付物。用右边「排期」一键生成，或者在下面手动加。</li>'}</ul>
@@ -120,7 +124,7 @@
     const list = D.openTasks(p.id).sort((a, b) => a.done - b.done || (a.due_at || '9999').localeCompare(b.due_at || '9999') || a.id - b.id);
     const open = list.filter(t => !t.done), done = list.filter(t => t.done);
     const row = t => { const r = t.done ? { text: '', cls: '' } : D.rel(t.due_at);
-      return `<li class="${t.done ? 'done' : ''}" data-task="${t.id}"><label><input type="checkbox" data-task-done ${t.done ? 'checked' : ''}> <span>${t.milestone ? '🚩 ' : ''}${esc(t.title)}</span></label>
+      return `<li class="${t.done ? 'done' : ''}" data-task="${t.id}"><label><input type="checkbox" data-task-done ${t.done ? 'checked' : ''}> <span>${t.milestone ? D.icon('flag', 'sm') + ' ' : ''}${esc(t.title)}</span></label>
         ${t.offset_days != null ? `<small class="muted">${esc(D.offsetLabel(t.offset_days))}</small>` : ''}
         <button type="button" class="tb slim" data-tdue><span class="due ${r.cls}">${esc(t.due_at ? (t.done ? D.fmtDate(t.due_at) : r.text) : '日期')}</span></button>
         <button type="button" class="x" data-task-del aria-label="删除待办">×</button></li>`; };
@@ -137,7 +141,7 @@
     return sec('ai', 'AI 交接', `
       <input class="todo-in" data-ai-todo value="${esc(st.todo ?? '')}" maxlength="200" placeholder="这次要 AI 做什么，如：按领导意见改原型 V2 的抽奖模块" aria-label="这次要做什么">
       <div class="kick"><span class="muted small">点工具名 → 开工提示词直接复制好：</span>${tools.map(t => `<button type="button" class="btn sm ghost" data-kick="${esc(t)}">${esc(t)}</button>`).join('')}</div>
-      <div class="row wrap ai-more"><button type="button" class="tb" data-backfill>📥 贴回 AI 收工汇报</button><button type="button" class="tb" data-compare-start>⚖ 比稿</button>
+      <div class="row wrap ai-more"><button type="button" class="tb" data-backfill>${D.icon('download', 'sm')} 贴回 AI 收工汇报</button><button type="button" class="tb" data-compare-start>${D.icon('layers', 'sm')} 比稿</button>
         <button type="button" class="tb" data-other>其他模板 ▾</button><button type="button" class="tb" data-progress-copy>复制成 进度.md 条目</button></div>
       ${cmp ? `<div class="cmp"><p><b>比稿中</b>：${esc((cmp.tools || []).join('、'))}${cmp.scope ? `（${esc(cmp.scope)}）` : ''} · ${esc(D.fmtDate(cmp.started_at))} 开始</p>
         <div class="row wrap">${(cmp.tools || []).map(t => `<button type="button" class="btn sm" data-choose="${esc(t)}">选定 ${esc(t)} 版</button>`).join('')}
@@ -163,10 +167,10 @@
 
   function actBlock(p) {
     const list = D.acts[p.id];
-    return sec('acts', '动态', `<form class="add-row" data-act-add><select name="type" aria-label="类型">${D.ACT_TYPES.filter(a => ['progress', 'feedback', 'note'].includes(a.key)).map(a => `<option value="${a.key}">${a.icon} ${esc(a.label)}</option>`).join('')}</select>
+    return sec('acts', '动态', `<form class="add-row" data-act-add><select name="type" aria-label="类型">${D.ACT_TYPES.filter(a => ['progress', 'feedback', 'note'].includes(a.key)).map(a => `<option value="${a.key}">${esc(a.label)}</option>`).join('')}</select>
         <input name="summary" maxlength="500" placeholder="记一笔，如：领导说抽奖弹窗再简洁一点" aria-label="摘要"><button class="tb">记下</button></form>
       <ol class="timeline">${!list ? '<li class="muted">正在读取…</li>' : list.length ? list.slice(0, 30).map(a => `<li data-act-id="${a.id}">
-        <span class="ticon">${D.actOf(a.type).icon}</span>
+        <span class="ticon">${D.icon(D.actOf(a.type).icon)}</span>
         <div class="tbody"><div class="thead"><b>${esc(D.actOf(a.type).label)}</b>${a.tool ? `<span class="tag">${esc(a.tool)}</span>` : ''}<span class="muted">${esc(D.fmtDate(a.happened_at))}</span>
           <span class="grow"></span><button type="button" class="link-btn danger" data-act-del>删除</button></div>
           ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
@@ -198,13 +202,18 @@
       { folded: true, extra: list.length ? ` <span class="gcount">省了 ${esc(D.fmtMinutes(saved))}</span>` : '' });
   }
 
+  // 上线倒计时小圆环：离上线越近圈越满（按 30 天算满）
+  function countdown(p, late) {
+    const d = D.diffDays(p.launch_at, D.today()), k = late ? 1 : Math.max(0.04, Math.min(1, 1 - d / 30)), C = 2 * Math.PI * 9;
+    return `<span class="countdown${late ? ' late' : ''}" title="${esc(D.fmtDateW(p.launch_at))}"><svg viewBox="0 0 22 22" aria-hidden="true"><circle class="tr" cx="11" cy="11" r="9"/><circle class="pr" cx="11" cy="11" r="9" stroke-dasharray="${C.toFixed(1)}" stroke-dashoffset="${(C * (1 - k)).toFixed(1)}"/></svg>${esc(D.launchText(p))}</span>`;
+  }
   D.renderProject = (view, el) => {
     const p = D.project(view.pid);
     if (!p) { el.innerHTML = '<div class="page"><p class="empty-state">这个项目不存在或已删除。<button type="button" class="link-btn" data-goto="projects">回到项目列表</button></p></div>'; return; }
     if (!D.acts[p.id]) D.loadActs(p.id).then(() => { if (D.current?.pid === p.id) D.render(); });
     const late = p.launch_at && D.normStatus(p.status) === 'active' && p.launch_at < D.today();
     el.innerHTML = `<div class="page ppage" data-pid="${p.id}">
-      <div class="phead"><button type="button" class="link-btn back" data-back>← 项目</button>
+      <div class="phead">
         <input class="ptitle" data-f="title" value="${esc(p.title)}" maxlength="120" aria-label="项目名">
         <button type="button" class="pickbtn" data-pick="status" title="状态">${D.statusChip(p.status)} ▾</button>
         <button type="button" class="icon" data-pmenu aria-label="更多操作">⋯</button></div>
@@ -212,7 +221,7 @@
         <button type="button" class="pickbtn slim" data-pick="province">${esc(p.province || '全国 / 没填省份')} ▾</button>
         <label class="lbl inline">上线<input type="date" data-f="launch_at" value="${esc(p.launch_at || '')}" aria-label="上线日"></label>
         <label class="check"><input type="checkbox" data-f="launch_tentative" ${p.launch_tentative ? 'checked' : ''}> 暂定</label>
-        ${p.launch_at ? `<span class="due ${late ? 'overdue' : ''}">${esc(D.launchText(p))}</span>` : ''}
+        ${p.launch_at ? countdown(p, late) : ''}
         <label class="lbl inline">我这边截止<input type="date" data-f="due_at" value="${esc(p.due_at || '')}" aria-label="截止日"></label>
         ${p.archived_at ? '<span class="tag">已归档</span>' : ''}
       </div>
@@ -613,9 +622,8 @@
   D.projectsListEvents = main => {
     main.addEventListener('click', e => {
       if (D.current?.kind !== 'projects') return;
-      if (e.target.closest('[data-clear-q]')) { D.q = ''; D.$('#q').value = ''; D.render(); }
-      if (e.target.closest('[data-focus-q]')) D.$('#q').focus();
     });
+    main.addEventListener('input', e => { if (D.current?.kind === 'projects' && e.target.matches('[data-pfilter]')) { D.pq = e.target.value.trim(); D.render(true); } });
     main.addEventListener('keydown', e => { const c = e.target.closest?.('.pcard'); if (c && e.key === 'Enter') D.app.openProject(c.dataset.openProject); });
   };
 

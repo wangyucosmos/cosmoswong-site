@@ -76,8 +76,8 @@
             <td class="num"><b>${esc(D.fmtMinutes(D.saved(w)))}</b></td>
             <td class="editable clipcell" data-wk="output">${esc(w.output || '')}</td><td><button type="button" class="settle${w.portfolio_ok ? ' ok' : ''}" data-win-ok>${w.portfolio_ok ? '✓ 可以' : '不上'}</button></td>
             <td class="editable" data-wk="project_id">${w.project_id ? esc(D.projectName(w.project_id) || '（已删除）') : ''}</td>
-            <td><button type="button" class="icon" data-win-edit aria-label="编辑全部" title="编辑全部 / 删除">✎</button></td></tr>`).join('')}
-        </tbody></table></div><p class="muted small">点格子直接改；点 ✎ 编辑全部或删除。</p>` : `<p class="empty-state">${all.length ? '没有符合条件的记录。' : '还没有提效记录。用 AI 或脚本做完一件事，记下「以前大概多久、这次多久」——2027 年整理作品集时就有现成的数字了。'}</p>`}
+            <td><button type="button" class="icon" data-win-edit aria-label="编辑全部" title="编辑全部 / 删除">${D.icon('edit', 'sm')}</button></td></tr>`).join('')}
+        </tbody></table></div><p class="muted small">点格子直接改；点铅笔编辑全部或删除。</p>` : `<p class="empty-state">${all.length ? '没有符合条件的记录。' : '还没有提效记录。用 AI 或脚本做完一件事，记下「以前大概多久、这次多久」——2027 年整理作品集时就有现成的数字了。'}</p>`}
       </section></div>`;
   };
 

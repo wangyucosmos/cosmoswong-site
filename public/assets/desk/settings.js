@@ -70,7 +70,8 @@
     const sec = (id, title, body, hint = '') => `<details class="card-box set" data-sec="${id}" id="set-${id}" ${open[id] || want === id ? 'open' : ''}><summary><h3>${title}</h3>${hint ? `<span class="muted small">${hint}</span>` : ''}</summary>${body}</details>`;
     const baseTypes = [...new Set([...c.deliverable_types, ...Object.keys(c.baselines)])];
     el.innerHTML = `<div class="page settings">
-      <section class="card-box hero-box"><h2>⚙️ 设置</h2><p class="muted">常改的在上面；平时不用动的收在「高级」里。第一次用，先在「数据」里导入初始化包。</p></section>
+      ${sec('look', '外观', `<div class="theme-pick" role="group" aria-label="外观">${[['auto', 'a', '跟随系统', '白天浅色、晚上深色'], ['light', 'l', '浅色', '清爽：白卡片、青绿色'], ['dark', 'd', '深色', '精致：深底、紫蓝微光']].map(([k, c, t, d]) => `<button type="button" data-theme-set="${k}" class="${(window.DESK_THEME?.get() || 'auto') === k ? 'on' : ''}"><span class="sw ${c}"><i></i><i></i></span><b>${t}</b><span class="muted small">${d}</span></button>`).join('')}</div>
+        <p class="muted small">只记在这台设备的浏览器里；左下角也能随时切换。系统开了「减少动态效果」时，页面动效会自动关掉。</p>`, '跟随系统 / 浅色 / 深色')}
       ${sec('provinces', '省份', `<p class="muted small">名单随时可以改。新建项目、项目列表分组都按这里的顺序。</p>${rowsEditor('provinces', c.provinces.map(name => ({ name })), [{ key: 'name', label: '省份' }])}`, c.provinces.length ? `${c.provinces.length} 个` : '还没填')}
       ${sec('baselines', '提效基准', `<p class="muted small">每类交付物「以前不用 AI 大概要多少分钟」。标成已交付时自动带出来，你只填「这次用了多久」。第一次交某类东西时会顺手问一次。</p>
         <form class="opt-editor" data-setting="baselines"><div class="base-grid">${baseTypes.map(t => `<label class="lbl inline"><span>${esc(t)}</span><input type="number" min="0" max="100000" name="b" data-type="${esc(t)}" value="${esc(c.baselines[t] ?? '')}" class="w80"> 分钟</label>`).join('')}</div>
@@ -82,12 +83,13 @@
         ${D.state.prompts.map(t => `<details class="sub"><summary><b>${esc(t.name)}</b> <span class="muted small">${esc(t.scene || '其他')}${t.tool ? ' · ' + esc(t.tool) : ''}</span></summary>${ptForm(t)}</details>`).join('')}
         ${D.BUILTIN_PROMPTS.map(t => `<details class="sub builtin"><summary><b>${esc(t.name)}</b> <span class="muted small">内置 · ${esc(t.scene)} · 改它会另存成你的模板</span></summary>${ptForm(t)}</details>`).join('')}
         <details class="sub"><summary class="add">＋ 新建提示词模板</summary>${ptForm(null)}</details>`, `${D.state.prompts.length} 个`)}
-      ${sec('links', '快捷入口', D.linksManager(), `${D.state.links.length} 个，显示在今天页底部`)}
+      ${sec('assets', '素材库与资源', `<p class="muted small">常用网址、本机文件夹、小工具、文档都在左边「资源」页管理，钉住的显示在今天页。素材库读的是这台电脑上你选的文件夹，图片不会上传。</p>
+        <div class="row wrap"><button type="button" class="btn sm ghost" data-goto="resources">去资源页</button><button type="button" class="btn sm ghost" data-goto="assets">去素材库</button>${D.assets?.root ? `<span class="muted small">已连接「${esc(D.assets.rootName)}」</span><button type="button" class="tb ghost" data-assets-forget>断开</button>` : ''}</div>`, `${D.state.links.length + (D.state.resources || []).length} 个资源`)}
       ${sec('data', '数据：备份、恢复、初始化包', `
         <p class="muted small">数据保存在服务器上（不是这台电脑），换电脑、用手机打开都是同一份。建议每周下载一次 JSON 全量备份。</p>
         <div class="row wrap"><button type="button" class="btn sm" data-s="initpack">导入初始化包…</button>
           <button type="button" class="btn sm ghost" data-s="backup">下载 JSON 全量备份</button><button type="button" class="btn sm ghost" data-s="restore">从 JSON 备份恢复…</button></div>
-        <p class="muted small">初始化包：<b>新增</b>选项、时间表、检查清单、提示词模板、快捷入口，不删已有的；导入前会先给你看要加什么，重复导入不会出现重复项。已有同名、内容却不同的，会单独列出来，你勾了才换成包里的版本。</p>`)}
+        <p class="muted small">初始化包：<b>新增</b>选项、时间表、检查清单、提示词模板、网址、本机文件夹和过往项目，不删已有的；导入前会先给你看要加什么，重复导入不会出现重复项。已有同名、内容却不同的，会单独列出来，你勾了才换成包里的版本。</p>`)}
       ${sec('advanced', '高级', `
         ${ADV_LISTS.map(([k, t, hint]) => `<div class="opt-group"><h4>${t} ${hint ? `<small class="muted">${hint}</small>` : ''}</h4>${k === 'kinds'
           ? rowsEditor(k, c.kinds, [{ key: 'name', label: '类型名' }, { key: 'color', label: '颜色', type: 'color' }])
@@ -99,7 +101,7 @@
         <div class="opt-group"><h4>检查清单 <small class="muted">交付时能点开看一眼，只做提醒，不拦着</small></h4>
           ${D.state.checklists.map(cl => `<details class="sub"><summary><b>${esc(cl.name)}</b> <span class="muted small">${cl.items.length} 项 · ${cl.applies_to.length ? esc(cl.applies_to.join('、')) : '所有类型'}</span></summary>${clForm(cl)}</details>`).join('')}
           <details class="sub"><summary class="add">＋ 新建检查清单</summary>${clForm(null)}</details></div>`, '交付物类型、问谁、AI 工具、检查清单…')}
-      ${sec('keys', '快捷键', `<p><kbd>/</kbd> 搜索　<kbd>c</kbd> 收集　<kbd>n</kbd> 新项目　<kbd>t</kbd> 回到今天　<kbd>Esc</kbd> 关掉浮层；在项目页里按 <kbd>Esc</kbd> 回到上一页</p>
+      ${sec('keys', '快捷键', `<p><kbd>⌘</kbd> <kbd>K</kbd> 或 <kbd>/</kbd> 搜索一切　<kbd>c</kbd> 收集　<kbd>n</kbd> 新项目　<kbd>t</kbd> 回到今天　<kbd>Esc</kbd> 关掉浮层；在项目页里按 <kbd>Esc</kbd> 回到上一页</p>
         <p class="muted small">在输入框里打字时快捷键不生效。收集框里：回车保存，Shift+回车换行。</p>`)}
       ${sec('password', '改密码', `<p class="muted small">知道原密码就能改。改完之后，其他电脑和手机上的登录会全部失效，要用新密码重新登录；这台设备保持登录。忘了新密码，可以让 AI 按站点说明把它恢复成最初的密码。</p>
         <form class="pw-form" data-password novalidate>
@@ -114,7 +116,6 @@
     </div>`;
     el.querySelectorAll('.opt-editor .opt-rows').forEach(box => D.sortable(box, '.opt-row', () => {}, { axis: 'y', handle: '.grip' }));
     el.querySelectorAll('.tl-rows').forEach(box => D.sortable(box, '.tl-edit-row', () => {}, { axis: 'y', handle: '.grip' }));
-    el.querySelectorAll('.links-manager').forEach(D.bindLinksManager);
     if (want) { D.pref.set('settings.jump', null); requestAnimationFrame(() => D.$('#set-' + want)?.scrollIntoView({ block: 'start' })); }
   };
 
@@ -174,10 +175,10 @@
       let plan;
       try { plan = await D.api('POST', '/init-pack', { pack, current, apply: false }); } catch (e) { return D.fail(e); }
       const NAMES = { kinds: '项目类型', provinces: '省份', deliverable_types: '交付物类型', ask_whom: '问谁', ai_tools: 'AI 工具', win_task_types: '提效任务类型', inbox_sources: '收集箱来源' };
-      const li = (title, list) => list.length ? `<li><b>${esc(title)}</b>（${list.length}）：${list.map(esc).join('、')}</li>` : '';
+      const li = (title, list) => list.length ? `<li><b>${esc(title)}</b>（${list.length}）：${list.slice(0, 12).map(esc).join('、')}${list.length > 12 ? ` …等 ${list.length} 个` : ''}</li>` : '';
       const p = plan.plan, changed = p.changed || [];
       const adds = plan.count ? `<p>这个初始化包会<b>新增</b>下面 ${plan.count} 项（已有的不动、不重复加）：</p>
-        <ul class="plan">${Object.entries(p.options).map(([k, v]) => li('选项 · ' + (NAMES[k] || k), v)).join('')}${li('时间表模板', p.timelines)}${li('检查清单', p.checklists)}${li('提示词模板', p.prompt_templates)}${li('快捷入口', p.links)}</ul>` : '';
+        <ul class="plan">${Object.entries(p.options).map(([k, v]) => li('选项 · ' + (NAMES[k] || k), v)).join('')}${li('时间表模板', p.timelines)}${li('检查清单', p.checklists)}${li('提示词模板', p.prompt_templates)}${li('网址', p.links)}${li('本机文件夹 / 小工具 / 文档', p.resources || [])}${li('过往项目（已交付）', p.projects || [])}</ul>` : '';
       // 同名但内容不同：可能是包更新了，也可能是你自己改过——默认不勾，勾上才覆盖
       const chg = changed.length ? `<p>下面 ${changed.length} 项已经有同名的，但内容和包里不一样（可能是包更新了，也可能是你自己改过）。<b>勾上的</b>会换成包里的版本，不勾就保持原样：</p>
         <ul class="plan">${changed.map(c => `<li><label><input type="checkbox" data-ip-replace="${esc(c.id)}"> ${esc(c.kind)} · ${esc(c.name)}</label></li>`).join('')}</ul>` : '';

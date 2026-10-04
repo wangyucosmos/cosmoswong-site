@@ -107,8 +107,8 @@
   D.DELIV_STATUSES = [{ key: 'todo', label: '未开始', color: '#9ca3af' }, { key: 'doing', label: '制作中', color: '#2f7cf6' }, { key: 'review', label: '待审', color: '#e8a400' }, { key: 'done', label: '已交付', color: '#1aa35a' }];
   D.PEND_STATUSES = [{ key: 'waiting', label: '等待中' }, { key: 'answered', label: '已答复' }, { key: 'dropped', label: '不需要了' }];
   D.ACT_TYPES = [
-    { key: 'progress', label: '进展', icon: '➡️' }, { key: 'deliver', label: '交付', icon: '📦' }, { key: 'feedback', label: '收到反馈', icon: '💬' },
-    { key: 'nudge', label: '催办', icon: '⏰' }, { key: 'ai', label: 'AI 经手', icon: '🤖' }, { key: 'note', label: '备注', icon: '📝' }
+    { key: 'progress', label: '进展', icon: 'right' }, { key: 'deliver', label: '交付', icon: 'box' }, { key: 'feedback', label: '收到反馈', icon: 'message' },
+    { key: 'nudge', label: '催办', icon: 'clock' }, { key: 'ai', label: 'AI 经手', icon: 'sparkle' }, { key: 'note', label: '备注', icon: 'edit' }
   ];
   D.IDEA_TARGETS = [{ key: 'value', label: '高价值转化' }, { key: 'stay', label: '3 分钟停留' }, { key: 'both', label: '两者' }, { key: 'other', label: '其他' }];
   D.IDEA_COSTS = [{ key: 'light', label: '轻' }, { key: 'mid', label: '中' }, { key: 'heavy', label: '重' }];
@@ -119,7 +119,7 @@
   D.TODO_SCOPES = ['策划', '原型', 'Word', '规则更新', '拨测', '其他'];
   D.SCENES = ['开工', '收工', '需求梳理', '写玩法提案', '其他'];
 
-  D.state = { projects: [], deliverables: [], tasks: [], pendings: [], decisions: [], ideas: [], wins: [], inbox: [], timelines: [], checklists: [], prompts: [], links: [], settings: {} };
+  D.state = { projects: [], deliverables: [], tasks: [], pendings: [], decisions: [], ideas: [], wins: [], inbox: [], timelines: [], checklists: [], prompts: [], links: [], resources: [], settings: {} };
   const named = x => typeof x === 'string' ? { name: x } : x;
   D.cfg = () => {
     const s = D.state.settings || {};
@@ -159,7 +159,7 @@
   D.delivChip = key => { const s = D.delivStatusOf(key); return D.soft(s.label, s.color, 'ds'); };
   D.ideaStatusOf = key => D.IDEA_STATUSES.find(s => s.key === key) || D.IDEA_STATUSES[0];
   D.ideaChip = key => { const s = D.ideaStatusOf(key); return D.soft(s.label, s.color); };
-  D.actOf = key => D.ACT_TYPES.find(a => a.key === key) || { key, label: key, icon: '•' };
+  D.actOf = key => D.ACT_TYPES.find(a => a.key === key) || { key, label: key, icon: 'sparkle' };
   D.labelOf = (list, key) => (list.find(x => x.key === key) || {}).label || '';
 
   /* ---------- 界面偏好（localStorage，读写都包 try/catch） ---------- */
@@ -193,10 +193,10 @@
     const el = document.createElement('div');
     el.className = 'toast' + (opts.error ? ' err' : '');
     el.setAttribute('role', opts.error ? 'alert' : 'status');
-    el.innerHTML = `<span>${D.esc(msg)}</span>${opts.action ? `<button type="button">${D.esc(opts.action)}</button>` : ''}`;
+    el.innerHTML = `${D.icon ? D.icon(opts.error ? 'x' : opts.icon || 'check', 'sm') : ''}<span>${D.esc(msg)}</span>${opts.action ? `<button type="button">${D.esc(opts.action)}</button>` : ''}`;
     box.append(el);
     let done = false;
-    const close = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 200); opts.onClose?.(); };
+    const close = () => { if (done) return; done = true; el.classList.add('out'); setTimeout(() => el.remove(), 260); opts.onClose?.(); };
     if (opts.action) el.querySelector('button').addEventListener('click', () => { opts.onAction?.(); opts.onClose = null; close(); });
     setTimeout(close, opts.timeout || (opts.error ? 6000 : 3000));
     return close;
@@ -454,7 +454,6 @@
   ].sort((a, b) => a.date.localeCompare(b.date) || a.off - b.off);
   // 下一个节点：还没完成的、日期最早的那个
   D.nextNode = pid => D.scheduleOf(pid).find(n => !n.done);
-  D.KIND_ICON = { task: '☐', deliverable: '📦', wait: '⏳', launch: '◆' };
   D.delivLabel = d => [d.name || d.type, d.version].filter(Boolean).join(' ');
   // 交付前检查：按交付物类型匹配清单（清单的「适用交付物」为空 = 所有类型）
   D.checklistsFor = type => D.state.checklists.filter(cl => !(cl.applies_to || []).length || cl.applies_to.includes(type));

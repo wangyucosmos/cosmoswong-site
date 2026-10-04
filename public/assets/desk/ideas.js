@@ -37,12 +37,12 @@
       <div class="toolbar"><div class="filters">${sel('status', D.IDEA_STATUSES, f.status, '全部状态')}${sel('target', D.IDEA_TARGETS, f.target, '全部考核方向')}${sel('dev_cost', D.IDEA_COSTS, f.dev_cost, '全部开发量')}</div></div>
       <div class="table-wrap"><table class="grid ideas-table"><colgroup>${COLS.map(c => `<col style="width:${c[2]}px">`).join('')}<col style="width:150px"></colgroup>
         <thead><tr>${COLS.map(c => `<th>${c[1]}</th>`).join('')}<th></th></tr></thead><tbody>
-        ${thisWeek ? '' : `<tr class="addrow this-week"><td>${esc(D.weekLabel(week))}</td><td colspan="${COLS.length}"><form class="inline-add" data-idea-add><input name="title" maxlength="120" placeholder="✍️ 写本周创意：先起个名字，回车保存，再补玩法机制" aria-label="本周创意名"></form></td></tr>`}
+        ${thisWeek ? '' : `<tr class="addrow this-week"><td>${esc(D.weekLabel(week))}</td><td colspan="${COLS.length}"><form class="inline-add" data-idea-add><input name="title" maxlength="120" placeholder="写本周创意：先起个名字，回车保存，再补玩法机制" aria-label="本周创意名"></form></td></tr>`}
         ${list.map(i => `<tr data-idea="${i.id}" class="${i.week === week ? 'cur' : ''}">${COLS.map(([k]) => `<td class="editable c-${k}" data-ik="${k}">${cell(i, k)}</td>`).join('')}
-          <td class="c-act"><button type="button" class="tb" data-idea-prompt title="复制给 AI，让它写成给开发评估的提案">🤖 写提案</button><button type="button" class="x" data-idea-del aria-label="删除">×</button></td></tr>`).join('')}
+          <td class="c-act"><button type="button" class="tb" data-idea-prompt title="复制给 AI，让它写成给开发评估的提案">${D.icon('sparkle', 'sm')} 写提案</button><button type="button" class="x" data-idea-del aria-label="删除">×</button></td></tr>`).join('')}
         ${thisWeek || list.length ? `<tr class="addrow"><td colspan="${COLS.length + 1}"><button type="button" class="add-inline" data-idea-new>＋ 再加一条</button></td></tr>` : ''}
       </tbody></table></div>
-      ${all.length ? '' : '<p class="empty-state">还没有玩法创意。每周写一个，先起名字，再补机制、考核方向和开发量；写好点「🤖 写提案」让 AI 写成 Word。</p>'}
+      ${all.length ? '' : '<p class="empty-state">还没有玩法创意。每周写一个，先起名字，再补机制、考核方向和开发量；写好点「写提案」让 AI 写成 Word。</p>'}
     </div>`;
   };
 
