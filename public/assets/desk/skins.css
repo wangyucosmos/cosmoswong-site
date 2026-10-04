@@ -283,7 +283,7 @@
 :root[data-skin=glass] .theme-seg button.on { background: rgba(255, 255, 255, .92); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
 :root[data-skin=glass][data-theme=dark] .theme-seg button.on { background: rgba(255, 255, 255, .18); }
 /* 页头：苹果「大标题」，日期用红色小字写在上面 */
-:root[data-skin=glass] .mainwrap { overflow: visible; }
+:root[data-skin=glass] .mainwrap { min-height: 0; }   /* 主区域要固定高度、里面的 #main 自己滚动；不能让内容把它撑高（2026-10-04 玻璃风格滑不动的原因） */
 :root[data-skin=glass] #main, :root[data-skin=glass][data-theme=dark] #main { background: none; }
 :root[data-skin=glass] .head { padding: 26px 28px 0 14px; }
 :root[data-skin=glass] .htitle { display: flex; flex-direction: column-reverse; }
