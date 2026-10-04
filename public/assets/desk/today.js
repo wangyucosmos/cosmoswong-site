@@ -66,7 +66,7 @@
       ${items.length ? `<ul class="tlist">${items.map(x => itemRow(x, today)).join('')}</ul>` : `<p class="muted">${askLaunch.length ? '' : '🎉 今天没有到期的事。'}</p>`}
       <form class="add-row today-add" data-today-add>
         <input name="title" maxlength="200" placeholder="＋ 加一条今天的待办" aria-label="今天的待办">
-        <select name="project" aria-label="项目">${D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' })}</select>
+        <select name="project" aria-label="项目">${D.selectOpts(D.optionsFor('project').filter(o => D.projOk(o.value)), '', { empty: '（不属于任何项目）' })}</select>
         <button class="tb">添加</button></form></section>`;
 
     const wait = `<section class="card-box"><h3>在等谁 <span class="gcount">${waits.length}</span></h3>
@@ -133,7 +133,7 @@
         ${doneTasks.length + doneDelivs.length ? `<ul class="done-list">${doneTasks.map(t => `<li>✓ ${esc(t.title)}${t.project_id ? ` <small class="muted">${esc(D.projectName(t.project_id))}</small>` : ''}</li>`).join('')}${doneDelivs.map(d => `<li>📦 交付了 ${esc(D.delivLabel(d))} <small class="muted">${esc(D.projectName(d.project_id))}</small></li>`).join('')}</ul>` : '<p class="muted">今天还没勾掉任何事。没关系，明天继续。</p>'}</section>
       <section class="wsec"><h4>明天第一件事 <small class="muted">${esc(D.fmtDateW(tomorrow))}</small></h4>
         <input name="first" maxlength="200" placeholder="写成能直接动手的一句话，如：把原型 V2 发群" aria-label="明天第一件事">
-        <div class="row wrap"><select name="first_project" aria-label="属于哪个项目">${D.selectOpts(D.optionsFor('project'), '', { empty: '（不属于任何项目）' })}</select>
+        <div class="row wrap"><select name="first_project" aria-label="属于哪个项目">${D.selectOpts(D.optionsFor('project').filter(o => D.projOk(o.value)), '', { empty: '（不属于任何项目）' })}</select>
           <label class="check"><input type="radio" name="first_mode" value="task" checked> 新建明天的待办</label>
           <label class="check"><input type="radio" name="first_mode" value="next"> 写进项目的「下一步」</label></div></section>
       <div class="row end"><button type="button" class="btn sm ghost" data-wrap-close>取消</button><button class="btn sm">收工</button></div>`;
