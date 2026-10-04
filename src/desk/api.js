@@ -6,6 +6,7 @@
 import { json } from '../shared.js';
 import { isAuthed, login, logout, csrfOk, changePassword } from './auth.js';
 import { TABLES, JSON_COLS, Invalid, clean } from './schema.js';
+import { githubApi } from './github.js';
 
 const MAX_BODY = 4 * 1024 * 1024;   // 恢复备份、导入初始化包最大 4MB，其余请求远小于此
 const UNDO_HOURS = 24;              // 软删除保留 24 小时后清理（页面上的撤销窗口是 5 秒）
@@ -19,7 +20,7 @@ const CHILDREN = ['deliverables', 'tasks', 'pendings', 'activities', 'decisions'
 const REORDERABLE = ['deliverables', 'tasks', 'links', 'timelines', 'resources'];
 // 选项清单类设置（初始化包只往里「新增」）+ 其他偏好
 const OPTION_KEYS = ['kinds', 'provinces', 'deliverable_types', 'ask_whom', 'ai_tools', 'win_task_types', 'inbox_sources'];
-const SETTING_KEYS = [...OPTION_KEYS, 'statuses', 'nudge_days', 'view_order', 'welcome_done', 'wrapup_nag', 'baselines'];
+const SETTING_KEYS = [...OPTION_KEYS, 'statuses', 'nudge_days', 'view_order', 'welcome_done', 'wrapup_nag', 'baselines', 'github'];
 const BACKUP_TABLES = ['projects', 'deliverables', 'tasks', 'pendings', 'activities', 'decisions', 'ideas', 'wins', 'inbox',
   'timelines', 'checklists', 'prompt_templates', 'links', 'resources', 'saved_views', 'settings'];
 
@@ -390,7 +391,7 @@ const REPLACE_LABEL = { timelines: '时间表模板', checklists: '检查清单'
 async function initPack(db, input) {
   const pack = input.pack;
   if (!pack || pack.app !== 'cosmoswong-desk-init') throw new Invalid('这不是工作台的初始化包（文件里 app 应该是 cosmoswong-desk-init）');
-  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [], resources: [], projects: [], changed: [] };
+  const plan = { options: {}, timelines: [], checklists: [], prompt_templates: [], links: [], resources: [], projects: [], github: false, changed: [] };
   const stmts = [];
   const t = now();
   const replace = new Set(Array.isArray(input.replace) ? input.replace.map(String) : []);
@@ -452,6 +453,16 @@ async function initPack(db, input) {
   await addRows('links', 'links', (pack.links || []).map((l, i) => ({ ...l, sort_order: l.sort_order ?? i })), 'url', d => `${d.group_name ? d.group_name + ' · ' : ''}${d.label}`);
   await addRows('resources', 'resources', (pack.resources || []).map((r, i) => ({ ...r, sort_order: r.sort_order ?? i })), 'path', d => `${d.group_name ? d.group_name + ' · ' : ''}${d.label}`);
 
+  // GitHub 配置（v4）：哪些仓库、进度文件、草稿放哪。还没配过就直接用包里的；配过但不一样，列进 changed 让用户勾
+  if (pack.github && typeof pack.github === 'object') {
+    const v = JSON.stringify(pack.github);
+    if (v.length > 30000) throw new Invalid('初始化包里的 GitHub 设置太大了');
+    const cur = await db.prepare("SELECT value FROM settings WHERE key = 'github'").first();
+    const put = () => stmts.push(db.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)').bind('github', v, t));
+    if (!cur) { plan.github = true; put(); }
+    else if (cur.value !== v) { plan.changed.push({ id: 'settings:github', kind: '设置', name: 'GitHub 连接（仓库、进度文件、草稿位置）' }); if (replace.has('settings:github')) { put(); replaced++; } }
+  }
+
   // 历史项目（v3）：按项目名去重，已有同名的不动；交付物跟着项目一起建
   const haveTitles = new Set((await db.prepare('SELECT title FROM projects WHERE deleted_at IS NULL').all()).results.map(r => String(r.title).trim().toLowerCase()));
   for (const [i, raw] of (Array.isArray(pack.projects) ? pack.projects : []).entries()) {
@@ -474,7 +485,7 @@ async function initPack(db, input) {
     }
   }
 
-  const count = Object.values(plan.options).reduce((a, v) => a + v.length, 0) + plan.timelines.length + plan.checklists.length + plan.prompt_templates.length + plan.links.length + plan.resources.length + plan.projects.length;
+  const count = Object.values(plan.options).reduce((a, v) => a + v.length, 0) + plan.timelines.length + plan.checklists.length + plan.prompt_templates.length + plan.links.length + plan.resources.length + plan.projects.length + (plan.github ? 1 : 0);
   if (input.apply && stmts.length) await db.batch(stmts);
   return json({ plan, count, replaced: input.apply ? replaced : 0, applied: !!input.apply && stmts.length > 0 });
 }
@@ -538,6 +549,7 @@ async function route(req, env, parts) {
   if (res === 'backup' && m === 'GET') return backup(db);
   if (res === 'restore' && m === 'POST') return restoreAll(db, await body(req));
   if (res === 'init-pack' && m === 'POST') return initPack(db, await body(req));
+  if (res === 'gh') return githubApi(req, env, db, parts, body);
 
   if (res === 'settings' && idRaw && m === 'PUT') {
     if (!SETTING_KEYS.includes(idRaw)) throw new Invalid('不认识的设置项');
