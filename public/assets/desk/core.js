@@ -181,7 +181,7 @@
       });
     } catch { throw new Error('网络不通，没保存上，请检查网络后重试'); }
     const data = await r.json().catch(() => ({}));
-    if (r.status === 401 && path !== '/login') { D.onUnauthorized?.(); throw new Error('登录过期了，请重新输入密码'); }
+    if (r.status === 401 && path !== '/login') { D.onUnauthorized?.(data.reason); throw new Error('登录过期了，请重新输入密码'); }
     if (!r.ok) { const e = new Error(data.error || `出错了（${r.status}）`); e.status = r.status; e.data = data; throw e; }
     return data;
   };

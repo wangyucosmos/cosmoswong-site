@@ -4,7 +4,7 @@
 // v3（2026-10-04）：资源表（本机文件夹 / 小工具 / 文档）、快捷入口可钉到今天页、初始化包可带历史项目。
 // 数据库只加不删，旧版代码（git 标签 desk-v1 / desk-v2）照样能用这份数据。
 import { json } from '../shared.js';
-import { isAuthed, login, logout, csrfOk, changePassword } from './auth.js';
+import { isAuthed, authState, login, logout, csrfOk, changePassword } from './auth.js';
 import { TABLES, JSON_COLS, Invalid, clean } from './schema.js';
 import { githubApi } from './github.js';
 
@@ -592,7 +592,11 @@ export async function deskApi(req, env, path) {
   if (path === '/api/desk/logout' && req.method === 'POST') return csrfOk(req) ? logout() : forbidden();
   // 页面打开时探测是否已登录：只回答是 / 否，不含任何数据（这样未登录时浏览器控制台不会出现 401 报错）
   if (path === '/api/desk/session' && req.method === 'GET') return json({ authed: await isAuthed(req, env) });
-  if (!(await isAuthed(req, env))) return json({ error: '需要登录' }, 401);
+  const st = await authState(req, env);
+  if (st !== 'ok') {
+    console.log('desk auth', st, req.method, path, (req.headers.get('user-agent') || '').slice(0, 120));   // 只记原因和浏览器型号，不记任何 cookie 值
+    return json({ error: '需要登录', reason: st }, 401);
+  }
   if (!csrfOk(req)) return forbidden();
   const parts = path.slice('/api/desk/'.length).split('/').filter(Boolean);
   try {

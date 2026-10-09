@@ -53,13 +53,15 @@ const newSession = async (env, m) => {
   return cookie(`${exp}.${await sign(env, m, 'desk:' + exp)}`, SESSION_DAYS * 86400);
 };
 
-export async function isAuthed(req, env) {
+// 为什么不认这次登录：nocookie（浏览器根本没带登录凭证回来）/ expired（过期或格式不对）/ badsig（签名对不上，比如改过密码）
+export async function authState(req, env) {
   const c = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
-  if (!c) return false;
+  if (!c) return 'nocookie';
   const [exp, sig] = c[1].split('.');
-  if (!exp || !sig || !/^\d+$/.test(exp) || Number(exp) < Date.now() / 1000) return false;
-  return safeEq(sig, await sign(env, await meta(env), 'desk:' + exp));
+  if (!exp || !sig || !/^\d+$/.test(exp) || Number(exp) < Date.now() / 1000) return 'expired';
+  return (await safeEq(sig, await sign(env, await meta(env), 'desk:' + exp))) ? 'ok' : 'badsig';
 }
+export const isAuthed = async (req, env) => (await authState(req, env)) === 'ok';
 
 /* ---------- 输错限流（登录和改密码共用）：同一 IP 15 分钟 10 次 ---------- */
 async function gate(db, ip) {

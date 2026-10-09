@@ -30,7 +30,10 @@
     $('#login-pw').value = ''; $('#login-pw').focus();
     document.querySelectorAll('dialog[open]').forEach(d => d.close());
   }
-  D.onUnauthorized = () => showLogin('登录过期了，请重新输入密码');
+  let justLoggedIn = 0;
+  D.onUnauthorized = reason => showLogin(reason === 'nocookie' && Date.now() - justLoggedIn < 15000
+    ? '密码是对的，但这个浏览器没有保存登录信息（Cookie 被拦了）。请在浏览器设置里允许 cosmoswong.com 的 Cookie、关掉拦截类插件，或换一个浏览器 / 退出无痕模式再试。'
+    : '登录过期了，请重新输入密码');
 
   async function login(e) {
     e.preventDefault();
@@ -38,7 +41,7 @@
     if (!pw) { $('#login-msg').textContent = '请输入密码'; return; }
     $('#login-msg').textContent = '正在验证…';
     const btn = $('#login button'); btn.disabled = true;
-    try { await D.api('POST', '/login', { password: pw }); $('#login-msg').textContent = ''; await start(); }
+    try { await D.api('POST', '/login', { password: pw }); justLoggedIn = Date.now(); $('#login-msg').textContent = ''; await start(); }
     catch (err) {
       $('#login-msg').textContent = err.message; $('#login-pw').select();
       const f = $('#login'); f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake');
