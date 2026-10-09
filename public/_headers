@@ -2,12 +2,14 @@
 # 资源带 ?v=时间戳，所以可以长缓存；HTML 仍然每次回源校验。
 # 多条规则同时命中时头会叠加（同名头用逗号拼起来），所以先写 /* 通用规则，
 # 再在具体路径里用「! Cache-Control」摘掉通用值后重设。
+# HSTS（2026-10-09）：用 https 打开过一次之后，浏览器以后自动只走 https；不带 includeSubDomains，免得影响其他子域名。
 # CSP：唯一外部脚本是 Cloudflare 自动注入的 Insights beacon；style-src 保留 'unsafe-inline'
 # 是因为 render.js 里还有 style="…" 内联属性。script-src 里的 'sha256-…' 是首页 JSON-LD 的哈希，
 # 由 tools/build_pages.mjs 每次构建自动维护（改 data.js 的 me.* 后会变），不要手改。
 
 /*
   Cache-Control: public, max-age=0, must-revalidate
+  Strict-Transport-Security: max-age=31536000
   Referrer-Policy: strict-origin-when-cross-origin
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY

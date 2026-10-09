@@ -1,3 +1,5 @@
+// 必须走 https：登录凭证（Cookie）只在加密连接下保存，用 http:// 打开会「密码对了却马上又要登录」（2026-10-09 实际发生过）
+if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) location.replace('https://' + location.host + location.pathname + location.search + location.hash);
 /* 我的工作台 · 主题（v3）与风格（v5）：页面最早加载，先把 data-theme / data-skin 写到 <html> 上，避免先闪一下别的样子。
    深浅色存 localStorage desk.theme：auto（跟随系统，默认）/ light / dark。
    风格存 localStorage desk.skin：classic（经典，v3 的样稿 A / B）/ precise（精密，样稿 D）/ glass（玻璃，样稿 E）。

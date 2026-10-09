@@ -1,3 +1,5 @@
+// 必须走 https：登录凭证（Cookie）只在加密连接下保存，用 http:// 打开会「密码对了却马上又要登录」（2026-10-09 实际发生过）
+if (location.protocol === 'http:' && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) location.replace('https://' + location.host + location.pathname + location.search + location.hash);
 /* KOL 工作台 · 核心：工具函数、默认选项、接口、提示、弹层、筛选排序。
    所有模块挂在 window.KOL 上；业务数据只从 /api/kol 读写，localStorage 只存界面偏好。 */
 (() => {
