@@ -177,7 +177,8 @@ window.SITE = {
   /* ---------- 工具箱 ---------- */
   tools: [
     { name: 'Cosmos OS', desc: 'macOS 个人工作系统，把日常流程做成自己的操作系统。开发中。', icon: '🖥', url: 'https://github.com/wangyucosmos/Cosmos-Toolbox' },
-    { name: '旅行协作站', desc: '扫码进组一起编辑行程、清单、预算。印尼这次在用，之后每次旅行都能复用。', icon: '🧭', url: 'https://indonesia.cosmoswong.com' }
+    { name: '旅行协作站', desc: '扫码进组一起编辑行程、清单、预算。印尼这次在用，之后每次旅行都能复用。', icon: '🧭', url: 'https://indonesia.cosmoswong.com' },
+    { name: '动效 H5 编辑器', desc: '把长图和 GIF 叠在一起，发布成手机上手动滑动、动图原地播放的 H5 页面。带图层、修图（智能修补、仿制图章、画笔）和静态图生成摆动、飘落动效。需口令才能使用。', icon: '🎞', url: 'https://h5.cosmoswong.com/editor/' }
   ],
 
   /* ---------- 收藏 ---------- */
