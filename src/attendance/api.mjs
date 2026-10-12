@@ -10,7 +10,7 @@ class HttpError extends Error{constructor(status,message){super(message);this.st
 const fail=(status,message)=>{throw new HttpError(status,message);};
 function credentials(body){const username=String(body.username||'').normalize('NFKC').trim().toLowerCase();const password=body.password;
   if(!/^[\p{L}\p{N}_.-]{3,32}$/u.test(username))fail(400,'账号需为3至32位文字、数字、下划线、点或短横线');
-  if(typeof password!=='string'||password.length<10||password.length>128)fail(400,'密码需为10至128位');
+  if(typeof password!=='string'||password.length<8||password.length>128)fail(400,'密码需为8至128位');
   return {username,password};
 }
 async function throttle(db,key,limit,seconds){const now=Math.floor(Date.now()/1000);
@@ -47,7 +47,7 @@ export async function api(req,db){try {
     const {password}=credentials({username:user.username,password:body.password});if(body.confirmPassword!==password)fail(400,'两次新密码不一致');const salt=random();
     await db.batch([db.prepare('UPDATE users SET salt=?,password_hash=? WHERE id=?').bind(salt,await passwordHash(password,salt),user.id),db.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id)]);return await issue(db,req,user);
   }
-  if(path==='/records'&&req.method==='GET'){const {results}=await db.prepare('SELECT date,kind,minutes,note,revision FROM records WHERE user_id=? ORDER BY date').bind(user.id).all();return json({records:results});}
+  if(path==='/records'&&req.method==='GET'){const {results}=await db.prepare('SELECT date,kind,minutes,note,revision FROM records WHERE user_id=? ORDER BY date').bind(user.id).all();return json({records:results.map(row=>({...row,...validateRecord(row)}))});}
   if(path==='/records'&&req.method==='PUT'){
     if(!Array.isArray(body.records)||body.records.length<1||body.records.length>500)fail(400,'每次保存1至500条记录');
     const rows=body.records.map(row=>({...validateRecord(row),expectedRevision:row.expectedRevision??null}));if(new Set(rows.map(r=>r.date)).size!==rows.length)fail(400,'同批记录日期重复，请先核对');

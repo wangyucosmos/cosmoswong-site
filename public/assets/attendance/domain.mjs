@@ -8,16 +8,14 @@ export function validDate(date) {
 export function validateRecord(row) {
   if (!row || !validDate(row.date) || !Object.hasOwn(KINDS,row.kind)) throw new Error('日期或考勤类型不正确');
   let minutes = row.minutes;
-  if (row.kind === 'leave' || row.kind === 'rest') minutes = null;
-  else if (row.kind === 'makeup') minutes = 480;
+  if (['leave', 'rest', 'makeup'].includes(row.kind)) minutes = null;
   else if (minutes !== null && (!Number.isInteger(minutes) || minutes < 0 || minutes > 1440)) throw new Error('OA时长需在0到1440分钟之间');
   const note = String(row.note || '').trim();
   if (note.length > 240) throw new Error('备注最多240字');
   return {date:row.date,kind:row.kind,minutes,note};
 }
 export function delta(row) {
-  if (row.kind === 'leave' || row.kind === 'rest') return 0;
-  if (row.kind === 'makeup') return -36;
+  if (['leave', 'rest', 'makeup'].includes(row.kind)) return 0;
   if (row.minutes == null) return null;
   return row.minutes - TARGET;
 }

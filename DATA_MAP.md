@@ -3,3 +3,5 @@
 ATTENDANCE_DB独立D1：users（加盐密码哈希）、sessions（令牌哈希）、records（user_id/date联合主键及revision）、throttles。Cookie路径/api/attendance。请求中的user_id不会决定读写范围。整批JSON事务只需两条SQL，兼容多月备份；revision冲突整批回滚。
 
 新D1迁移已执行；线上两账号隔离、固定补卡时长和批量冲突回滚已验收。验收用临时账号仅按本轮准确ID清理，未迁移任何本机试用账号或记录。
+
+补卡规则替代旧的欠36分钟：leave/rest/makeup均返回0，新增或编辑免计记录的minutes为空；读取历史补卡以新规则显示，不更新原存储值、日期、备注或版本。密码下限8位，原有密码仍可登录，无数据库结构变化。
