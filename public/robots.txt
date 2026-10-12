@@ -24,6 +24,7 @@
 # AND RELATED RIGHTS IN THE DIGITAL SINGLE MARKET.
 
 User-agent: *
+Disallow: /attendance
 Disallow: /kol
 Disallow: /desk
 

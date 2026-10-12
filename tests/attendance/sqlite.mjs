@@ -1,0 +1,4 @@
+import {DatabaseSync} from 'node:sqlite';
+export function sqlite(path){const connection=new DatabaseSync(path);connection.exec('PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;');
+  function prepare(sql){let args=[];const statement=connection.prepare(sql);const wrapper={bind(...values){args=values;return wrapper;},async first(){return statement.get(...args)||null;},async all(){return {results:statement.all(...args)};},async run(){const result=statement.run(...args);return {meta:{changes:Number(result.changes)}};},execute(){return statement.run(...args);}};return wrapper;}
+  return {prepare,exec:sql=>connection.exec(sql),close:()=>connection.close(),async batch(commands){connection.exec('BEGIN IMMEDIATE');try{const results=commands.map(c=>({meta:{changes:Number(c.execute().changes)}}));connection.exec('COMMIT');return results;}catch(error){connection.exec('ROLLBACK');throw error;}}};}

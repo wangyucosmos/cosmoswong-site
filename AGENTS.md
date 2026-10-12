@@ -76,3 +76,12 @@
 - 公司交付物上站前要脱敏：未上线活动、奖品数值、内部联系人、二维码、官方受限素材一律不放。
 - 改完先本地验：`npx wrangler@4 dev --port 8788`，`node tools/build_pages.mjs` 连跑两次 `git diff --stat` 应为空。
 - `build_pages.mjs` 用 `git log` 取 sitemap 的 lastmod。本机 `/usr/bin/git` 若因 Xcode 许可协议没同意而报错，lastmod 会**静默丢失**（sitemap 出现大片 diff）。这时把 `/Library/Developer/CommandLineTools/usr/bin` 放到 PATH 最前面再构建 / 部署。
+
+## /attendance 补时计算器（2026-10-12）
+
+- 页面 `public/attendance.html`，脚本与OCR在 `public/assets/attendance/`，服务端 `src/attendance/`，接口 `/api/attendance/*`。页面独立、不进入build_pages的STATIC/DYNAMIC清单、不进sitemap；工具箱入口只改data.js。
+- 数据独立D1 binding `ATTENDANCE_DB`，迁移 `migrations/attendance/`；不可导入本机账号或测试记录。用户自行注册，每个读写请求都以已验证会话的user_id过滤。
+- 注册只需账号、密码、确认密码。密码PBKDF2加盐哈希；30天HttpOnly会话，Secure、SameSite=Strict，Cookie仅 `/api/attendance`。写请求同源检查及x-attendance-request防伪头。
+- 截图、姓名、原始OCR文字不发送到服务器；OCR引擎及模型同源托管，无CDN。仅保存核对后的日期、分钟、类型、备注。源码不得含真实考勤或公司身份信息。
+- 无时长需人工核对；之后无时长截图保留已确认记录。规则位于domain.mjs，记录冲突版本校验与整批事务回滚。
+- 本地检查：`node --test tests/attendance/*.test.mjs`；D1迁移仅操作ATTENDANCE_DB。OCR资源大，请核对上传及网页实际识别，不把单元测试当作线上验收。

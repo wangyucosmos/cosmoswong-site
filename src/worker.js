@@ -8,6 +8,8 @@
 import { json, safeEq, hmac } from './shared.js';
 import { kolApi } from './kol/api.js';
 import { deskApi } from './desk/api.js';
+import { api as attendanceApi } from './attendance/api.mjs';
+import { secure as attendanceSecure } from './attendance/security.mjs';
 
 const COOKIE = 'subs_session';
 const SESSION_DAYS = 30;
@@ -93,6 +95,10 @@ async function subsApi(req, env, path) {
 export default {
   async fetch(req, env) {
     const path = new URL(req.url).pathname.replace(/\/+$/, '');
+    if (path === '/api/attendance' || path.startsWith('/api/attendance/')) {
+      if (new URL(req.url).protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(new URL(req.url).hostname)) return Response.redirect(req.url.replace(/^http:/, 'https:'), 308);
+      return attendanceSecure(await attendanceApi(req, env.ATTENDANCE_DB));
+    }
     if (path === '/api/subs' || path.startsWith('/api/subs/')) return subsApi(req, env, path);
     if (path === '/api/kol' || path.startsWith('/api/kol/')) return kolApi(req, env, path);
     if (path === '/api/desk' || path.startsWith('/api/desk/')) return deskApi(req, env, path);

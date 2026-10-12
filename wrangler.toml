@@ -34,6 +34,13 @@ database_name = "cosmoswong-desk"
 database_id = "f817a51f-a151-4fcb-81ac-42069e62152b"
 migrations_dir = "migrations/desk"
 
+# /attendance 补时计算器：独立用户与记录，只跑迁移，不导入本机数据
+[[d1_databases]]
+binding = "ATTENDANCE_DB"
+database_name = "cosmoswong-attendance"
+database_id = "4dc63377-ee29-4ac0-9bfb-d520c6a5c71f"
+migrations_dir = "migrations/attendance"
+
 # 主域名 + www 都指到这里；`wrangler deploy` 会自动建域名绑定和 DNS 记录
 [[routes]]
 pattern = "cosmoswong.com"
