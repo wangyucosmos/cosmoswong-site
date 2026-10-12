@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>透明跑马灯 GIF 生成器 — Cosmos Wong</title>
+  <meta name="description" content="输入一段公告文字，调字号、颜色和速度，在浏览器里直接生成透明背景的滚动字幕 GIF，文字不上传。">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/marquee/style.css">
+  <script src="/assets/marquee/app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <a class="back" href="/tools">← 工具箱</a>
+      <h1>透明跑马灯 GIF 生成器</h1>
+      <p>本地生成，不上传文字。调好参数后点击导出，浏览器会直接下载 GIF。</p>
+    </header>
+    <section class="grid">
+      <div class="card controls">
+        <label><span>公告文字</span><textarea id="text">欢迎使用透明跑马灯 GIF 生成器：输入一段公告文字，调好字号、颜色和速度，一键导出透明背景的滚动字幕 GIF</textarea></label>
+        <div class="row">
+          <label><span>画布宽度</span><input id="width" type="number" min="100" max="1920" value="750"></label>
+          <label><span>画布高度</span><input id="height" type="number" min="30" max="500" value="80"></label>
+        </div>
+        <div class="row">
+          <label><span>字号</span><input id="fontSize" type="number" min="10" max="180" value="28"></label>
+          <label><span>字重</span><select id="fontWeight"><option value="400">常规</option><option value="500">中等</option><option value="600" selected>半粗</option><option value="700">粗体</option></select></label>
+        </div>
+        <label><span>字体</span><input id="fontFamily" value="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif"></label>
+        <div class="color-row">
+          <label><span>文字颜色</span><input id="color" type="color" value="#1f4e79"></label>
+          <label><span>纯色背景</span><input id="backgroundColor" type="color" value="#ffffff" disabled></label>
+        </div>
+        <label><span>背景</span><select id="backgroundMode"><option value="transparent" selected>透明背景</option><option value="solid">纯色背景</option></select></label>
+        <div class="row">
+          <label><span>滚动一遍时长（秒）</span><input id="duration" type="number" min="2" max="60" step="0.5" value="15"></label>
+          <label><span>帧率</span><select id="fps"><option>15</option><option>20</option><option>24</option><option selected>30</option><option>40</option><option>50</option></select></label>
+        </div>
+        <div class="row">
+          <label><span>方向</span><select id="direction"><option value="rtl" selected>从右向左</option><option value="ltr">从左向右</option></select></label>
+          <label><span>首尾留白</span><input id="padding" type="number" min="0" max="500" value="20"></label>
+        </div>
+        <div class="segmented">
+          <button class="secondary" id="presetSlow" type="button">慢速：20秒/30帧</button>
+          <button class="secondary" id="presetSmooth" type="button">顺滑：15秒/50帧</button>
+        </div>
+        <button class="primary" id="exportButton" type="button">导出透明 GIF</button>
+        <button class="danger" id="stopButton" type="button" hidden>停止导出</button>
+        <p class="note">提示：高帧率、长时长会明显增大 GIF 文件。一般活动页面建议30帧；对流畅度要求较高时再使用40或50帧。</p>
+      </div>
+      <div class="card preview-card">
+        <div class="preview-head"><h2>实时预览</h2><div id="summary"></div></div>
+        <div class="preview-wrap"><canvas id="preview" width="750" height="80"></canvas></div>
+        <div id="status">参数修改后会自动重新预览。</div>
+        <button class="secondary" id="restartButton" type="button">从头预览</button>
+        <div class="tip">透明区域在预览中显示为灰白棋盘格，导出的 GIF 中不会包含棋盘格。GIF 只支持一位透明度，文字边缘可能比 PNG 略硬，这是格式本身的限制。</div>
+      </div>
+    </section>
+  </main>
+  </body>
+</html>

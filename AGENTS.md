@@ -77,6 +77,11 @@
 - 改完先本地验：`npx wrangler@4 dev --port 8788`，`node tools/build_pages.mjs` 连跑两次 `git diff --stat` 应为空。
 - `build_pages.mjs` 用 `git log` 取 sitemap 的 lastmod。本机 `/usr/bin/git` 若因 Xcode 许可协议没同意而报错，lastmod 会**静默丢失**（sitemap 出现大片 diff）。这时把 `/Library/Developer/CommandLineTools/usr/bin` 放到 PATH 最前面再构建 / 部署。
 
+## /marquee 跑马灯 GIF 生成器（2026-10-12）
+- 用户自己做的单文件小工具，拆成 `public/marquee.html` + `public/assets/marquee/app.js`（内含 gifenc，MIT）+ `style.css`，因为全站 CSP 不允许内联脚本。
+- 纯前端、零接口：文字在浏览器里画成 GIF 并下载，不上传。不在 `build_pages.mjs` 清单里（不注入主站导航），工具箱入口只改 `data.js`；资源版本号由 `deploy.sh` 的 `/assets/marquee/*` 那条 sed 维护。
+- 默认示例文字必须是通用的，不能放工作里的真实公告。
+
 ## /attendance 补时计算器（2026-10-12）
 
 - 页面 `public/attendance.html`，脚本与OCR在 `public/assets/attendance/`，服务端 `src/attendance/`，接口 `/api/attendance/*`。页面独立、不进入build_pages的STATIC/DYNAMIC清单、不进sitemap；工具箱入口只改data.js。

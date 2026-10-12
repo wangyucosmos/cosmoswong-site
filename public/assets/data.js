@@ -203,7 +203,8 @@ window.SITE = {
     { name: '补时计算器', desc: '上传 OA 截图，自动核算每日盈亏和月度补时余额；按月查看日历与历史记录。每个人自行注册，记录独立保存，截图在本机识别。', icon: '⏱', url: 'https://cosmoswong.com/attendance' },
     { name: 'Cosmos OS', desc: 'macOS 个人工作系统，把日常流程做成自己的操作系统。开发中。', icon: '🖥', url: 'https://github.com/wangyucosmos/Cosmos-Toolbox' },
     { name: '旅行协作站', desc: '扫码进组一起编辑行程、清单、预算。印尼这次在用，之后每次旅行都能复用。', icon: '🧭', url: 'https://indonesia.cosmoswong.com' },
-    { name: '动效 H5 编辑器', desc: '把长图和 GIF 叠在一起，发布成手机上手动滑动、动图原地播放的 H5 页面。带图层、修图（智能修补、仿制图章、画笔）和静态图生成摆动、飘落动效。需口令才能使用。', icon: '🎞', url: 'https://h5.cosmoswong.com/editor/' }
+    { name: '动效 H5 编辑器', desc: '把长图和 GIF 叠在一起，发布成手机上手动滑动、动图原地播放的 H5 页面。带图层、修图（智能修补、仿制图章、画笔）和静态图生成摆动、飘落动效。需口令才能使用。', icon: '🎞', url: 'https://h5.cosmoswong.com/editor/' },
+    { name: '跑马灯 GIF 生成器', desc: '输入一段公告文字，调字号、颜色和速度，直接导出透明背景的滚动字幕 GIF，放进活动页面就能用。全部在浏览器里生成，文字不上传。', icon: '📢', url: 'https://cosmoswong.com/marquee' }
   ],
 
   /* ---------- 收藏 ---------- */
