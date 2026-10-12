@@ -9,14 +9,30 @@ function mode(value){authMode=value;$('remember-label').hidden=value==='register
 $('login-tab').onclick=()=>mode('login');$('register-tab').onclick=()=>mode('register');
 $('auth-form').onsubmit=async event=>{event.preventDefault();$('auth-submit').disabled=true;$('auth-error').textContent='';try{const data=await request('/'+authMode,'POST',{username:$('username').value,password:$('password').value,confirmPassword:$('confirm').value,...(authMode==='login'?{rememberDays:Number($('remember-days').value)}:{})});user=data.user;session=data.session;accountGeneration++;$('auth-form').reset();await load();}catch(error){$('auth-error').textContent=error.message;}finally{$('auth-submit').disabled=false;}};
 async function load(){const data=await request('/records');rows=data.records;$('auth').hidden=true;$('dashboard').hidden=false;$('accountbar').hidden=false;$('trialbadge').hidden=true;render();}
-function resetSession(){accountGeneration++;session=null;user=null;rows=[];draft=[];clearPreviews();clearQueue();$('raw-text').value='';$('files').value='';$('restore-file').value='';$('username').value='';$('password').value='';$('confirm').value='';$('auth').hidden=false;$('dashboard').hidden=true;$('accountbar').hidden=true;$('trialbadge').hidden=false;document.querySelectorAll('dialog[open]').forEach(d=>d.close());releaseOCR().catch(()=>{});}
+function resetSession(){closeMonthPicker();accountGeneration++;session=null;user=null;rows=[];draft=[];clearPreviews();clearQueue();$('raw-text').value='';$('files').value='';$('restore-file').value='';$('username').value='';$('password').value='';$('confirm').value='';$('auth').hidden=false;$('dashboard').hidden=true;$('accountbar').hidden=true;$('trialbadge').hidden=false;document.querySelectorAll('dialog[open]').forEach(d=>d.close());releaseOCR().catch(()=>{});}
 $('logout').onclick=async()=>{try{await request('/logout','POST',{});resetSession();}catch(error){toast(error.message);}};
-function selectedMonth(value){if(!/^\d{4}-\d{2}$/.test(value)||!validDate(value+'-01'))return;month=value;filter='all';render();}
-$('month').onchange=()=>selectedMonth($('month').value);
+let pickerYear=Number(month.slice(0,4));
+function closeMonthPicker(focus=false){$('month-popover').hidden=true;$('month').setAttribute('aria-expanded','false');if(focus)$('month').focus();}
+function selectedMonth(value){if(!/^\d{4}-\d{2}$/.test(value)||!validDate(value+'-01'))return;const changed=value!==month;month=value;filter='all';closeMonthPicker();render();if(changed&&!matchMedia('(prefers-reduced-motion: reduce)').matches)for(const node of document.querySelectorAll('.stats,.chart,.calendar,.detail'))node.animate([{opacity:.55,transform:'translateY(5px)'},{opacity:1,transform:'translateY(0)'}],{duration:220,easing:'ease-out'});}
+function renderMonthPicker(){
+  $('picker-year').value=pickerYear;$('prev-year').disabled=pickerYear<=2000;$('next-year').disabled=pickerYear>=2100;
+  const recorded=new Set(rows.map(row=>row.date.slice(0,7))),current=today().slice(0,7);
+  $('picker-months').innerHTML=Array.from({length:12},(_,i)=>{const value=`${pickerYear}-${String(i+1).padStart(2,'0')}`,selected=value===month;return `<button type="button" data-month="${value}" class="picker-month ${selected?'selected':''} ${value===current?'current':''}" aria-pressed="${selected}" aria-label="${pickerYear}年${i+1}月${recorded.has(value)?'，有记录':''}${value===current?'，本月':''}"><span>${i+1}月</span><i class="${recorded.has(value)?'recorded':''}" aria-hidden="true"></i></button>`;}).join('');
+}
+$('month').onclick=()=>{if(!$('month-popover').hidden){closeMonthPicker();return;}pickerYear=Number(month.slice(0,4));renderMonthPicker();$('month-popover').hidden=false;$('month').setAttribute('aria-expanded','true');$('picker-months').querySelector('.selected').focus();};
+$('close-month-picker').onclick=()=>closeMonthPicker(true);
+$('prev-year').onclick=()=>{if(pickerYear>2000){pickerYear--;renderMonthPicker();}};$('next-year').onclick=()=>{if(pickerYear<2100){pickerYear++;renderMonthPicker();}};
+$('picker-year').onchange=()=>{const value=Number($('picker-year').value);if(Number.isInteger(value)&&value>=2000&&value<=2100)pickerYear=value;renderMonthPicker();};
+$('picker-year').oninput=()=>{const value=Number($('picker-year').value);if(Number.isInteger(value)&&value>=2000&&value<=2100){pickerYear=value;renderMonthPicker();}};
+$('picker-months').onclick=e=>{const button=e.target.closest('[data-month]');if(button){selectedMonth(button.dataset.month);$('month').focus();}};
+$('picker-current').onclick=()=>{selectedMonth(today().slice(0,7));$('month').focus();};
+$('month-popover').onkeydown=e=>{if(e.key==='Escape'){e.preventDefault();closeMonthPicker(true);return;}const shifts={ArrowLeft:-1,ArrowRight:1,ArrowUp:-3,ArrowDown:3};if(e.target.matches('[data-month]')&&e.key in shifts){e.preventDefault();const buttons=[...$('picker-months').querySelectorAll('button')],index=buttons.indexOf(e.target);buttons[(index+shifts[e.key]+12)%12].focus();}};
+$('month-popover').onfocusout=e=>{if(e.relatedTarget&&!e.currentTarget.contains(e.relatedTarget)&&e.relatedTarget!==$('month'))closeMonthPicker();};
+document.addEventListener('click',e=>{if(!e.target.closest('.month-picker'))closeMonthPicker();});
 function shiftMonth(amount){const [year,m]=month.split('-').map(Number),date=new Date(Date.UTC(year,m-1+amount,1));selectedMonth(date.toISOString().slice(0,7));}
 $('prev-month').onclick=()=>shiftMonth(-1);$('next-month').onclick=()=>shiftMonth(1);$('this-month').onclick=()=>selectedMonth(today().slice(0,7));
 function color(value){return value==null?'amber':value<0?'negative':value>0?'positive':'muted';}
-function render(){const stats=summarize(rows,month),current=month===today().slice(0,7);$('month').value=month;$('account-name').textContent=user.username;
+function render(){const stats=summarize(rows,month),current=month===today().slice(0,7);$('month-display').textContent=`${Number(month.slice(0,4))}年${Number(month.slice(5))}月`;$('account-name').textContent=user.username;
   $('balance-title').textContent=stats.count===0?'本月余额':stats.passed?'本月已达标':stats.pending?'已知记录还需补':'本月还需补';$('need').textContent=stats.count===0?'等待录入':stats.passed?`盈余 ${fmt(stats.balance)}`:fmt(stats.required);
   $('balance-caption').textContent=stats.count===0?'上传截图，开始累计这个月':`已知余额 ${fmt(stats.balance,true)}${stats.pending?' · 完整结果待核对':stats.balance===0?' · 再补1分钟即可达标':stats.passed?' · 已录入记录的余额大于0':' · 最终余额需大于0'}`;
   const daily=current?rows.find(r=>r.date===today()):stats.timeline.at(-1);$('daily-title').textContent=current?'今日盈亏':'最新记录盈亏';$('daily').textContent=daily?fmt(delta(daily),true):'未录入';$('daily').className=daily?color(delta(daily)):'';$('daily-caption').textContent=daily?`${daily.date.slice(5).replace('-','月')}日 · ${KINDS[daily.kind]}${daily.minutes!=null?' · OA '+fmt(daily.minutes):''}`:'未上传的日期不会自动扣时';
