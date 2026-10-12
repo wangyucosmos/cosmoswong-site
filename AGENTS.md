@@ -77,6 +77,12 @@
 - 改完先本地验：`npx wrangler@4 dev --port 8788`，`node tools/build_pages.mjs` 连跑两次 `git diff --stat` 应为空。
 - `build_pages.mjs` 用 `git log` 取 sitemap 的 lastmod。本机 `/usr/bin/git` 若因 Xcode 许可协议没同意而报错，lastmod 会**静默丢失**（sitemap 出现大片 diff）。这时把 `/Library/Developer/CommandLineTools/usr/bin` 放到 PATH 最前面再构建 / 部署。
 
+## 作品集（2026-10-12 重构）
+- 列表两种看法：**目录**（默认，`workIndex`）/ **画廊**（`workGallery`，第一个有封面的精选作品横跨两列）；访客选的看法记在 localStorage `portfolio.view`。卡片类名 `.wcard` / `.wrow`，不复用旧的 `.card`（3D 倾斜只作用于 `.card`）。
+- 详情 = 一串**内容块**（`render.js` 的 `workBlocks` + `BLOCK`）：旧字段自动转换——`video`（有就做头部视频，`poster` 封面）否则 `cover` → 头图，`body` 按段落 → 正文块（「背景：」这种开头变小标题），`images` → 大图 / 多图，`links` → 按钮。
+- 作品里可选 `blocks: [...]` 加更多块：`stats {items:[{value,label}]}`（放在第一段正文后）、`video {src,poster,cap}`、`compare {before,after,beforeLabel,afterLabel,cap}`、`phone {src,title,body}`、`quote {text}`、`image {src,cap}`、`gallery {items:[{src,cap}]}`。**新展示方式只要在 `BLOCK` 里加一种渲染**，旧作品不用改。
+- 视频放 `public/media/`（同源，CSP 不用改），控制在几 MB 以内；首页精选卡片点开跳 `/portfolio#<id>`。
+
 ## /marquee 跑马灯 GIF 生成器（2026-10-12）
 - 用户自己做的单文件小工具，拆成 `public/marquee.html` + `public/assets/marquee/app.js`（内含 gifenc，MIT）+ `style.css`，因为全站 CSP 不允许内联脚本。
 - 纯前端、零接口：文字在浏览器里画成 GIF 并下载，不上传。不在 `build_pages.mjs` 清单里（不注入主站导航），工具箱入口只改 `data.js`；资源版本号由 `deploy.sh` 的 `/assets/marquee/*` 那条 sed 维护。

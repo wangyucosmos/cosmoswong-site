@@ -5,7 +5,7 @@
 (() => {
   const S = window.SITE, RENDER = window.RENDER;
   const $ = (s, r = document) => r.querySelector(s);
-  const { workCard, workModal } = RENDER;
+  const { workModal, workGallery, workIndex } = RENDER;
   const page = document.body.dataset.page || 'home';
 
   /* ---------- 公共骨架：背景、导航、页脚（没预渲染时才插） ---------- */
@@ -73,26 +73,56 @@
   const render = RENDER.pages[page] || (page === 'home' ? RENDER.pages.home : null);
   if (render && !main.dataset.prerendered) main.innerHTML = render(S);
 
-  /* ---------- 作品集：筛选 + 详情弹窗 ---------- */
+  /* ---------- 首页精选作品：点开跳到作品集里对应的案例 ---------- */
+  if (page !== 'portfolio') {
+    const go = id => { location.href = '/portfolio#' + encodeURIComponent(id); };
+    document.addEventListener('click', e => { const c = e.target.closest('[data-work]'); if (c) go(c.dataset.work); });
+    document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.work) { e.preventDefault(); go(e.target.dataset.work); } });
+  }
+
+  /* ---------- 作品集：筛选 + 目录 / 画廊 + 案例详情 ---------- */
   if (page === 'portfolio') {
+    let cat = '全部', view = 'index';
+    try { if (localStorage.getItem('portfolio.view') === 'gallery') view = 'gallery'; } catch (e) { }   // 只记这台设备的偏好
+    const list = () => S.portfolio.filter(w => cat === '全部' || w.category === cat);
+    const paint = () => {
+      $('#windex').innerHTML = workIndex(list()); $('#wgallery').innerHTML = workGallery(list());
+      $('#windex').hidden = view !== 'index'; $('#wgallery').hidden = view !== 'gallery';
+      $('#views').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === view));
+    };
+    if (view !== 'index') paint();
     $('#filters').addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b) return;
       $('#filters').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
-      const c = b.dataset.c;
-      $('#works').innerHTML = S.portfolio.filter(w => c === '全部' || w.category === c).map(workCard).join('');
+      cat = b.dataset.c; paint();
     });
+    $('#views').addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      view = b.dataset.v; try { localStorage.setItem('portfolio.view', view); } catch (err) { }
+      paint();
+    });
+    // 画廊卡片：有视频的，鼠标放上去原地播放
+    document.addEventListener('pointerover', e => { const c = e.target.closest('.wcard'); const v = c && c.querySelector('.shot video'); if (v && v.paused) v.play().catch(() => {}); });
+    document.addEventListener('pointerout', e => { const c = e.target.closest('.wcard'); if (c && !c.contains(e.relatedTarget)) { const v = c.querySelector('.shot video'); if (v) v.pause(); } });
+
     /* 弹窗进历史：打开 pushState，关闭走 history.back()，这样手机返回键关的是弹窗而不是离开页面。
        Esc / 点遮罩 / 点关闭按钮三条路径都只调 close()，统一由 dialog 的 close 事件回退历史。
-       popstate 里关弹窗也会触发 close 事件，用 navigating 标志跳过那一次 back()，否则会连环后退。 */
+       popstate 里关弹窗也会触发 close 事件，用 navigating 标志跳过那一次 back()，否则会连环后退。
+       弹窗里翻上一个 / 下一个用 replaceState：不管翻了几个，返回一次就关掉。 */
     const dlg = $('#dlg');
     let navigating = false;
-    const open = (id, push = true) => {
+    const open = (id, how = 'push') => {
       const w = S.portfolio.find(x => x.id === id); if (!w) return;
-      $('#modal').innerHTML = workModal(w);
-      if (push) history.pushState({ work: id }, '', '#' + id);
+      const L = list().some(x => x.id === id) ? list() : S.portfolio, i = L.findIndex(x => x.id === id);
+      const prev = L.length > 1 ? L[(i - 1 + L.length) % L.length] : null, next = L.length > 1 ? L[(i + 1) % L.length] : null;
+      $('#sheet').innerHTML = workModal(w, prev, next);
+      if (how === 'push') history.pushState({ work: id }, '', '#' + id);
+      else if (how === 'replace') history.replaceState({ work: id }, '', '#' + id);
       if (!dlg.open) dlg.showModal();
+      $('#sheet').scrollTop = 0;
     };
     dlg.addEventListener('close', () => {
+      dlg.querySelectorAll('video').forEach(v => v.pause());
       // dialog 的 close 事件是异步派发的，所以标志在这里消费，不能在 popstate 里同步复位
       if (navigating) { navigating = false; return; }
       if (history.state?.work) history.back();
@@ -100,17 +130,27 @@
     });
     window.addEventListener('popstate', () => {
       const id = location.hash.slice(1);
-      if (id && S.portfolio.some(x => x.id === id)) { open(id, false); return; }
+      if (id && S.portfolio.some(x => x.id === id)) { open(id, 'none'); return; }
       if (dlg.open) { navigating = true; dlg.close(); }
     });
+    const lb = $('#lb');
     document.addEventListener('click', e => {
+      if (!lb.hidden) { lb.hidden = true; return; }
+      const z = e.target.closest('[data-zoom]'); if (z) { lb.querySelector('img').src = z.querySelector('img').src; lb.hidden = false; return; }
+      const g = e.target.closest('[data-go]'); if (g) return open(g.dataset.go, history.state?.work ? 'replace' : 'push');
       const c = e.target.closest('[data-work]'); if (c) return open(c.dataset.work);
       if (e.target.closest('[data-close]') || e.target.id === 'dlg') dlg.close();
     });
-    // 卡片是 role="button"，Enter 和空格都要能打开；空格要拦掉默认的翻页滚动
+    // 新旧对比：拖动滑杆
+    document.addEventListener('input', e => {
+      const c = e.target.closest('.b-compare'); if (!c) return;
+      const v = +e.target.value; c.querySelector('.top').style.clipPath = `inset(0 ${100 - v}% 0 0)`; c.querySelector('.knob').style.left = v + '%';
+    });
+    // 卡片 / 目录行是 role="button"，Enter 和空格都要能打开；空格要拦掉默认的翻页滚动
     document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !lb.hidden) { lb.hidden = true; e.preventDefault(); return; }
       if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.work) { e.preventDefault(); open(e.target.dataset.work); }
     });
-    if (location.hash.length > 1) open(location.hash.slice(1), false);
+    if (location.hash.length > 1) open(location.hash.slice(1), 'none');
   }
 })();

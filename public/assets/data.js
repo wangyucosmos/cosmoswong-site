@@ -33,10 +33,18 @@ window.SITE = {
       summary: '项目少但每个都很深：把在等谁、拍板的口径、交付节点、几个 AI 的比稿版本一页理清。一天迭代五版，三种风格可切换，演示版可以直接试用。',
       featured: true,
       cover: '/media/workbench-glass.webp',
+      video: '/media/workbench-demo.mp4', poster: '/media/workbench-demo-poster.jpg',   // 案例头部的短视频（截图都来自演示版，数据虚构）
       tags: ['产品设计', 'AI 协作', '工作流', 'Cloudflare'],
       body: '背景：我做运营（活动策划、原型、客服文档），同时只有几个项目，但每个都有一堆没定的口径、几个 AI 的比稿版本、我手改过的底稿、在等别人给的东西。现成的项目管理工具擅长「管很多条相似记录」，正好不是我要的。\n\n做了什么：今天页顶部是焦点仪表盘（离上线几天、今天做什么、卡在谁那里）；项目页一页读完下一步、在等谁、已拍板的口径、交付物；「开工包」把口径、去年同类项目、相关笔记和素材拼好交给 AI，AI 收工汇报贴回来自动更新；知识库和素材库直接读电脑上的文件、不上传；三种风格（经典 / 精密 / 玻璃）随时切换。\n\n怎么做的：需求、取舍、审美和验收是我，代码和测试主要是 Claude Code。第一版照搬了另一个工作台，用半天觉得太重，当天按自己的工作重做——这成了后面所有设计的第一原则。每次大改都留一条命令就能回退；真实数据不进公开代码仓库；每一版都用真浏览器跑自动化测试。\n\n演示版：同一套页面代码，数据是虚构的、只存在访客自己的浏览器里，可以随便点。',
       links: [{ label: '看完整案例', url: '/workbench' }, { label: '在线试用演示版', url: '/desk-demo' }],
-      images: ['/media/workbench-precise.webp', '/media/workbench-kickpack.webp']
+      images: ['/media/workbench-precise.webp', '/media/workbench-kickpack.webp'],
+      // 内容块（可选）：stats 数字 / video 视频 / compare 对比 / phone 手机截图 / quote 引言 / image 大图 / gallery 多图，写法见 AGENTS.md
+      blocks: [
+        { type: 'stats', items: [{ value: '5 版', label: '一天迭代' }, { value: '3 种', label: '界面风格随时切换' }, { value: '1 条命令', label: '每次大改都能回退' }] },
+        { type: 'compare', before: '/media/workbench-classic.webp', after: '/media/workbench-glass-dark.webp', beforeLabel: '经典', afterLabel: '玻璃 · 深色', cap: '同一套页面，三种风格随时切换（拖动中间看差别）' },
+        { type: 'phone', src: '/media/workbench-phone.webp', title: '手机上也能用', body: '手机上左侧导航收成底部 5 个按钮加「更多」，今天页、项目页照样能看能改。' },
+        { type: 'quote', text: '第一版照搬了另一个工作台，用半天觉得太重——当天按自己的工作重做，这成了后面所有设计的第一原则。' }
+      ]
     },
     {
       id: 'indonesia-trip-app', title: '国庆印尼旅游 · 多人协作行程站', category: '产品与工具', year: '2026',

@@ -35,13 +35,70 @@
     <div class="menu-backdrop" aria-hidden="true"></div>`;
 
   /* ---------- 渲染小工具 ---------- */
-  const workCard = w => `
-    <article class="card link" data-work="${esc(w.id)}" tabindex="0" role="button" aria-label="查看 ${esc(w.title)}">
-      <div class="cover ${w.cover ? '' : 'ph'}" style="${w.cover ? `background-image:url('${esc(w.cover)}')` : ''}"></div>
-      <div class="body"><div class="k">${esc(w.category)} · ${esc(w.year)}</div>
-        <h3>${esc(w.title)}</h3><p>${esc(w.summary)}</p>
-        ${w.tags?.length ? `<div class="pills">${w.tags.map(t => `<span class="pill">${esc(t)}</span>`).join('')}</div>` : ''}
-      </div></article>`;
+  /* ---------- 作品集（2026-10-12 重构）：画廊卡片 / 目录行 / 案例详情（内容块） ---------- */
+  const WICON = {
+    '产品与工具': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2.5"/><path d="M3 8.5h18M7 13h4M7 15.5h7"/></svg>',
+    '活动策划': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="11" rx="2"/><path d="M2.5 9h19v-3h-19zM12 6v14M12 6c-1.5-3-5-3.2-5-1s3.5 1 5 1zm0 0c1.5-3 5-3.2 5-1s-3.5 1-5 1z"/></svg>',
+    '知识与流程': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M8.2 7.3l2.6 8.4M15.8 7.3l-2.6 8.4M8.5 6h7"/></svg>',
+    '游戏运营': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4.5 4.5 0 014.4 5.4l-.8 3.6a2 2 0 01-3.4.9L15 15.6H9l-2.2 2.3a2 2 0 01-3.4-.9l-.8-3.6A4.5 4.5 0 017 8z"/><path d="M7.5 11v3M6 12.5h3"/></svg>'
+  };
+  const wicon = c => WICON[c] || WICON['产品与工具'];
+  const PLAY = '<svg viewBox="0 0 12 12" fill="currentColor"><path d="M3 2l7 4-7 4z"/></svg>';
+  const PIC = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="10" height="8" rx="1.5"/><path d="M1.5 9l3-3 2 2 1.5-1.5L11 9"/></svg>';
+  // 作品详情 = 一串「内容块」。data.js 里的作品不用改写：封面 / 视频 → 头图，body 按段落 → 正文块，images → 大图 / 多图，links → 按钮；
+  // 想加视频、对比、手机截图、数字等，在作品里写 blocks: [...]（stats 放在第一段正文后面，其余放在正文之后、配图之前）。
+  // 以后加新的展示方式：在 BLOCK 里加一种渲染即可，旧作品不受影响。
+  const workBlocks = w => {
+    const out = [], extra = w.blocks || [];
+    if (w.video) out.push({ type: 'video', src: w.video, poster: w.poster || w.cover, hero: true });
+    else if (w.cover) out.push({ type: 'hero', src: w.cover });
+    String(w.body || '').split(/\n\s*\n|\n/).filter(x => x.trim()).forEach((p, i) => {
+      const m = p.match(/^([^：:\n]{1,10})[：:]([\s\S]*)$/);
+      out.push({ type: 'text', label: m ? m[1] : (i ? '' : '概述'), body: m ? m[2].trim() : p });
+      if (i === 0) out.push(...extra.filter(b => b.type === 'stats'));
+    });
+    out.push(...extra.filter(b => b.type !== 'stats'));
+    const imgs = (w.images || []).filter(Boolean);
+    if (imgs.length === 1) out.push({ type: 'image', src: imgs[0] });
+    else if (imgs.length > 1) out.push({ type: 'gallery', items: imgs.map(src => ({ src })) });
+    if (w.links?.length) out.push({ type: 'links', items: w.links });
+    return out;
+  };
+  const workMedia = w => {
+    const bs = workBlocks(w);
+    return { img: bs.reduce((n, b) => n + (b.type === 'hero' || b.type === 'image' ? 1 : b.type === 'gallery' ? b.items.length : 0), 0),
+             vid: bs.filter(b => b.type === 'video').length };
+  };
+  const BLOCK = {
+    hero: b => `<div class="b-frame"><img src="${esc(b.src)}" alt=""></div>`,
+    image: b => `<div class="b-frame"><img src="${esc(b.src)}" alt="" loading="lazy"></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
+    video: b => `<div class="b-frame"><video src="${esc(b.src)}"${b.poster ? ` poster="${esc(b.poster)}"` : ''} ${b.hero ? 'autoplay muted loop playsinline' : 'controls playsinline preload="metadata"'}></video></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
+    text: b => `<div class="b-text"><h4>${esc(b.label)}</h4><p>${esc(b.body)}</p></div>`,
+    stats: b => `<div class="b-stats">${b.items.map(i => `<div><strong>${esc(i.value)}</strong><span>${esc(i.label)}</span></div>`).join('')}</div>`,
+    gallery: b => `<div class="b-gallery">${b.items.map(i => `<figure data-zoom><img src="${esc(i.src)}" alt="" loading="lazy">${i.cap ? `<figcaption>${esc(i.cap)}</figcaption>` : ''}</figure>`).join('')}</div>`,
+    phone: b => `<div class="b-phone"><div class="phone"><img src="${esc(b.src)}" alt="" loading="lazy"></div><div><h4>${esc(b.title)}</h4><p>${esc(b.body)}</p></div></div>`,
+    compare: b => `<div class="b-compare"><img src="${esc(b.after)}" alt="" loading="lazy"><img class="top" src="${esc(b.before)}" alt="" loading="lazy"><div class="knob"></div>
+      <span class="lb l">${esc(b.beforeLabel || '之前')}</span><span class="lb r">${esc(b.afterLabel || '之后')}</span><input type="range" min="0" max="100" value="50" aria-label="拖动对比"></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
+    quote: b => `<blockquote class="b-quote">${esc(b.text)}</blockquote>`,
+    links: b => `<div class="b-links">${b.items.map((l, i) => `<a class="btn ${i ? 'glass' : 'solid'} sm" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}</div>`
+  };
+  const workCover = w => {
+    const m = workMedia(w);
+    const badges = `<div class="badges">${m.vid ? `<span class="badge">${PLAY}视频</span>` : ''}${m.img ? `<span class="badge">${PIC}${m.img}</span>` : ''}</div>`;
+    if (w.cover) return `<div class="mat"><div class="shot"><img src="${esc(w.cover)}" alt="" loading="lazy">${w.video ? `<video src="${esc(w.video)}" muted loop playsinline preload="none"></video>` : ''}</div>${badges}</div>`;
+    return `<div class="mat"><div class="glyph"><span class="ic">${wicon(w.category)}</span><span class="big">${esc(w.category)}</span></div>${badges}</div>`;
+  };
+  const workCard = (w, wide) => `
+    <article class="wcard${wide ? ' wide' : ''}" data-work="${esc(w.id)}" data-cat="${esc(w.category)}" tabindex="0" role="button" aria-label="查看 ${esc(w.title)}">${workCover(w)}
+      <div class="txt"><div class="wmeta"><span class="cat">${esc(w.category)}</span><span>·</span><span>${esc(w.year)}</span></div>
+        <h3>${esc(w.title)}</h3><p class="sum">${esc(w.summary)}</p><div class="go">查看案例 <i>→</i></div></div></article>`;
+  const workRow = (w, i) => `
+    <div class="wrow" data-work="${esc(w.id)}" data-cat="${esc(w.category)}" tabindex="0" role="button" aria-label="查看 ${esc(w.title)}"><span class="no">${String(i + 1).padStart(2, '0')}</span>
+      <span class="th">${w.cover ? `<img src="${esc(w.cover)}" alt="" loading="lazy">` : wicon(w.category)}</span>
+      <span class="tt"><h3>${esc(w.title)}</h3><p>${esc(w.summary)}</p></span><span class="c">${esc(w.category)}</span><span class="y">${esc(w.year)}</span><span class="ar">→</span></div>`;
+  // 画廊：第一个有封面的精选作品做成横跨两列的大卡片
+  const workGallery = list => { let big = false; return list.map(w => { const wide = !big && w.featured && w.cover && (big = true); return workCard(w, wide); }).join(''); };
+  const workIndex = list => list.map(workRow).join('');
   const STATUS = { 进行中: 'live', 规划中: 'dim', 已完成: 'ok' };
   const tripCard = (t, big) => {
     const inner = `<div class="cover ph"></div><div class="body">
@@ -72,7 +129,7 @@
         ${S.resume.pdf ? `<a class="btn glass" href="${esc(S.resume.pdf)}" download>下载简历</a>` : `<a class="btn glass" href="/resume">看简历</a>`}</div>
     </section>
     <section class="sec"><div class="sec-head"><div><p class="eyebrow">Selected work</p><h2>精选作品</h2></div><a class="more" href="/portfolio">全部作品 →</a></div>
-      ${featured.length ? `<div class="grid">${featured.map(workCard).join('')}</div>` : '<div class="empty">还没有作品，去 data.js 里加。</div>'}</section>
+      ${featured.length ? `<div class="wgrid">${featured.map(w => workCard(w)).join('')}</div>` : '<div class="empty">还没有作品，去 data.js 里加。</div>'}</section>
     ${trips.length ? `<section class="sec"><div class="sec-head"><div><p class="eyebrow">Trips</p><h2>旅游计划</h2></div><a class="more" href="/trips">全部 →</a></div>
       <div class="grid wide">${trips.slice(0, 3).map((t, i) => tripCard(t, i === 0)).join('')}</div></section>` : ''}
     ${tools.length ? `<section class="sec"><div class="sec-head"><div><p class="eyebrow">Tools</p><h2>工具箱</h2></div><a class="more" href="/tools">全部 →</a></div>
@@ -80,12 +137,18 @@
   };
 
   R.portfolio = S => {
-    const cats = ['全部', ...new Set(S.portfolio.map(w => w.category))];
+    const W = S.portfolio, cats = ['全部', ...new Set(W.map(w => w.category))];
+    const n = c => c === '全部' ? W.length : W.filter(w => w.category === c).length;
     return `
-    <section class="page-head"><h1>作品集</h1><p>做过的项目，按类别筛选。点开看详情。</p></section>
-    <div class="filters" id="filters">${cats.map((c, i) => `<button data-c="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}</button>`).join('')}</div>
-    <div class="grid" id="works">${S.portfolio.map(workCard).join('')}</div>
-    <dialog id="dlg"><div class="modal-wrap"><div class="modal" id="modal"></div></div></dialog>`;
+    <section class="page-head"><p class="eyebrow">Selected work</p><h1>作品集</h1><p>做过的项目和小工具。按类别筛选，点开看完整案例。</p></section>
+    <div class="pbar"><div class="filters" id="filters">${cats.map((c, i) => `<button data-c="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}<b>${n(c)}</b></button>`).join('')}</div>
+      <div class="vtoggle" id="views" role="group" aria-label="显示方式">
+        <button data-v="index" aria-pressed="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3.5h9.5M5 8h9.5M5 12.5h9.5"/><circle cx="2" cy="3.5" r=".8" fill="currentColor"/><circle cx="2" cy="8" r=".8" fill="currentColor"/><circle cx="2" cy="12.5" r=".8" fill="currentColor"/></svg>目录</button>
+        <button data-v="gallery" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/></svg>画廊</button></div></div>
+    <div class="windex" id="windex">${workIndex(W)}</div>
+    <div class="wgrid" id="wgallery" hidden>${workGallery(W)}</div>
+    <dialog id="dlg" class="case-dlg"><div class="sheet" id="sheet"></div></dialog>
+    <div class="lightbox" id="lb" hidden><img alt=""></div>`;
   };
 
   R.resume = S => {
@@ -127,14 +190,24 @@
         ? `<a class="row" href="${esc(b.url)}" target="_blank" rel="noreferrer"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span><span class="arrow">↗</span></a>`
         : `<div class="row"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span></div>`).join('')}</div>` : '<div class="empty">这个分类还是空的</div>'}</section>`).join('')}`;
 
-  // 作品详情弹窗内容（只在浏览器里用，但同样是纯函数，放这里便于统一维护）
-  const workModal = w => `<button class="close" data-close aria-label="关闭">✕</button>
-        <div class="k">${esc(w.category)} · ${esc(w.year)}</div><h2>${esc(w.title)}</h2>
-        ${w.tags?.length ? `<div class="pills" style="margin-top:0">${w.tags.map(t => `<span class="pill">${esc(t)}</span>`).join('')}</div>` : ''}
-        <div class="prose">${esc(w.body)}</div>
-        ${w.images?.length ? `<div class="imgs">${w.images.map(i => `<img src="${esc(i)}" alt="" loading="lazy">`).join('')}</div>` : ''}
-        ${w.links?.length ? `<div class="cta" style="margin-top:14px">${w.links.map(l => `<a class="btn glass sm" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}</div>` : ''}`;
+  // 作品详情（只在浏览器里用，但同样是纯函数，放这里便于统一维护）。prev / next：当前筛选下的上一个、下一个
+  const workModal = (w, prev, next) => {
+    const m = workMedia(w);
+    const content = [m.img ? m.img + ' 张图' : '', m.vid ? m.vid + ' 段视频' : ''].filter(Boolean).join(' · ') || '文字';
+    return `
+    <div class="sheet-top"><span class="crumb">作品集 / ${esc(w.category)} / <b>${esc(w.title)}</b></span>
+      <span class="navs">${prev ? `<button class="iconbtn" data-go="${esc(prev.id)}" aria-label="上一个">‹</button><button class="iconbtn" data-go="${esc(next.id)}" aria-label="下一个">›</button>` : ''}<button class="iconbtn" data-close aria-label="关闭">✕</button></span></div>
+    <article class="case" data-cat="${esc(w.category)}">
+      <div class="wmeta"><span class="cat">${esc(w.category)}</span><span>·</span><span>${esc(w.year)}</span></div>
+      <h2>${esc(w.title)}</h2><p class="intro">${esc(w.summary)}</p>
+      <div class="facts"><div><span>类别</span><strong>${esc(w.category)}</strong></div><div><span>时间</span><strong>${esc(w.year)}</strong></div>
+        <div><span>内容</span><strong>${esc(content)}</strong></div>
+        <div><span>关键词</span><div class="ftags">${(w.tags || []).map(t => `<em>${esc(t)}</em>`).join('')}</div></div></div>
+      ${workBlocks(w).map(b => BLOCK[b.type] ? `<section class="blk blk-${b.type}">${BLOCK[b.type](b)}</section>` : '').join('')}
+      ${prev && prev.id !== w.id ? `<div class="nextcase"><button data-go="${esc(prev.id)}">← 上一个<b>${esc(prev.title)}</b></button><button data-go="${esc(next.id)}">下一个 →<b>${esc(next.title)}</b></button></div>` : ''}
+    </article>`;
+  };
 
   // 同时兼容浏览器和 Node（build_pages.mjs 用 vm 跑这个文件，window 由它注入）
-  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, workCard, tripCard, toolRow, workModal, pages: R };
+  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, workCard, workRow, workGallery, workIndex, workBlocks, tripCard, toolRow, workModal, pages: R };
 })();
