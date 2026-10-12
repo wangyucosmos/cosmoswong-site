@@ -16,7 +16,7 @@ $('month').onchange=()=>selectedMonth($('month').value);
 function shiftMonth(amount){const [year,m]=month.split('-').map(Number),date=new Date(Date.UTC(year,m-1+amount,1));selectedMonth(date.toISOString().slice(0,7));}
 $('prev-month').onclick=()=>shiftMonth(-1);$('next-month').onclick=()=>shiftMonth(1);$('this-month').onclick=()=>selectedMonth(today().slice(0,7));
 function color(value){return value==null?'amber':value<0?'negative':value>0?'positive':'muted';}
-function render(){const stats=summarize(rows,month),current=month===today().slice(0,7);$('month').value=month;$('greeting').textContent=`${user.username} 的时间账本`;
+function render(){const stats=summarize(rows,month),current=month===today().slice(0,7);$('month').value=month;$('account-name').textContent=user.username;
   $('balance-title').textContent=stats.count===0?'本月余额':stats.passed?'本月已达标':stats.pending?'已知记录还需补':'本月还需补';$('need').textContent=stats.count===0?'等待录入':stats.passed?`盈余 ${fmt(stats.balance)}`:fmt(stats.required);
   $('balance-caption').textContent=stats.count===0?'上传截图，开始累计这个月':`已知余额 ${fmt(stats.balance,true)}${stats.pending?' · 完整结果待核对':stats.balance===0?' · 再补1分钟即可达标':stats.passed?' · 已录入记录的余额大于0':' · 最终余额需大于0'}`;
   const daily=current?rows.find(r=>r.date===today()):stats.timeline.at(-1);$('daily-title').textContent=current?'今日盈亏':'最新记录盈亏';$('daily').textContent=daily?fmt(delta(daily),true):'未录入';$('daily').className=daily?color(delta(daily)):'';$('daily-caption').textContent=daily?`${daily.date.slice(5).replace('-','月')}日 · ${KINDS[daily.kind]}${daily.minutes!=null?' · OA '+fmt(daily.minutes):''}`:'未上传的日期不会自动扣时';
