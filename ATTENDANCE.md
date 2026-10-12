@@ -83,3 +83,39 @@
 请假、公休、补卡均计0，只累计其他有效时长的盈亏；旧补卡无需重录即可按新规则显示，不覆写原数据库。密码至少8位，不要求字母或符号。手机号可以作为普通账号名，不代表已验证手机所有权；无短信费用，不启用恢复码。忘记密码先由网站拥有者核实身份，再定向重置该账号的密码哈希及会话，不修改考勤数据。
 
 多图上传先进入本机待分析队列，可继续添加、移除或清空，点击开始分析才运行OCR；保留最终核对保存步骤。单批最多12张，每张不超过15MB，失败图片留在队列中重试。
+
+当前v0.2部署：16828932-65ef-450e-bd19-136aeaffc454。回退参考源码为0b52b6f，上一部署为427e5536-f105-4624-866b-0cb33719c233。修改记录与验证见CHANGELOG。
+
+### v0.2变更文件
+
+- `ATTENDANCE.md`
+- `CHANGELOG.md`
+- `DATA_MAP.md`
+- `PAGE_MAP.md`
+- `PROJECT_BRIEF.md`
+- `public/404.html`
+- `public/assets/attendance/app.mjs`
+- `public/assets/attendance/domain.mjs`
+- `public/assets/attendance/style.css`
+- `public/attendance.html`
+- `public/bookmarks.html`
+- `public/desk-demo.html`
+- `public/desk.html`
+- `public/index.html`
+- `public/knowledge/dsh-ops.html`
+- `public/knowledge/index.html`
+- `public/knowledge/kb-rules.html`
+- `public/knowledge/overview.html`
+- `public/knowledge/parallel-drafts.html`
+- `public/knowledge/three-layers.html`
+- `public/knowledge/us-apple-id.html`
+- `public/kol.html`
+- `public/portfolio.html`
+- `public/resume.html`
+- `public/subs.html`
+- `public/tools.html`
+- `public/trips.html`
+- `public/workbench.html`
+- `src/attendance/api.mjs`
+- `tests/attendance/api.test.mjs`
+- `tests/attendance/domain.test.mjs`
