@@ -83,14 +83,6 @@ window.SITE = {
       links: [], images: ['/media/case-gz-wireframe.jpg']
     },
     {
-      id: 'migu-national-campaign', title: '咪咕视频 · 全国促活活动策划与原型', category: '活动策划', year: '2026',
-      summary: '面向全国用户的大页面促活活动：从活动机制、规则、文案到低保真原型，可直接进入设计与开发。',
-      featured: true, cover: '',
-      tags: ['活动策划', '促活', 'H5 原型', '规则与客服文档'],
-      body: '负责咪咕视频全国促活活动的完整策划：活动机制设计、参与路径、奖励逻辑、活动规则与客服口径，并产出黑白灰低保真原型供设计和开发对接。\n\n交付物包括策划案（Word）、长 H5 原型（Figma）、活动规则、客服 FAQ 与题库、上线后的拨测报告。\n\n方法上把"策划案 → 原型 → 规则 → 客服文档"做成了可复用的流程和检查清单，后续活动直接套用。',
-      links: [], images: []
-    },
-    {
       id: 'five-province-welfare', title: '五省福利中心 · 本地化策划与原型', category: '活动策划', year: '2026',
       summary: '河南、安徽、浙江、海南、广东五省福利中心的活动策划案与原型，每省按方言、民俗、赛事和政策做本地化。',
       featured: true, cover: '',
