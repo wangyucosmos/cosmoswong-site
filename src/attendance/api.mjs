@@ -18,8 +18,9 @@ async function throttle(db,key,limit,seconds){const now=Math.floor(Date.now()/10
   if(row.count>limit)fail(429,'尝试过于频繁，请稍后再试');
 }
 function cookie(req,token,maxAge=2592000){const url=new URL(req.url);const local=['127.0.0.1','localhost'].includes(url.hostname);return `attendance_session=${token}; Path=/api/attendance; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${local?'':'; Secure'}`;}
-async function issue(db,req,user){const token=random(),digest=await hash(token);await db.prepare('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)').bind(digest,user.id,Date.now()+2592000000).run();return json({user:{id:user.id,username:user.username}},200,{'Set-Cookie':cookie(req,token)});}
-async function userFor(db,req){const token=(req.headers.get('Cookie')||'').match(/(?:^|;\s*)attendance_session=([a-f0-9]{64})(?:;|$)/)?.[1];if(!token)return null;return db.prepare('SELECT u.id,u.username,s.token_hash FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?').bind(await hash(token),Date.now()).first();}
+function rememberSeconds(body){const days=body.rememberDays??30;if(![7,30,365].includes(days))fail(400,'登录时长请选择一周、一个月或一年');return days*86400;}
+async function issue(db,req,user,maxAge=2592000,replaceToken=null){const token=random(),digest=await hash(token),expiresAt=Date.now()+maxAge*1000;const commands=[db.prepare('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)').bind(digest,user.id,expiresAt)];if(replaceToken)commands.push(db.prepare('DELETE FROM sessions WHERE token_hash=? AND user_id=?').bind(replaceToken,user.id));await db.batch(commands);return json({user:{id:user.id,username:user.username},session:{expiresAt}},200,{'Set-Cookie':cookie(req,token,maxAge)});}
+async function userFor(db,req){const token=(req.headers.get('Cookie')||'').match(/(?:^|;\s*)attendance_session=([a-f0-9]{64})(?:;|$)/)?.[1];if(!token)return null;return db.prepare('SELECT u.id,u.username,s.token_hash,s.expires_at FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>?').bind(await hash(token),Date.now()).first();}
 export async function api(req,db){try {
   const url=new URL(req.url),path=url.pathname.replace(/^\/api\/attendance/,''); const mutation=!['GET','HEAD'].includes(req.method);
   if(mutation&&(req.headers.get('Origin')!==url.origin||req.headers.get('x-attendance-request')!=='1'))fail(403,'请求来源不正确，请刷新页面');
@@ -32,20 +33,21 @@ export async function api(req,db){try {
     return await issue(db,req,user);
   }
   if(path==='/login'&&req.method==='POST'){
-    const {username,password}=credentials(body);await throttle(db,`login-ip:${ip}`,60,900);await throttle(db,`login-user:${username}`,10,900);
+    const maxAge=rememberSeconds(body),{username,password}=credentials(body);await throttle(db,`login-ip:${ip}`,60,900);await throttle(db,`login-user:${username}`,10,900);
     const user=await db.prepare('SELECT * FROM users WHERE username=?').bind(username).first();const salt=user?.salt||'a'.repeat(64);const digest=await passwordHash(password,salt);
     if(!user||!equal(digest,user.password_hash))fail(401,'账号或密码不正确');
-    await db.prepare('DELETE FROM throttles WHERE key=?').bind(`login-user:${username}`).run();return await issue(db,req,user);
+    await db.prepare('DELETE FROM throttles WHERE key=?').bind(`login-user:${username}`).run();return await issue(db,req,user,maxAge);
   }
   const user=await userFor(db,req);
-  if(path==='/session'&&req.method==='GET')return json({user:user?{id:user.id,username:user.username}:null});
+  if(path==='/session'&&req.method==='GET')return json({user:user?{id:user.id,username:user.username}:null,session:user?{expiresAt:user.expires_at}:null});
   if(!user)fail(401,'请先登录');
+  if(path==='/session'&&req.method==='POST')return await issue(db,req,user,rememberSeconds(body),user.token_hash);
   if(path==='/logout'&&req.method==='POST'){await db.prepare('DELETE FROM sessions WHERE token_hash=?').bind(user.token_hash).run();return json({ok:true},200,{'Set-Cookie':cookie(req,'',0)});}
   if(path==='/password'&&req.method==='POST'){
     await throttle(db,`password:${user.id}`,10,900);const stored=await db.prepare('SELECT salt,password_hash FROM users WHERE id=?').bind(user.id).first();
     if(typeof body.oldPassword!=='string'||body.oldPassword.length>128||!equal(await passwordHash(body.oldPassword,stored.salt),stored.password_hash))fail(400,'原密码不正确');
     const {password}=credentials({username:user.username,password:body.password});if(body.confirmPassword!==password)fail(400,'两次新密码不一致');const salt=random();
-    await db.batch([db.prepare('UPDATE users SET salt=?,password_hash=? WHERE id=?').bind(salt,await passwordHash(password,salt),user.id),db.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id)]);return await issue(db,req,user);
+    await db.batch([db.prepare('UPDATE users SET salt=?,password_hash=? WHERE id=?').bind(salt,await passwordHash(password,salt),user.id),db.prepare('DELETE FROM sessions WHERE user_id=?').bind(user.id)]);return await issue(db,req,user,Math.max(1,Math.ceil((user.expires_at-Date.now())/1000)));
   }
   if(path==='/records'&&req.method==='GET'){const {results}=await db.prepare('SELECT date,kind,minutes,note,revision FROM records WHERE user_id=? ORDER BY date').bind(user.id).all();return json({records:results.map(row=>({...row,...validateRecord(row)}))});}
   if(path==='/records'&&req.method==='PUT'){
