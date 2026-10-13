@@ -260,3 +260,33 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 .guide summary { cursor: pointer; display: flex; gap: 8px; align-items: baseline; font-size: 15px; }
 .guide summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
 .guide-body { display: grid; gap: 12px; margin-top: 14px; font-size: 14px; }
+
+/* 账户搭建：可折叠分节 + 通用积木（流程卡、规则卡、清单） */
+.setup-parts { display: grid; gap: 12px; }
+.setup-parts h4 { margin: 6px 0 0; font-size: 15px; }
+.setup-parts p { margin: 0; }
+.s-list { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.s-list.ord li::marker { color: var(--amber); font-weight: 700; }
+.s-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.s-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px; background: var(--bg); display: grid; gap: 6px; align-content: start; min-width: 0; }
+.s-card .big { font-family: var(--f-display); font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1.3; overflow-wrap: anywhere; }
+.s-card .big .tag { font-size: 15px; }
+.s-flows { display: grid; gap: 12px; }
+.s-flow { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--bg); display: grid; gap: 10px; min-width: 0; }
+.s-flow-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
+.s-flow-top h4 { margin: 0; }
+.s-flow .fid { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); }
+.s-facts { display: grid; grid-template-columns: max-content 1fr; gap: 3px 12px; margin: 0; font-size: 13.5px; }
+.s-facts dt { color: var(--muted); }
+.s-facts dd { margin: 0; min-width: 0; }
+.s-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.s-steps li { border-top: 2px solid var(--accent); padding-top: 8px; display: grid; gap: 2px; align-content: start; font-size: 13.5px; min-width: 0; }
+.s-steps li.gate { border-top-style: dashed; border-top-color: var(--muted); }
+.s-steps .when { font-family: var(--f-mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+.s-steps li.gate .when { color: var(--muted); }
+.s-steps b { font-weight: 600; font-size: 14px; }
+@media (max-width: 720px) {
+  .s-steps { grid-template-columns: 1fr; gap: 6px; }
+  .s-steps li { border-top: 0; border-left: 2px solid var(--accent); padding: 0 0 4px 12px; }
+  .s-steps li.gate { border-left-style: dashed; border-left-color: var(--muted); }
+}

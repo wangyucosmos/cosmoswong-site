@@ -195,6 +195,8 @@ function render() {
   $('quotes').innerHTML = d.unsubComments.length ? d.unsubComments.map(q => `<div class="quote">"${esc(q.length > 220 ? q.slice(0, 220) + '…' : q)}"<small>退订时填写的原因</small></div>`).join('') : '<p class="muted">这一期没有人填写退订理由。</p>';
   bars('reasonBars', d.unsubReasons.map(r => [r[0], r[1], r[0] === 'SPAM' ? 'bad' : 'amber']));
 
+  renderSetup();
+
   const plan = PB.plan || [];
   $('plan').innerHTML = plan.map(p => `<div class="step"><div class="w">${esc(p.when)}<small>${esc(p.title)}</small></div><ul>${(p.items || []).map(i => `<li>${esc(i)}</li>`).join('')}</ul></div>`).join('');
 
@@ -207,6 +209,36 @@ function render() {
   $('previewBanner').hidden = !preview;
   $('snapSel').disabled = !!preview;
   $('deleteBox').hidden = !!preview || !cur;
+}
+
+// ---------- 账户搭建：手册里的 setup（结论 + 若干可折叠分节，每节由通用积木组成）----------
+// 积木类型：text / note / table / list / cards / flows。文字里 **加粗**、`标签` 两种标记。
+const inl = s => esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<span class="tag">$1</span>');
+const FLOW_ST = { new: ['now', '新增'], have: ['safe', '已有方案'], wait: ['slow', '待确认'] };
+function blockHtml(b) {
+  const h = b.title ? `<h4>${inl(b.title)}</h4>` : '';
+  switch (b.type) {
+    case 'text': return h + `<p>${inl(b.body)}</p>`;
+    case 'note': return h + `<p class="note">${inl(b.body)}</p>`;
+    case 'table': return h + `<div class="tscroll"><table><thead><tr>${(b.head || []).map(x => `<th>${inl(x)}</th>`).join('')}</tr></thead><tbody>${(b.rows || []).map(r => `<tr>${r.map(c => `<td>${inl(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    case 'list': { const t = b.ordered ? 'ol' : 'ul'; return h + `<${t} class="s-list${b.ordered ? ' ord' : ''}">${(b.items || []).map(x => `<li>${inl(x)}</li>`).join('')}</${t}>`; }
+    case 'cards': return h + `<div class="s-cards">${(b.items || []).map(c => `<div class="s-card"><span class="big">${inl(c.big)}</span><p>${inl(c.body)}</p></div>`).join('')}</div>`;
+    case 'flows': return h + `<div class="s-flows">${(b.items || []).map(f => {
+      const st = FLOW_ST[f.status] || FLOW_ST.new;
+      return `<article class="s-flow"><div class="s-flow-top"><span class="fid">${esc(f.id || '')}</span><h4>${inl(f.name)}</h4><span class="chip ${st[0]}">${st[1]}</span></div>
+        ${f.facts?.length ? `<dl class="s-facts">${f.facts.map(([k, v]) => `<dt>${inl(k)}</dt><dd>${inl(v)}</dd>`).join('')}</dl>` : ''}
+        <ol class="s-steps">${(f.steps || []).map(x => `<li class="${x.gate ? 'gate' : ''}"><span class="when">${inl(x.when)}</span><b>${inl(x.what)}</b>${x.why ? `<span class="muted">${inl(x.why)}</span>` : ''}</li>`).join('')}</ol></article>`;
+    }).join('')}</div>`;
+    default: return '';
+  }
+}
+function renderSetup() {
+  const S = PB.setup;
+  $('setup').hidden = $('setupLink').hidden = !S;
+  if (!S) return;
+  $('setupLede').innerHTML = inl(S.lede || '');
+  $('setupVerdict').innerHTML = (S.verdict || []).map((x, i) => `<li><span class="k">${i + 1}</span><div><b>${inl(x.b)}</b><span class="muted">${inl(x.t)}</span></div></li>`).join('');
+  $('setupParts').innerHTML = (S.parts || []).map(p => `<details class="panel guide"${p.open ? ' open' : ''}><summary><b>${inl(p.title)}</b>${p.hint ? `<span class="muted">${inl(p.hint)}</span>` : ''}</summary><div class="guide-body">${(p.blocks || []).map(blockHtml).join('')}</div></details>`).join('');
 }
 
 // ---------- 诊断器 ----------
