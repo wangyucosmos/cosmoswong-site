@@ -3,7 +3,7 @@
 // 让微信、飞书、百度、Bing 这些不跑 JS 的抓取器也能拿到完整页面；同时给每页补
 // favicon、canonical、og / twitter 分享卡片、theme-color；首页额外注入 Person JSON-LD（其 sha256 自动写进
 // public/_headers 的 CSP script-src）；最后生成 public/sitemap.xml。
-// 内容仍然只来自 public/assets/data.js —— 改 data.js 后重新部署即更新，不要手改 html。
+// 公开内容来自 public/assets/data.js，简历正文仅构建时从 data/resume.json 读取 —— 改 data.js 后重新部署即更新，不要手改 html。
 // 幂等：所有注入段都包在标记注释里，重复构建整段替换而不是叠加。
 // 用法：node tools/build_pages.mjs   （deploy.sh 在 build_notes.mjs 之后自动调用，顺序不能反）
 import { readFileSync, writeFileSync, readdirSync } from 'node:fs';
@@ -26,6 +26,7 @@ for (const f of ['data.js', 'render.js']) vm.runInContext(readFileSync(join(PUB,
 const { SITE, RENDER } = window;
 if (!SITE || !RENDER) { console.error('data.js / render.js 没有导出 SITE / RENDER'); process.exit(1); }
 const esc = RENDER.esc;
+const privateResume = JSON.parse(readFileSync(join(ROOT, 'data/resume.json'), 'utf8'));
 
 /* ---------- 首页 JSON-LD（Person）：数据全部来自 SITE.me ---------- */
 // 存成一个字符串，注入 <script> 和算 CSP hash 用的是同一份字节
@@ -50,7 +51,7 @@ const JSONLD_HASH = "'sha256-" + createHash('sha256').update(JSONLD, 'utf8').dig
 const DYNAMIC = [
   { path: '/', file: 'index.html', page: 'home', type: 'profile' },
   { path: '/portfolio', file: 'portfolio.html', page: 'portfolio' },
-  { path: '/resume', file: 'resume.html', page: 'resume', type: 'profile' },
+  { path: '/resume', file: 'resume.html', page: 'resume', type: 'profile', nosite: true, protected: true },
   { path: '/trips', file: 'trips.html', page: 'trips' },
   { path: '/tools', file: 'tools.html', page: 'tools' },
   { path: '/bookmarks', file: 'bookmarks.html', page: 'bookmarks' }
@@ -63,7 +64,7 @@ const STATIC = [
   ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).sort().map(f => ({
     // 子目录的 index.html 在 auto-trailing-slash 下实际 URL 是 /knowledge/（/knowledge 会 307 过去），canonical 要跟实际一致
     path: f === 'index.html' ? '/knowledge/' : `/knowledge/${f.replace(/\.html$/, '')}`,
-    file: join('knowledge', f)
+    file: join('knowledge', f), nosite: true, protected: true
   }))
 ];
 
@@ -85,6 +86,7 @@ function headMeta(p, html) {
   const title = attr(html, /<title>([^<]*)<\/title>/);
   const desc = attr(html, /<meta name="description" content="([^"]*)"/);
   const lines = [
+    ...(p.protected ? ['<meta name="robots" content="noindex, nofollow">'] : []),
     `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
     `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
@@ -121,6 +123,14 @@ function build(p) {
   let html = readFileSync(file, 'utf8');
   const here = p.path || '/404';
 
+  if (p.protected) {
+    const label = p.page === 'resume' ? '简历' : '知识库';
+    html = html.replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${label}内容需输入口令后查看。"`);
+    const title = p.page === 'resume' ? label : (html.match(/<h1[^>]*>([^<]*)<\/h1>/)?.[1] || label);
+    html = html.replace(/<title>[^<]*<\/title>/, `<title>${title} · Cosmos Wong</title>`);
+  }
+  if (p.page === 'home') html = html.replace(/<meta name="description" content="[^"]*"/, '<meta name="description" content="Cosmos Wong 的作品展示、实用工具与个人计划。"');
+
   // 1. head：icon / canonical / og / twitter / theme-color
   html = upsert(html, 'head', headMeta(p, html), '</head>', 'before');
 
@@ -134,7 +144,8 @@ function build(p) {
 
   // 4. 动态页正文
   if (p.page) {
-    const body = RENDER.pages[p.page](SITE);
+    const data = p.page === 'resume' ? { ...SITE, resume: privateResume, me: { ...SITE.me, fullName: privateResume.fullName } } : SITE;
+    const body = RENDER.pages[p.page](data);
     html = html.replace(/<main class="wrap"[^>]*>[\s\S]*?<\/main>/, `<main class="wrap" data-prerendered="1">${body}\n</main>`);
   }
 
@@ -174,7 +185,7 @@ const gitDate = f => {
 };
 const dataDate = gitDate('public/assets/data.js');
 const urls = [
-  ...DYNAMIC.map(p => ({ loc: ORIGIN + p.path, lastmod: dataDate })),
+  ...DYNAMIC.filter(p => !p.nosite).map(p => ({ loc: ORIGIN + p.path, lastmod: dataDate })),
   ...STATIC.filter(p => p.path && !p.nosite).map(p => ({ loc: ORIGIN + p.path, lastmod: gitDate(join('public', p.file)) }))
 ];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>

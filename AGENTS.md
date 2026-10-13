@@ -4,7 +4,7 @@
 
 ## 架构
 - 静态站为主，Cloudflare Workers 静态资源托管（`wrangler.toml` 的 `[assets]`）。
-- **唯一的服务端代码是 `src/worker.js`，只接 `/api/*`**（`run_worker_first`），其余请求直接走静态资源，不经过它。
+- **服务端入口是 `src/worker.js`**：所有请求先做共用口令门路径检查，`/api/*`交给应用接口，其余公开页面转给ASSETS；见「工具箱口令门」。
   `/subs`、`/kol`、`/desk` 共用的小工具（JSON 响应、HMAC、长度无关比较）在 `src/shared.js`。
   `/subs` 订阅倒计时页（2026-09-29 起）：
   - 页面 `public/subs.html` + `public/assets/subs.js` 是公开的壳，**不含任何订阅数据**；数据只经 `/api/subs` 读写
@@ -50,7 +50,7 @@
 - **演示版 `/desk-demo` + 案例页 `/workbench`**（2026-10-04，用户要把工作台当面试作品）：① `public/desk-demo.html` 由 `node tools/desk_demo_page.mjs` 从 `desk.html` 生成（**改了 desk.html 要重跑**，别手改 desk-demo.html）：`<html data-demo="1">`、不显示登录框、多加载 `demo.js`。② `demo.js` 把 `DESK.api` 换成浏览器里的模拟：路由和规则照 `src/desk/api.js` 写（**改了服务端接口的规则，要同步改 demo.js 里对应的那段**），字段校验直接用同一份 `public/assets/desk/schema.mjs`（v5 起 schema 的实体挪到这里，`src/desk/schema.js` 只是转引，wrangler 打包照常）；数据全虚构（A / B / C 省、张老师、example.com），存访客浏览器 localStorage `deskdemo.db`，「重置」恢复；知识库是 demo.js 里的示例笔记，素材库是在 OPFS 里现画的示例图，GitHub 是假数据。演示页的界面偏好用 `deskdemo.*`、IndexedDB 用 `desk-demo-assets` / `desk-demo-kb`，**和真实 /desk 完全隔开**；整个演示过程不请求任何 `/api`。`_headers` 里 `/desk-demo` 和 `/desk` 同一条 CSP、noindex；`robots.txt` 的 `Disallow: /desk` 按前缀也挡住了它。③ `public/workbench.html` 案例页：正文手写在 html 里（不走 data.js），在 `build_pages.mjs` 的 STATIC 清单里（会注入导航、进 sitemap），截图 `public/media/workbench-*.webp` 全部取自演示版（虚构数据）；作品集 `data.js` 的 `my-workbench` 条目链接到它和演示版。
 
 ## 内容与生成物
-- **所有内容只改 `public/assets/data.js`（`window.SITE`）**。不要把内容写进 HTML 模板或 `tools/*.mjs`。
+- **公开内容改 `public/assets/data.js`（`window.SITE`），简历正文改 `data/resume.json`**。不要把内容写进 HTML 模板或 `tools/*.mjs`。
 - `public/*.html` 里 `<!--head:auto-->`、`<!--chrome-top:auto-->`、`<!--chrome-bottom:auto-->` 之间，以及 `<main data-prerendered="1">` 的内容，都是 `tools/build_pages.mjs` 的生成物。**手改会被下次部署覆盖**——要改就改生成逻辑。
 - `public/knowledge/*.html` 由 `tools/build_notes.mjs` 从 `~/Documents/我的知识库/个人主页/公开笔记.txt` 生成，同样手改会被覆盖。要公开一篇笔记，在那个清单里加一行再部署。
 - `public/sitemap.xml`、`public/resume.pdf` 也是生成物：前者随 `build_pages.mjs`，后者用 `tools/make_resume_pdf.sh` 从 `/resume` 页打印。改简历只改 `data.js` 再重跑脚本，不要另存第二份简历。
@@ -87,6 +87,10 @@
 - **规则**：工具箱里的工具别人能看到卡片，点进去要口令；补时计算器 `/attendance` **直链不要口令**（同事用直链），只有从工具箱点进去才经过口令门。补时计算器页面里不放任何回主站的链接（左上角 CW 是纯文字）。
 - **做法**：`data.js` 的 `tools[].url` 统一写 `/go/<id>`，真实地址只在 `src/tools-gate.js` 的 `TARGETS`。`/go/*` 有凭证 → 302 到真实地址，没有 → `/unlock?next=<id>`（`public/unlock.html` + `assets/unlock.js`，独立页、不带主站导航）。`/marquee`、`/assets/marquee/*` 也由 Worker 先校验（`wrangler.toml` 的 `run_worker_first`）。**新增工具**：`TARGETS` 加一行 + `data.js` 写 `/go/<新id>`；工具若在主站内，还要把它的路径加进 `run_worker_first` 和 `toolsGate()`。
 - **口令**：Worker secret `TOOLS_PASSWORD`，凭证签名 `TOOLS_COOKIE_KEY`，都不进仓库、知识库不记。凭证 365 天、`Path=/`、HttpOnly、Secure、SameSite=Lax；同一 IP 15 分钟输错 10 次锁定（计数在 KV `SUBS`，前缀 `tools-rl:`）。换口令：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD`（旧凭证全部失效）。
+- **共用保护范围（2026-10-13）**：`/resume`、`/resume.html`、`/resume.pdf`（含尾斜杠别名）与`/knowledge`、`/knowledge/`、全部笔记路径，共用TOOLS_PASSWORD和tools_session。成功响应private/no-store、Vary: Cookie及noindex；/attendance直链仍公开。Worker对所有请求先检查解码后的路径，避免编码URL绕过，其他静态页仍转发ASSETS。
+- **返回地址**：客户端与服务端共用`public/assets/tools-next.mjs`，只接受TOOL_IDS中的id或严格白名单的简历/笔记本站路径，可带query/hash；拒绝外站、协议相对地址、反斜杠、控制字符、路径穿越及编码路径。登录接口返回服务端验证后的redirect，浏览器再次核对。新增受保护页面需同步protectedPath、safeNext、Worker路由、noindex与测试；新增工具同步TARGETS和TOOL_IDS。
+- **简历内容**：正文及简历姓名改`data/resume.json`（在public之外，仅构建读；公开GitHub仍能读到）；data.js只保留PDF入口。build_pages仅为resume页注入完整数据，浏览器接管预渲染正文，不请求公开JSON。简历与知识库nosite并三层noindex。禁止把正文放回公开JS。
+- **健身入口**：导航统一`/go/fitness`，子站本身不加锁。主站公开的项目概述不等于笔记正文，知识库方法摘要已改为通用入口说明。
 - **挡不住的**：外站工具本身（GitHub 公开仓库、indonesia 子站）知道网址仍能直接打开；作品集 / 旅游计划里也有它们的直链。H5 编辑器自己另有口令。
 - 测试：`node --test tests/tools/*.test.mjs`。
 

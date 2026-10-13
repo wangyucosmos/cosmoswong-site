@@ -7,13 +7,15 @@
 //     设置 / 换口令：HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD（旧凭证随之全部失效）
 //   - 输对一次，这台设备 365 天免输；同一 IP 15 分钟输错 10 次锁定（计数复用 SUBS 这个 KV，key 前缀 tools-rl:）。
 import { json, safeEq, hmac } from './shared.js';
+import { protectedPath, nextLocation } from '../public/assets/tools-next.mjs';
 
 export const TARGETS = {
   attendance: '/attendance',
   'cosmos-os': 'https://github.com/wangyucosmos/Cosmos-Toolbox',
   travel: 'https://indonesia.cosmoswong.com',
   'h5-editor': 'https://h5.cosmoswong.com/editor/',
-  marquee: '/marquee'
+  marquee: '/marquee',
+  fitness: 'https://jianshen.cosmoswong.com'
 };
 
 const COOKIE = 'tools_session';
@@ -52,15 +54,18 @@ async function login(req, env) {
   const rlKey = 'tools-rl:' + ip;
   const fails = Number(await env.SUBS.get(rlKey)) || 0;
   if (fails >= MAX_FAILS) return json({ error: '输错次数太多，请 15 分钟后再试' }, 429);
-  let password = '';
-  try { password = String((await req.json()).password || ''); } catch { /* 空口令按输错处理 */ }
+  let password = '', body = {};
+  try { body = await req.json(); password = String(body.password || ''); } catch { /* 空口令按输错处理 */ }
+  if (!body || typeof body !== 'object' || Array.isArray(body)) body = {};
+  const destination = nextLocation(body.next ?? '');
+  if (destination === null) return json({ error: '返回地址不受支持' }, 400);
   if (!password || !(await safeEq(password, env.TOOLS_PASSWORD))) {
     await env.SUBS.put(rlKey, String(fails + 1), { expirationTtl: FAIL_WINDOW });
     return json({ error: '口令不对' }, 401);
   }
   await env.SUBS.delete(rlKey);
   const exp = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
-  return json({ ok: true }, 200, { 'set-cookie': cookie(`${exp}.${await sign(env, 'tools:' + exp)}`, SESSION_DAYS * 86400) });
+  return json({ ok: true, redirect: destination }, 200, { 'set-cookie': cookie(`${exp}.${await sign(env, 'tools:' + exp)}`, SESSION_DAYS * 86400) });
 }
 
 // 返回 Response 表示已处理；返回 null 表示不归这里管
@@ -68,6 +73,11 @@ export async function toolsGate(req, env, path) {
   if (path === '/api/tools/login') {
     if (!ready(env)) return json({ error: '服务端还没设置口令' }, 500);
     return req.method === 'POST' ? login(req, env) : json({ error: '不支持的请求' }, 405);
+  }
+  if (protectedPath(path)) {
+    if (await toolsAuthed(req, env)) return null;
+    const requested = new URL(req.url).pathname + new URL(req.url).search;
+    return redirect(unlockUrl(nextLocation(requested) === null ? (nextLocation(path) === null ? '/knowledge/' : path + new URL(req.url).search) : requested));
   }
   if (path === '/go' || path.startsWith('/go/')) {
     let id = '';

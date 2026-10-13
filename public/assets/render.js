@@ -16,7 +16,7 @@
     ['/subs', '订阅'],   // 入口公开，页面内容要密码（src/worker.js）
     ['/kol', 'KOL 工作台'],   // 同上：入口公开（用户 2026-10-03 要求加），数据要密码；页面仍 noindex、不进 sitemap
     ['/desk', '我的工作台'],   // 同上（用户 2026-10-04 要求加，名字要和 KOL 工作台区分开）；页面仍 noindex、不进 sitemap
-    ['https://jianshen.cosmoswong.com', '我的健身计划']
+    ['/go/fitness', '我的健身计划']
   ].filter(([, , show]) => show !== false);
   // here：当前路径（无尾斜杠，首页为 '/'）
   const renderHeader = (S, here) => `
@@ -126,7 +126,7 @@
       <h1 class="up"><span class="pre">Hello, I'm</span><span>${esc(S.me.name)}.</span></h1>
       <p class="sub up d1"><b>${esc(S.me.title)}</b>${S.me.tagline ? `<br>${esc(S.me.tagline)}` : ''}</p>
       <div class="cta up d2"><a class="btn solid" href="/portfolio">看作品集 →</a>
-        ${S.resume.pdf ? `<a class="btn glass" href="${esc(S.resume.pdf)}" download>下载简历</a>` : `<a class="btn glass" href="/resume">看简历</a>`}</div>
+        ${S.resume.pdf ? `<a class="btn glass" href="${esc(S.resume.pdf)}">下载简历</a>` : `<a class="btn glass" href="/resume">看简历</a>`}</div>
     </section>
     <section class="sec"><div class="sec-head"><div><p class="eyebrow">Selected work</p><h2>精选作品</h2></div><a class="more" href="/portfolio">全部作品 →</a></div>
       ${featured.length ? `<div class="wgrid">${featured.map(w => workCard(w)).join('')}</div>` : '<div class="empty">还没有作品，去 data.js 里加。</div>'}</section>

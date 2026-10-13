@@ -1,3 +1,4 @@
+import { safeNext, nextLocation } from './tools-next.mjs';
 // 工具箱口令页：输对口令后跳回 /go/<next>（服务端再跳到真实工具地址）。见 src/tools-gate.js
 (() => {
   if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
@@ -5,17 +6,20 @@
     return;
   }
   const next = new URLSearchParams(location.search).get('next') || '';
-  const safeNext = /^[a-z0-9-]{1,40}$/.test(next) ? next : '';
+  const destination = nextLocation(next);
+  const validNext = !next || safeNext(next) !== null;
   const f = document.getElementById('f'), pw = document.getElementById('pw'), btn = document.getElementById('go'), err = document.getElementById('err');
   pw.focus();
+  if (!validNext) { err.textContent = '返回地址不受支持，请从站内入口重新打开'; btn.disabled = true; }
   f.addEventListener('submit', async e => {
     e.preventDefault();
+    if (!validNext) return;
     err.textContent = '';
     if (!pw.value) { err.textContent = '请输入口令'; return; }
     btn.disabled = true;
     try {
-      const r = await fetch('/api/tools/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tools-request': '1' }, credentials: 'same-origin', body: JSON.stringify({ password: pw.value }) });
-      if (r.ok) { location.replace(safeNext ? '/go/' + safeNext : '/tools'); return; }
+      const r = await fetch('/api/tools/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tools-request': '1' }, credentials: 'same-origin', body: JSON.stringify({ password: pw.value, next }) });
+      if (r.ok) { const d = await r.json(); if (d.redirect !== destination) throw new Error('返回地址不正确'); location.replace(destination); return; }
       const d = await r.json().catch(() => ({}));
       err.textContent = d.error || '出错了，请稍后再试';
       pw.select();

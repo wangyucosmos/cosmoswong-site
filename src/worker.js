@@ -1,4 +1,4 @@
-// cosmoswong.com 的服务端：只接 /api/*（wrangler.toml 的 run_worker_first），其余请求都是静态资源，不经过这里。
+// 所有请求先经过共用口令门检查；公开静态页面原样交给ASSETS，/api/*交给各应用接口。
 // 另有工具箱口令门（src/tools-gate.js：/api/tools/login、/go/*、/marquee）。
 // 三个功能：/subs 订阅倒计时页、/kol KOL 工作台（路由在 src/kol/，数据在 D1）、/desk 我的工作台（路由在 src/desk/，数据在另一个 D1）。
 // 下面是 /subs 的部分：
@@ -12,6 +12,7 @@ import { deskApi } from './desk/api.js';
 import { api as attendanceApi } from './attendance/api.mjs';
 import { secure as attendanceSecure } from './attendance/security.mjs';
 import { toolsGate } from './tools-gate.js';
+import { protectedPath } from '../public/assets/tools-next.mjs';
 
 const COOKIE = 'subs_session';
 const SESSION_DAYS = 30;
@@ -96,7 +97,12 @@ async function subsApi(req, env, path) {
 
 export default {
   async fetch(req, env) {
-    const path = new URL(req.url).pathname.replace(/\/+$/, '');
+    const rawPath = new URL(req.url).pathname;
+    let decodedPath;
+    try { decodedPath = rawPath.startsWith('/go/') ? rawPath : decodeURIComponent(rawPath); } catch { return json({ error: '地址不正确' }, 400); }
+    if (/[\\\u0000-\u001f\u007f]/.test(decodedPath)) return json({ error: '地址不正确' }, 400);
+    if (!rawPath.startsWith('/go/') && decodedPath.includes('%')) return json({ error: '地址不正确' }, 400);
+    const path = decodedPath.replace(/\/+/g, '/').replace(/\/+$/, '');
     if (path === '/api/attendance' || path.startsWith('/api/attendance/')) {
       if (new URL(req.url).protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(new URL(req.url).hostname)) return Response.redirect(req.url.replace(/^http:/, 'https:'), 308);
       return attendanceSecure(await attendanceApi(req, env.ATTENDANCE_DB));
@@ -107,6 +113,12 @@ export default {
     const gated = await toolsGate(req, env, path);   // 工具箱口令门：/api/tools/login、/go/*、/marquee（见 src/tools-gate.js）
     if (gated) return gated;
     if (path.startsWith('/api/')) return json({ error: '没有这个接口' }, 404);
-    return env.ASSETS.fetch(req);
+    const response = await env.ASSETS.fetch(req);
+    if (!protectedPath(path)) return response;
+    const headers = new Headers(response.headers);
+    headers.set('Cache-Control', 'private, no-store');
+    headers.set('X-Robots-Tag', 'noindex, nofollow');
+    headers.append('Vary', 'Cookie');
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
   }
 };

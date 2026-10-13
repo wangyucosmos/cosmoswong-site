@@ -12,7 +12,7 @@ binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "404-page"
 # /go/* 和 /marquee 走工具箱口令门（src/tools-gate.js）；口令是 Worker secret TOOLS_PASSWORD、TOOLS_COOKIE_KEY
-run_worker_first = ["/api/*", "/go/*", "/marquee", "/marquee.html", "/assets/marquee/*"]
+run_worker_first = true # 所有请求先做轻量路径检查，避免编码路径绕过；公开页面仍直接转给ASSETS。
 
 # /subs 订阅数据（不进仓库）。密码与 cookie 签名 key 是 Worker secret：SUBS_PASSWORD、SUBS_COOKIE_KEY
 [[kv_namespaces]]

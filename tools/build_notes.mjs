@@ -32,6 +32,7 @@ function shell({ title, eyebrow, h1, lede, body }) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
 <meta name="description" content="${esc(lede)}">
 <title>${esc(title)} · Cosmos Wong</title>
 <link rel="stylesheet" href="/assets/style.css?v=20260913220000">

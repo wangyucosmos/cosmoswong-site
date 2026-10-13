@@ -14,7 +14,7 @@
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(), camera=(), microphone=()
-  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com 'sha256-oZoMV+TnI0QswRujt1IiegYeqnBRGJca0BZowPrS9y8='; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com 'sha256-tN1SvugCfVdmHBl8QU0dEpEMla8mR7e4lRFWHDi093Y='; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
 # /kol KOL 工作台：密码页，禁止搜索引擎收录
 /kol
@@ -71,3 +71,12 @@
   Cache-Control: public, max-age=0, must-revalidate
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; object-src 'none'
+
+# 简历及笔记由Worker鉴权，并在成功响应上强制no-store。
+/resume*
+  X-Robots-Tag: noindex, nofollow
+/knowledge*
+  X-Robots-Tag: noindex, nofollow
+/assets/tools-next.mjs
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate

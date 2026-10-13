@@ -66,3 +66,19 @@ test('没设置 secret 时一律进不去', async () => {
   assert.equal((await login(e, 'x')).status, 500);
   assert.equal((await call(e, '/go/travel')).headers.get('location'), '/unlock?next=travel');
 });
+
+test('简历和所有知识库页面未登录被拦，next保留原页面及查询',async()=>{
+ const e=env();for(const path of ['/resume','/resume.html','/resume.pdf','/resume/','/knowledge','/knowledge/','/knowledge/overview','/knowledge/xxx.html','/knowledge/overview?view=full']){
+  const r=await call(e,path);assert.equal(r.status,302);const next=new URL(r.headers.get('location'),'https://cosmoswong.com');assert.equal(next.pathname,'/unlock');assert.equal(next.searchParams.get('next'),path);assert.equal(r.headers.get('cache-control'),'no-store');
+ }
+});
+test('一份旧格式tools_session在所有保护页与健身入口共用，响应不共享缓存',async()=>{
+ const e=env(),ok=await login(e,'test-pass-123'),c={headers:{cookie:cookieOf(ok)}};
+ for(const path of ['/resume','/resume.html','/resume.pdf','/knowledge/','/knowledge/overview']){const r=await call(e,path,c);assert.equal(r.status,200);assert.equal(r.headers.get('cache-control'),'private, no-store');assert.match(r.headers.get('x-robots-tag'),/noindex/);assert.match(r.headers.get('vary'),/Cookie/);assert.match(await r.text(),/^asset:/);}
+ assert.equal((await call(e,'/go/fitness',c)).headers.get('location'),'https://jianshen.cosmoswong.com');assert.equal((await call(e,'/go/fitness')).headers.get('location'),'/unlock?next=fitness');
+ for(const path of ['/attendance','/','/portfolio'])assert.equal((await call(e,path)).status,200);
+});
+test('编码与重复斜杠不能绕过保护',async()=>{
+ const e=env();for(const path of ['/%72esume.pdf','/re%73ume','/know%6cedge/overview','/knowledge%2foverview','//resume','/knowledge//overview'])assert.equal((await call(e,path)).status,302,path);
+ for(const path of ['/%2572esume','/knowledge/%5coverview'])assert.equal((await call(e,path)).status,400,path);
+});
