@@ -1,4 +1,5 @@
 // cosmoswong.com 的服务端：只接 /api/*（wrangler.toml 的 run_worker_first），其余请求都是静态资源，不经过这里。
+// 另有工具箱口令门（src/tools-gate.js：/api/tools/login、/go/*、/marquee）。
 // 三个功能：/subs 订阅倒计时页、/kol KOL 工作台（路由在 src/kol/，数据在 D1）、/desk 我的工作台（路由在 src/desk/，数据在另一个 D1）。
 // 下面是 /subs 的部分：
 //   - 密码存在 Worker secret SUBS_PASSWORD，登录 cookie 用 SUBS_COOKIE_KEY 签名；两个都不进仓库
@@ -10,6 +11,7 @@ import { kolApi } from './kol/api.js';
 import { deskApi } from './desk/api.js';
 import { api as attendanceApi } from './attendance/api.mjs';
 import { secure as attendanceSecure } from './attendance/security.mjs';
+import { toolsGate } from './tools-gate.js';
 
 const COOKIE = 'subs_session';
 const SESSION_DAYS = 30;
@@ -102,6 +104,8 @@ export default {
     if (path === '/api/subs' || path.startsWith('/api/subs/')) return subsApi(req, env, path);
     if (path === '/api/kol' || path.startsWith('/api/kol/')) return kolApi(req, env, path);
     if (path === '/api/desk' || path.startsWith('/api/desk/')) return deskApi(req, env, path);
+    const gated = await toolsGate(req, env, path);   // 工具箱口令门：/api/tools/login、/go/*、/marquee（见 src/tools-gate.js）
+    if (gated) return gated;
     if (path.startsWith('/api/')) return json({ error: '没有这个接口' }, 404);
     return env.ASSETS.fetch(req);
   }

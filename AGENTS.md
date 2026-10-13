@@ -83,6 +83,13 @@
 - 作品里可选 `blocks: [...]` 加更多块：`stats {items:[{value,label}]}`（放在第一段正文后）、`video {src,poster,cap}`、`compare {before,after,beforeLabel,afterLabel,cap}`、`phone {src,title,body}`、`quote {text}`、`image {src,cap}`、`gallery {items:[{src,cap}]}`。**新展示方式只要在 `BLOCK` 里加一种渲染**，旧作品不用改。
 - 视频放 `public/media/`（同源，CSP 不用改），控制在几 MB 以内；首页精选卡片点开跳 `/portfolio#<id>`。
 
+## 工具箱口令门（2026-10-12，用户要求）
+- **规则**：工具箱里的工具别人能看到卡片，点进去要口令；补时计算器 `/attendance` **直链不要口令**（同事用直链），只有从工具箱点进去才经过口令门。补时计算器页面里不放任何回主站的链接（左上角 CW 是纯文字）。
+- **做法**：`data.js` 的 `tools[].url` 统一写 `/go/<id>`，真实地址只在 `src/tools-gate.js` 的 `TARGETS`。`/go/*` 有凭证 → 302 到真实地址，没有 → `/unlock?next=<id>`（`public/unlock.html` + `assets/unlock.js`，独立页、不带主站导航）。`/marquee`、`/assets/marquee/*` 也由 Worker 先校验（`wrangler.toml` 的 `run_worker_first`）。**新增工具**：`TARGETS` 加一行 + `data.js` 写 `/go/<新id>`；工具若在主站内，还要把它的路径加进 `run_worker_first` 和 `toolsGate()`。
+- **口令**：Worker secret `TOOLS_PASSWORD`，凭证签名 `TOOLS_COOKIE_KEY`，都不进仓库、知识库不记。凭证 365 天、`Path=/`、HttpOnly、Secure、SameSite=Lax；同一 IP 15 分钟输错 10 次锁定（计数在 KV `SUBS`，前缀 `tools-rl:`）。换口令：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD`（旧凭证全部失效）。
+- **挡不住的**：外站工具本身（GitHub 公开仓库、indonesia 子站）知道网址仍能直接打开；作品集 / 旅游计划里也有它们的直链。H5 编辑器自己另有口令。
+- 测试：`node --test tests/tools/*.test.mjs`。
+
 ## /marquee 跑马灯 GIF 生成器（2026-10-12）
 - 用户自己做的单文件小工具，拆成 `public/marquee.html` + `public/assets/marquee/app.js`（内含 gifenc，MIT）+ `style.css`，因为全站 CSP 不允许内联脚本。
 - 纯前端、零接口：文字在浏览器里画成 GIF 并下载，不上传。不在 `build_pages.mjs` 清单里（不注入主站导航），工具箱入口只改 `data.js`；资源版本号由 `deploy.sh` 的 `/assets/marquee/*` 那条 sed 维护。

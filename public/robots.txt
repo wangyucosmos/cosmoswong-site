@@ -27,5 +27,8 @@ User-agent: *
 Disallow: /attendance
 Disallow: /kol
 Disallow: /desk
+Disallow: /unlock
+Disallow: /go/
+Disallow: /marquee
 
 Sitemap: https://cosmoswong.com/sitemap.xml
