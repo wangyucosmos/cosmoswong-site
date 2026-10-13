@@ -255,3 +255,8 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
 .tpl pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font-family: var(--f-mono); font-size: 12.5px; line-height: 1.6; padding-right: 72px; }
 .tpl .copy { position: absolute; top: 8px; right: 8px; }
 @media (max-width: 720px) { .step-card ul { padding-left: 20px; } .step-tip, .tpl { margin-left: 0; } .tpl pre { padding-right: 0; padding-top: 28px; } }
+
+/* Mailchimp 按钮位置说明（人群卡片上方，可折叠） */
+.guide summary { cursor: pointer; display: flex; gap: 8px; align-items: baseline; font-size: 15px; }
+.guide summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+.guide-body { display: grid; gap: 12px; margin-top: 14px; font-size: 14px; }
