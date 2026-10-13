@@ -39,7 +39,12 @@
 
 <nav class="sec" aria-label="章节" id="nav" hidden>
   <div class="in">
-    <a href="#verdict">结论</a><a href="#trend">每期变化</a><a href="#overview">名单概况</a><a href="#segments">人群</a><a href="#interest">爱看什么</a><a href="#unsub">退订诊断</a><a href="#next">下一步</a><a href="#setup" id="setupLink" hidden>账户搭建</a><a href="#doctor">单封诊断器</a><a href="#update">更新数据</a>
+    <div class="views" role="tablist" aria-label="切换视图">
+      <button type="button" role="tab" id="tabData" data-go="#analysis" aria-selected="true">名单分析</button>
+      <button type="button" role="tab" id="tabManual" data-go="#manual" aria-selected="false">执行手册</button>
+    </div>
+    <div class="links" id="linksData"><a href="#verdict">结论</a><a href="#trend">每期变化</a><a href="#overview">名单概况</a><a href="#segments">人群</a><a href="#interest">爱看什么</a><a href="#unsub">退订诊断</a><a href="#update">更新数据</a></div>
+    <div class="links links-manual" id="linksManual" hidden></div>
   </div>
 </nav>
 
@@ -52,6 +57,7 @@
 </div>
 
 <div id="content" hidden>
+<div id="analysis" class="view">
 <section id="verdict">
   <div class="sec-head">
     <div class="eyebrow">先看这里</div>
@@ -195,13 +201,39 @@
   </div>
 </section>
 
+<div class="panel to-manual">
+  <div><b>看完数据，接下来做什么？</b><p class="muted">4 周计划、Mailchimp 账户怎么搭、每封邮件发完看哪些数，都在「执行手册」里。</p></div>
+  <a class="btn" href="#manual">打开执行手册 →</a>
+</div>
+</div>
+
+<div id="manual" class="view manual" hidden>
+<aside class="toc" id="toc" aria-label="执行手册目录"></aside>
+<div class="manual-body">
 <section id="next">
   <div class="sec-head">
-    <div class="eyebrow">下一步</div>
-    <h2>怎么判断方向、怎么做</h2>
-    <p>思路只有一句话：<b>先止血，再打最热的人，用数字决定加码还是换方向。</b></p>
+    <div class="eyebrow">4 周计划</div>
+    <h2>先做什么、后做什么</h2>
+    <p>思路只有一句话：<b>先止血，再打最热的人，用数字决定加码还是换方向。</b>每一步具体怎么在 Mailchimp 里搭，见下面的「账户搭建」。</p>
   </div>
   <div class="flow" id="plan"></div>
+</section>
+
+<section id="setup" hidden>
+  <div class="sec-head">
+    <div class="eyebrow">账户搭建</div>
+    <h2>把人群、流程和规则拼成一套账户</h2>
+    <p id="setupLede"></p>
+  </div>
+  <div class="verdict"><ol id="setupVerdict"></ol></div>
+  <div class="setup-parts" id="setupParts"></div>
+</section>
+
+<section id="metrics">
+  <div class="sec-head">
+    <div class="eyebrow">发完复盘</div>
+    <h2>每封邮件发完，看什么、怎么调</h2>
+  </div>
 
   <div class="panel" style="display:grid;gap:14px">
     <h3>每封邮件发完，看这 4 个数</h3>
@@ -214,7 +246,7 @@
     </div>
   </div>
 
-  <div class="panel" style="display:grid;gap:12px">
+  <div class="panel" id="adjust" style="display:grid;gap:12px">
     <h3>看到什么情况，就怎么调</h3>
     <div class="rules">
       <div class="rule"><div><b>打开率低</b>（低于 20%）</div><div class="arrow">→</div><div>主题行没吸引力，或发错了人。换成具体画面或问题式主题行；检查发送时间是不是收件人当地的上午。</div></div>
@@ -225,16 +257,6 @@
       <div class="rule"><div><b>A/B 测试两版差距不到 20%</b></div><div class="arrow">→</div><div>人数少时这种差距可能只是运气。一次只改一处（主题行或按钮），连测 2–3 次结论一致再定。</div></div>
     </div>
   </div>
-</section>
-
-<section id="setup" hidden>
-  <div class="sec-head">
-    <div class="eyebrow">账户搭建</div>
-    <h2>把人群、流程和规则拼成一套账户</h2>
-    <p id="setupLede"></p>
-  </div>
-  <div class="verdict"><ol id="setupVerdict"></ol></div>
-  <div class="setup-parts" id="setupParts"></div>
 </section>
 
 <section id="doctor">
@@ -265,6 +287,8 @@
     <div class="out" id="docOut" aria-live="polite"></div>
   </div>
 </section>
+</div>
+</div>
 </div>
 
 <section id="update">

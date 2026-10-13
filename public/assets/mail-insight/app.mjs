@@ -191,7 +191,9 @@ function render() {
     const lo = Math.min(sc(r.a), sc(r.b)), hi = Math.max(sc(r.a), sc(r.b)), col = r.b > r.a ? 'var(--bad)' : 'var(--good)';
     return `<div class="db-row"><span>${esc(r.name)}<br><small class="muted">在订 ${pct(r.a, 1, 0)} · 退订 ${pct(r.b, 1, 0)}</small></span><div class="db-track"><div class="db-line" style="left:${lo}%;width:${hi - lo}%;background:${col};opacity:.45"></div><div class="db-dot s" style="left:${sc(r.a)}%"></div><div class="db-dot u" style="left:${sc(r.b)}%;background:${col}"></div></div><span class="db-x" style="color:${col}">×${r.x.toFixed(1)}</span></div>`;
   }).join('') || '<p class="muted">没有退订数据。</p>';
-  $('campRows').innerHTML = d.unsubCampaigns.map(c => `<tr><td>${esc(c[0])}</td><td class="n">${fmt(c[1])}</td></tr>`).join('') || '<tr><td class="muted" colspan="2">没有数据</td></tr>';
+  const camps = d.unsubCampaigns, CAP = 8;
+  $('campRows').innerHTML = (camps.map((c, i) => `<tr${i >= CAP ? ' class="more-row" hidden' : ''}><td>${esc(c[0])}</td><td class="n">${fmt(c[1])}</td></tr>`).join('') || '<tr><td class="muted" colspan="2">没有数据</td></tr>')
+    + (camps.length > CAP ? `<tr><td colspan="2"><button class="btn ghost small" type="button" id="campMore">展开其余 ${camps.length - CAP} 封</button></td></tr>` : '');
   $('quotes').innerHTML = d.unsubComments.length ? d.unsubComments.map(q => `<div class="quote">"${esc(q.length > 220 ? q.slice(0, 220) + '…' : q)}"<small>退订时填写的原因</small></div>`).join('') : '<p class="muted">这一期没有人填写退订理由。</p>';
   bars('reasonBars', d.unsubReasons.map(r => [r[0], r[1], r[0] === 'SPAM' ? 'bad' : 'amber']));
 
@@ -234,12 +236,46 @@ function blockHtml(b) {
 }
 function renderSetup() {
   const S = PB.setup;
-  $('setup').hidden = $('setupLink').hidden = !S;
-  if (!S) return;
-  $('setupLede').innerHTML = inl(S.lede || '');
-  $('setupVerdict').innerHTML = (S.verdict || []).map((x, i) => `<li><span class="k">${i + 1}</span><div><b>${inl(x.b)}</b><span class="muted">${inl(x.t)}</span></div></li>`).join('');
-  $('setupParts').innerHTML = (S.parts || []).map(p => `<details class="panel guide"${p.open ? ' open' : ''}><summary><b>${inl(p.title)}</b>${p.hint ? `<span class="muted">${inl(p.hint)}</span>` : ''}</summary><div class="guide-body">${(p.blocks || []).map(blockHtml).join('')}</div></details>`).join('');
+  $('setup').hidden = !S;
+  const parts = S?.parts || [];
+  if (S) {
+    $('setupLede').innerHTML = inl(S.lede || '');
+    $('setupVerdict').innerHTML = (S.verdict || []).map((x, i) => `<li><span class="k">${i + 1}</span><div><b>${inl(x.b)}</b><span class="muted">${inl(x.t)}</span></div></li>`).join('');
+    $('setupParts').innerHTML = parts.map((p, i) => `<div class="panel s-part" id="setup-${i + 1}"><h3>${inl(p.title)}</h3>${(p.blocks || []).map(blockHtml).join('')}</div>`).join('');
+  }
+  // 执行手册目录：电脑上是左侧固定目录，手机上是顶部导航里的一排链接
+  const groups = [
+    ['计划', [['#next', '4 周计划']]],
+    ...(S ? [['账户搭建', [['#setup', '三条结论'], ...parts.map((p, i) => ['#setup-' + (i + 1), p.toc || String(p.title).split('：')[0]])]]] : []),
+    ['发完复盘', [['#metrics', '看哪 4 个数'], ['#adjust', '看到什么就怎么调'], ['#doctor', '单封诊断器']]]
+  ];
+  $('toc').innerHTML = groups.map(([g, items]) => `<p class="toc-g">${esc(g)}</p>${items.map(([h, t]) => `<a href="${h}">${inl(t)}</a>`).join('')}`).join('');
+  $('linksManual').innerHTML = groups.flatMap(([, items]) => items).map(([h, t]) => `<a href="${h}">${inl(t)}</a>`).join('');
+  watchSections();
 }
+
+// ---------- 两个视图：名单分析 / 执行手册。按网址里的 #锚点 决定显示哪个，跨视图的链接也能直接跳 ----------
+let view = 'analysis';
+function setView(v) {
+  view = v;
+  const m = v === 'manual';
+  $('analysis').hidden = m; $('manual').hidden = !m;
+  if (PB) $('update').hidden = m;
+  $('linksData').hidden = m; $('linksManual').hidden = !m;
+  $('tabData').setAttribute('aria-selected', String(!m)); $('tabManual').setAttribute('aria-selected', String(m));
+}
+function route() {
+  if ($('content').hidden) return;
+  const id = decodeURIComponent(location.hash.slice(1));
+  const el = id && document.getElementById(id);
+  if (!el) { setView('analysis'); return; }
+  setView($('manual').contains(el) ? 'manual' : 'analysis');
+  el.scrollIntoView();
+}
+addEventListener('hashchange', route);
+document.querySelectorAll('.views button').forEach(b => b.addEventListener('click', () => {
+  if (location.hash === b.dataset.go) route(); else location.hash = b.dataset.go;
+}));
 
 // ---------- 诊断器 ----------
 function doctor() {
@@ -295,7 +331,7 @@ async function boot() {
     PB = r.playbook; SNAPS = Array.isArray(r.snapshots) ? r.snapshots : [];
     if (!PB) { showEmpty('分析手册还没有配置，请联系 Claude 先上传手册。'); $('update').hidden = true; return; }
     fillSnapSel();
-    if (SNAPS.length) await openSnap(SNAPS[0].id); else showEmpty();
+    if (SNAPS.length) { await openSnap(SNAPS[0].id); route(); } else showEmpty();
   } catch (e) { if (e.message !== '需要口令') { $('loading').textContent = '读取失败：' + e.message; } }
 }
 
@@ -356,6 +392,11 @@ document.addEventListener('click', e => {
     try { navigator.clipboard.writeText(cp.dataset.t).then(done, sel); } catch { sel(); }
     return;
   }
+  if (e.target.id === 'campMore') {
+    document.querySelectorAll('#campRows .more-row').forEach(r => { r.hidden = false; });
+    e.target.closest('tr').remove();
+    return;
+  }
   const h = e.target.closest('.seg button.head');
   if (h) {
     const card = h.parentElement, open = !card.classList.contains('open');
@@ -373,8 +414,9 @@ const drop = $('drop');
 ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', e => loadFiles([...e.dataTransfer.files]));
 
-const links = [...document.querySelectorAll('nav.sec a')];
-const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) links.forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id)); }), { rootMargin: '-45% 0px -50% 0px' });
-document.querySelectorAll('main section').forEach(s => io.observe(s));
+const io = new IntersectionObserver(es => es.forEach(en => {
+  if (en.isIntersecting) document.querySelectorAll('nav.sec .links a, #toc a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + en.target.id));
+}), { rootMargin: '-45% 0px -50% 0px' });
+function watchSections() { io.disconnect(); document.querySelectorAll('main section, .s-part, #adjust').forEach(s => io.observe(s)); }
 
 boot();

@@ -290,3 +290,38 @@ footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line);
   .s-steps li { border-top: 0; border-left: 2px solid var(--accent); padding: 0 0 4px 12px; }
   .s-steps li.gate { border-left-style: dashed; border-left-color: var(--muted); }
 }
+
+/* 两个视图：顶部吸附栏左侧是视图切换，右侧是当前视图的章节链接 */
+nav.sec .in { align-items: center; }
+.views { flex: none; display: flex; gap: 2px; padding: 3px; margin: 6px 10px 6px 0; background: var(--surface-2); border-radius: 999px; }
+.views button { border: 0; background: transparent; font: inherit; font-size: 13.5px; padding: 6px 14px; border-radius: 999px; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.views button:hover { color: var(--ink); }
+.views button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.views button[aria-selected="true"] { background: var(--surface); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgb(0 0 0 / .1); }
+nav.sec .links { display: flex; gap: 4px; }
+.view { display: block; }
+.to-manual { margin-top: 44px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.to-manual > div { display: grid; gap: 2px; min-width: 0; }
+.btn.small { font-size: 13px; padding: 5px 12px; }
+
+/* 执行手册：左侧固定目录 + 右侧正文；窄屏时目录收进顶部导航 */
+.manual { display: grid; grid-template-columns: 188px minmax(0, 1fr); gap: 40px; }
+.manual[hidden] { display: none !important; }
+.manual-body { min-width: 0; }
+.toc { position: sticky; top: 64px; align-self: start; padding-block: 48px 20px; display: grid; gap: 1px; font-size: 14px; max-height: calc(100vh - 64px); overflow-y: auto; }
+.toc-g { font-size: 12px; letter-spacing: .1em; font-weight: 700; color: var(--ink); margin: 16px 0 6px; }
+.toc-g:first-child { margin-top: 0; }
+.toc a { color: var(--muted); text-decoration: none; padding: 5px 0 5px 12px; border-left: 2px solid var(--line); line-height: 1.45; }
+.toc a:hover, .toc a:focus-visible { color: var(--ink); outline: none; }
+.toc a.on { color: var(--accent); border-left-color: var(--accent); font-weight: 600; }
+.s-part { display: grid; gap: 14px; scroll-margin-top: 64px; }
+.s-part h3 { font-size: 18px; }
+#adjust { scroll-margin-top: 64px; }
+@media (min-width: 1000px) { nav.sec .links-manual { display: none !important; } }
+@media (max-width: 999px) {
+  .manual { grid-template-columns: 1fr; gap: 0; }
+  .toc { display: none; }
+}
+a.btn { text-decoration: none; display: inline-block; }
+.view, #update { scroll-margin-top: 56px; }
+.grid-2 > .panel { align-content: start; }
