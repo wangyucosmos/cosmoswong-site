@@ -25,3 +25,12 @@ test('已确认请假不会被以后无时长截图覆盖，其他有效变更�
 test('OCR有效结果冲突不能以已有记录为由静默忽略',()=>{const incoming={...row('2026-10-08',null),note:'同一日期识别到不同结果，请核对'};assert.equal(compareRecord(row('2026-10-08',540),incoming).type,'changed');});
 
 test('历史补卡免计，余额只累计有时长的计时记录',()=>{const rows=[row('2026-10-08',480,'makeup'),row('2026-10-09',496),row('2026-10-10',546),row('2026-10-11',null,'leave')];const result=summarize(rows,'2026-10');assert.equal(result.balance,10);assert.equal(result.pending,0);assert.equal(result.passed,true);assert.equal(rows[0].minutes,480);});
+
+// 2026-10-13：截图小 / 压缩时识别率低的修复。打卡时长 = 末次 − 首次 − 1 小时（用户 OA 的真实规律），只用来确认或拦下读数
+test('OCR常见错字：公体日、小时被拆或认错',()=>{const rows=parseOCR('2026-09-25 星期五 无 无 无 公体日\n2026-09-22 9:02 19:37 9/J\\时35份 考勤正常\n2026-09-23 8:56 18:37 8小41分 考勤正常');assert.equal(rows[0].minutes,575);assert.equal(rows[1].minutes,521);assert.equal(rows[2].kind,'rest');});
+test('读数和首末打卡对不上：列待确认并写明原因，不静默记错',()=>{const rows=parseOCR('2026-09-21 8:55 19:10 9小时1分 考勤正常');assert.equal(rows[0].minutes,null);assert.match(rows[0].note,/对不上/);assert.match(compareRecord(null,rows[0]).message,/对不上/);});
+test('两轮识别打架时，选和打卡对得上的那个',()=>{const rows=parseOCR('2026-09-21 8:55 19:10 9小时1分 考勤正常\n2026-09-21 8:55 19:10 9小时15分 考勤正常');assert.equal(rows[0].minutes,555);assert.equal(rows[0].note,'');});
+test('时长没读出来：只在两个数字正好对上打卡时采用，否则提示补时长',()=>{assert.equal(parseOCR('2026-09-28 9:09 18:54 8 BIE 45 考勤正常')[0].minutes,525);const miss=parseOCR('2026-09-28 9:09 18:54 BINEIA 考勤正常')[0];assert.equal(miss.minutes,null);assert.match(miss.note,/没读清/);});
+test('班次时间段不当作打卡时间',()=>{const rows=parseOCR('2026-09-21 标准班 09:00-18:00 8:55 19:10 9小时15分 正常');assert.equal(rows[0].minutes,555);assert.equal(rows[0].note,'');});
+test('没有打卡时间的行不受影响（不凭空推算）',()=>{const rows=parseOCR('2026-10-08 无 考勤正常\n2026-10-09 8小时4分');assert.equal(rows[0].minutes,null);assert.equal(rows[1].minutes,484);});
+test('截进来的左侧菜单不影响这一行（日期左边的字不算）',()=>{const rows=parseOCR('请假申请 2026-09-27 星期日 9:05 18:40 8小时35分 考勤正常\n补卡申请 2026-09-28 无 无 无 公休日');assert.equal(rows[0].kind,'normal');assert.equal(rows[0].minutes,515);assert.equal(rows[1].kind,'rest');});
