@@ -46,3 +46,5 @@ CW图标及文字可读性已部署：`048dd20f-0a59-4d37-aead-a6afce736f66`；�
 ## 2026-10-13 共用口令扩展
 
 简历HTML/PDF及知识库所有笔记共用工具箱口令和cookie；登录后返回白名单原路径。健身主站入口改/go/fitness，子站保持公开。简历正文移至构建专用data/resume.json，data.js只保留PDF路径。受保护页面不进sitemap、三层noindex并禁止共享缓存。公开首页及笔记项目入口摘要改为通用介绍；独立作品与工作台案例仍公开，公开GitHub源文件仍可见。
+
+共用口令扩展已部署：`09bb1c4b-0b60-4094-ade2-ea317fb39311`，源码`c69bb25`；43项测试、两次构建无diff及匿名线上检查均通过。内容出口a/b/c结论及完整文件清单见GATE_SECURITY_REPORT.md。生产secret未变，数据未改。
