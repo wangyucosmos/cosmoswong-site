@@ -1,5 +1,5 @@
 // Client and Worker share the exact return-target whitelist.
-export const TOOL_IDS = ['attendance', 'cosmos-os', 'travel', 'h5-editor', 'marquee', 'fitness'];
+export const TOOL_IDS = ['attendance', 'cosmos-os', 'travel', 'h5-editor', 'marquee', 'fitness', 'mail-insight'];
 export function protectedPath(path) {
   return /^\/resume(?:\.html|\.pdf)?\/?$/.test(path) || path === '/knowledge' || path.startsWith('/knowledge/');
 }

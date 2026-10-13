@@ -43,6 +43,10 @@
 /marquee
   X-Robots-Tag: noindex, nofollow
 
+# 邮件名单透视要口令（Worker 先校验），不收录；数据只经 /api/mail-insight
+/mail-insight
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable

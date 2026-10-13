@@ -99,6 +99,14 @@
 - 纯前端、零接口：文字在浏览器里画成 GIF 并下载，不上传。不在 `build_pages.mjs` 清单里（不注入主站导航），工具箱入口只改 `data.js`；资源版本号由 `deploy.sh` 的 `/assets/marquee/*` 那条 sed 维护。
 - 默认示例文字必须是通用的，不能放工作里的真实公告。
 
+## /mail-insight 邮件名单透视（2026-10-13）
+- 私用的 Mailchimp 邮件名单分析工具：人群画像、退订诊断、每期变化、单封邮件诊断器。走**工具箱口令门**（TOOLS_PASSWORD / tools_session，和其他工具共用），页面 `/mail-insight` 与 `/assets/mail-insight/*` 没凭证进不去（`src/tools-gate.js`）。
+- **仓库里只有通用外壳**：`public/mail-insight.html` + `public/assets/mail-insight/engine.mjs`（分析引擎，浏览器 / Worker / 本机脚本共用）+ `app.mjs` + `style.css`。**不得**把任何公司名、产品名、标签名、人群规则、名单数据写进仓库（仓库是公开的）。
+- 数据和"分析手册"都在 KV `SUBS`，前缀 `mi:`：`mi:playbook`（人群规则、写法建议、主题行、行动计划，只用 wrangler 写）、`mi:index`（期数清单 + 摘要）、`mi:snap:<id>`（每期汇总数字，可带 `insights` 点评）。接口 `src/mail-insight/api.js`：读手册与清单、读/传/删某一期；写请求要同源 + `x-tools-request: 1`；服务端把字符串里的邮箱抹成 `[邮箱]`。
+- 手册、点评和上传脚本在用户本机工作区（位置记在用户的私有知识库里），不在本仓库。
+- 页面 noindex（`_headers`、`robots.txt`、`<meta>`），不进 build_pages 清单、不进 sitemap；工具箱入口只改 data.js；资源版本号由 `deploy.sh` 的 `/assets/mail-insight/*` 那条 sed 维护。`app.mjs` 不 import `engine.mjs`（避免没版本号的 import 被长缓存），两个都由 html 按顺序加载，引擎挂在 `globalThis.MailInsight`。
+- 测试：`node --test tests/tools/*.test.mjs`（含 `mail-insight.test.mjs`）。
+
 ## /attendance 补时计算器（2026-10-12）
 
 - 页面 `public/attendance.html`，脚本与OCR在 `public/assets/attendance/`，服务端 `src/attendance/`，接口 `/api/attendance/*`。页面独立、不进入build_pages的STATIC/DYNAMIC清单、不进sitemap；工具箱入口只改data.js。

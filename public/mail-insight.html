@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>邮件名单透视</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/mail-insight/style.css?v=1">
+  <script type="module" src="/assets/mail-insight/engine.mjs?v=1"></script>
+  <script type="module" src="/assets/mail-insight/app.mjs?v=1"></script>
+</head>
+<body>
+<!-- 页面只是外壳：数据和分析手册都从 /api/mail-insight 读取（要工具箱口令），仓库里没有任何名单内容 -->
+<header class="wrap top">
+  <a class="back" href="/tools">← 工具箱</a>
+  <div class="title-row">
+    <div style="display:grid;gap:6px">
+      <div class="eyebrow" id="eyebrow">邮件名单 · 人群画像</div>
+      <h1>邮件名单<span>透视</span></h1>
+    </div>
+    <div class="snapbar" id="snapbar" hidden>
+      <label for="snapSel" class="muted" style="font-size:13px">查看哪一期</label>
+      <select id="snapSel"></select>
+      <span class="data-chip"><i></i><span id="dataLabel"></span></span>
+    </div>
+  </div>
+  <p class="lede" id="lede"></p>
+  <div class="banner" id="previewBanner" hidden>
+    <span><b>这是刚拖入的表格，还没保存。</b>确认没问题后保存为新的一期，之后每次打开都能看到，也会进入"每期变化"。</span>
+    <span class="acts">
+      <label for="snapLabel" class="muted" style="font-size:13px">这一期叫</label>
+      <input id="snapLabel" maxlength="60">
+      <button class="btn" id="saveSnap" type="button">保存为新一期</button>
+      <button class="btn ghost" id="dropPreview" type="button">放弃</button>
+    </span>
+  </div>
+</header>
+
+<nav class="sec" aria-label="章节" id="nav" hidden>
+  <div class="in">
+    <a href="#verdict">结论</a><a href="#trend">每期变化</a><a href="#overview">名单概况</a><a href="#segments">人群</a><a href="#interest">爱看什么</a><a href="#unsub">退订诊断</a><a href="#next">下一步</a><a href="#doctor">单封诊断器</a><a href="#update">更新数据</a>
+  </div>
+</nav>
+
+<main class="wrap">
+<div class="loading" id="loading">正在读取数据…</div>
+
+<div class="panel empty" id="empty" hidden>
+  <h2>还没有任何一期数据</h2>
+  <p class="muted" id="emptyText">把 Mailchimp 导出的 CSV 拖到页面最下方的"更新数据"里，算完后保存为第一期。</p>
+</div>
+
+<div id="content" hidden>
+<section id="verdict">
+  <div class="sec-head">
+    <div class="eyebrow">先看这里</div>
+    <h2>这一期的结论</h2>
+    <p id="verdictNote"></p>
+  </div>
+  <div class="verdict"><ol id="verdictList"></ol></div>
+</section>
+
+<section id="trend">
+  <div class="sec-head">
+    <div class="eyebrow">每期变化</div>
+    <h2>和之前比，变好了还是变差了</h2>
+    <p>每保存一期，这里就多一列。绿色是往好的方向变，红色是往坏的方向变。</p>
+  </div>
+  <div class="panel" style="min-width:0"><div class="tscroll" id="trendBox"></div></div>
+</section>
+
+<section id="overview">
+  <div class="sec-head">
+    <div class="eyebrow">名单概况</div>
+    <h2>名单有多大、有多"热"</h2>
+    <p>Mailchimp 给每个人打 1–5 星的活跃度。3 星以上才算经常打开、点击。</p>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid-2">
+    <div class="panel" style="display:grid;gap:10px">
+      <h3>每年新增订阅</h3>
+      <p class="muted" style="font-size:13.5px">今年新进来的人对品牌还不熟，最需要"先认识你"的内容。</p>
+      <div class="cols" id="yearCols"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:10px">
+      <h3>活跃度分布（会员星级）</h3>
+      <p class="muted" style="font-size:13.5px">3 星以上的这一小群是最好的口碑和内测种子。</p>
+      <div class="bars" id="ratingBars"></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="panel" style="display:grid;gap:10px">
+      <h3>地区分布</h3>
+      <p class="muted" style="font-size:13.5px" id="geoNote"></p>
+      <div class="bars" id="geoBars"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:12px">
+      <h3>标签里的"内部记号"</h3>
+      <p class="muted" style="font-size:13.5px">这些标签是负责人、A/B 分组、批次号，和用户兴趣无关。分群时要排除，最好统一改名，比如加 <span class="tag">ops_</span> 前缀。</p>
+      <div class="bars" id="noiseBars"></div>
+      <p class="note" id="tagNote"></p>
+    </div>
+  </div>
+</section>
+
+<section id="segments">
+  <div class="sec-head">
+    <div class="eyebrow">人群地图</div>
+    <h2>值得分开写邮件的人群</h2>
+    <p>点开卡片看：在 Mailchimp 里怎么圈出这群人、他们在想什么、该怎么写，还有能直接复制的主题行。人群之间有重叠，一个人可能同时属于好几群。</p>
+  </div>
+  <div class="legend">
+    <span><span class="chip now">立即做</span> 离成交近、退订风险低</span>
+    <span><span class="chip">本月做</span> 需要准备内容</span>
+    <span><span class="chip slow">慢热</span> 先给内容、少推销</span>
+    <span><span class="chip risk">退订风险 ×N</span> 在退订人群中的占比是在订人群的 N 倍</span>
+  </div>
+  <div class="segs" id="segs"></div>
+</section>
+
+<section id="interest">
+  <div class="sec-head">
+    <div class="eyebrow">内容偏好</div>
+    <h2>他们愿意点开什么</h2>
+    <p id="interestNote">名单里记录了谁打开过哪一封邮件。</p>
+  </div>
+  <div class="grid-2">
+    <div class="panel" style="display:grid;gap:10px">
+      <h3>打开人数最多的邮件</h3>
+      <div class="legend" id="openLegend"></div>
+      <div class="bars" id="openBars"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:14px">
+      <h3>浏览过产品页的人</h3>
+      <p class="muted" style="font-size:13.5px" id="viewNote"></p>
+      <div class="stack" id="viewStack"></div>
+      <div class="legend" id="viewLegend"></div>
+      <h3 style="margin-top:6px">加了购物车没付款</h3>
+      <div class="bars" id="abandonBars"></div>
+    </div>
+  </div>
+  <div class="panel" style="display:grid;gap:10px">
+    <h3>拉新钩子：人们是被什么弹窗吸引进来的</h3>
+    <div class="bars" id="hookBars"></div>
+  </div>
+</section>
+
+<section id="unsub">
+  <div class="sec-head">
+    <div class="eyebrow">退订诊断</div>
+    <h2>谁在退订、为什么</h2>
+    <p id="unsubLede"></p>
+  </div>
+  <div class="kpis" id="unsubKpis"></div>
+  <div class="panel" style="display:grid;gap:14px">
+    <h3>谁更容易退订</h3>
+    <p class="muted" style="font-size:13.5px">灰点是这群人在<b>在订名单</b>里的占比，红点是在<b>退订名单</b>里的占比。红点越靠右，说明这群人越容易退订。右边的数字是倍数。</p>
+    <div class="db-axis"><div></div><div><span>0%</span><span>25%</span><span>50%</span><span>75%</span></div><div></div></div>
+    <div class="db" id="dumbbell"></div>
+    <p class="note">退订样本少的时候（几十人），这里看的是方向，不是精确比例。</p>
+  </div>
+  <div class="grid-2">
+    <div class="panel" style="display:grid;gap:10px;min-width:0">
+      <h3>触发退订的邮件</h3>
+      <div class="tscroll"><table><thead><tr><th>邮件标题</th><th style="text-align:right">退订</th></tr></thead><tbody id="campRows"></tbody></table></div>
+    </div>
+    <div style="display:grid;gap:12px;align-content:start">
+      <div class="panel" style="display:grid;gap:10px">
+        <h3>用户自己写的退订理由</h3>
+        <div id="quotes" style="display:grid;gap:10px"></div>
+      </div>
+      <div class="panel" style="display:grid;gap:8px">
+        <h3>退订原因（系统选项）</h3>
+        <div class="bars" id="reasonBars"></div>
+        <p class="note">NORMAL = 不想再收；SPAM = 标成垃圾邮件，对发件信誉伤害最大；NOSIGNUP = 说自己没订阅过。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="next">
+  <div class="sec-head">
+    <div class="eyebrow">下一步</div>
+    <h2>怎么判断方向、怎么做</h2>
+    <p>思路只有一句话：<b>先止血，再打最热的人，用数字决定加码还是换方向。</b></p>
+  </div>
+  <div class="flow" id="plan"></div>
+
+  <div class="panel" style="display:grid;gap:14px">
+    <h3>每封邮件发完，看这 4 个数</h3>
+    <p class="muted" style="font-size:13.5px">下面是消费电子品类常见的经验区间，只用来起步。跑 1–2 个月后，用自己的历史平均值替换它。</p>
+    <div class="thr">
+      <div class="panel"><b>打开率</b><span class="muted" style="font-size:13px">打开数 ÷ 送达数。看主题行和人群对不对。苹果邮箱会虚报打开，所以只作参考。</span><div class="scale"><div style="flex:20"></div><div style="flex:15"></div><div style="flex:25"></div></div><div class="lbls"><span>0</span><span>20%</span><span>35%</span><span>60%</span></div></div>
+      <div class="panel"><b>点击率</b><span class="muted" style="font-size:13px">点击数 ÷ 送达数。<b>最重要的一个</b>，说明内容真的打动人。</span><div class="scale"><div style="flex:1"></div><div style="flex:1.5"></div><div style="flex:2.5"></div></div><div class="lbls"><span>0</span><span>1%</span><span>2.5%</span><span>5%</span></div></div>
+      <div class="panel"><b>退订率</b><span class="muted" style="font-size:13px">退订数 ÷ 送达数。超过 0.5% 就是这封发错了人或发太频。</span><div class="scale"><div style="flex:5"></div><div style="flex:3"></div><div style="flex:2"></div></div><div class="lbls"><span>1%</span><span>0.5%</span><span>0.2%</span><span>0</span></div></div>
+      <div class="panel"><b>垃圾邮件投诉率</b><span class="muted" style="font-size:13px">投诉 ÷ 送达。Gmail 要求低于 0.3%，最好在 0.1% 以下，否则以后的邮件都会进垃圾箱。</span><div class="scale"><div style="flex:7"></div><div style="flex:2"></div><div style="flex:1"></div></div><div class="lbls"><span>0.5%</span><span>0.3%</span><span>0.1%</span><span>0</span></div></div>
+    </div>
+  </div>
+
+  <div class="panel" style="display:grid;gap:12px">
+    <h3>看到什么情况，就怎么调</h3>
+    <div class="rules">
+      <div class="rule"><div><b>打开率低</b>（低于 20%）</div><div class="arrow">→</div><div>主题行没吸引力，或发错了人。换成具体画面或问题式主题行；检查发送时间是不是收件人当地的上午。</div></div>
+      <div class="rule"><div><b>打开高、点击低</b></div><div class="arrow">→</div><div>主题行有效但内容不对口。一封只讲一件事、只放一个按钮；参数往后放，先讲使用场景。</div></div>
+      <div class="rule"><div><b>点击高、成交低</b></div><div class="arrow">→</div><div>邮件没问题，问题在落地页或价格。检查链接是否直达对应产品、价格和运费是否清楚，可以补一封答疑邮件。</div></div>
+      <div class="rule"><div><b>退订率超过 0.5%</b></div><div class="arrow">→</div><div>这群人这周收太多了，或内容太硬广。下周这群人停发一次，再发时改成内容型。</div></div>
+      <div class="rule"><div><b>某个人群点击率明显高于平均</b></div><div class="arrow">→</div><div>这就是方向。给它做专属序列，增加内容投入，并把同类话题用到其他人群上测试。</div></div>
+      <div class="rule"><div><b>A/B 测试两版差距不到 20%</b></div><div class="arrow">→</div><div>人数少时这种差距可能只是运气。一次只改一处（主题行或按钮），连测 2–3 次结论一致再定。</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="doctor">
+  <div class="sec-head">
+    <div class="eyebrow">工具</div>
+    <h2>单封邮件诊断器</h2>
+    <p>在 Mailchimp 的 Reports 里找到一封邮件的数字，填进来，就能知道它好不好、问题出在哪、下一封怎么调。数字只在你的浏览器里计算。</p>
+  </div>
+  <div class="panel diag">
+    <form class="form" id="docForm" autocomplete="off">
+      <label>发给了哪个人群
+        <select id="docSeg"></select>
+      </label>
+      <div class="two">
+        <label>送达人数（Delivered）<input id="docSent" type="number" min="0" inputmode="numeric" value="420"></label>
+        <label>打开人数（Opens）<input id="docOpen" type="number" min="0" inputmode="numeric" value="150"></label>
+      </div>
+      <div class="two">
+        <label>点击人数（Clicks）<input id="docClick" type="number" min="0" inputmode="numeric" value="9"></label>
+        <label>退订人数（Unsubscribed）<input id="docUnsub" type="number" min="0" inputmode="numeric" value="4"></label>
+      </div>
+      <div class="two">
+        <label>投诉人数（Abuse reports）<input id="docSpam" type="number" min="0" inputmode="numeric" value="0"></label>
+        <label>成交单数（选填）<input id="docBuy" type="number" min="0" inputmode="numeric" value=""></label>
+      </div>
+      <p class="muted" style="font-size:12.5px">已填入一组示例数字，换成你的真实数据即可。</p>
+    </form>
+    <div class="out" id="docOut" aria-live="polite"></div>
+  </div>
+</section>
+</div>
+
+<section id="update">
+  <div class="sec-head">
+    <div class="eyebrow">更新数据</div>
+    <h2>拖入新导出的表格</h2>
+    <p>把 Mailchimp 新导出的 CSV 拖进来，浏览器会先在本地算好给你预览。确认后点顶部的"保存为新一期"，存到服务器上的<b>只有汇总数字</b>，没有任何邮箱。</p>
+  </div>
+  <div class="grid-2">
+    <div class="panel" style="display:grid;gap:10px">
+      <h3>怎么从 Mailchimp 导出</h3>
+      <ol class="how">
+        <li><span>进入 Audience → All contacts，选中要分析的 Segment（或全部联系人）。</span></li>
+        <li><span>点 Export Audience / Export segment，等邮件通知后下载压缩包并解压。</span></li>
+        <li><span>里面会有 subscribed、unsubscribed、cleaned 三个 CSV，一起拖到右边。</span></li>
+        <li><span>预览没问题，就在页面顶部给这一期起个名字，点"保存为新一期"。</span></li>
+      </ol>
+    </div>
+    <div class="drop" id="drop">
+      <h3>拖入 CSV 文件</h3>
+      <p class="muted" style="font-size:13.5px">可以一次拖入多个，至少要有 subscribed 那一份</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+        <label class="btn" for="file" tabindex="0" id="fileBtn">选择文件</label>
+      </div>
+      <input id="file" type="file" accept=".csv,text/csv" multiple hidden>
+      <p class="status" id="status"></p>
+    </div>
+  </div>
+  <div class="panel" id="deleteBox" style="display:grid;gap:10px" hidden>
+    <h3>删除当前这一期</h3>
+    <p class="muted" style="font-size:13.5px">如果某一期传错了表格，可以把它删掉。删掉后无法恢复，需要重新上传。</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button class="btn danger" id="delAsk" type="button">删除这一期</button>
+      <span id="delConfirm" hidden>确定删除"<b id="delName"></b>"吗？
+        <button class="btn danger" id="delYes" type="button">确定删除</button>
+        <button class="btn ghost" id="delNo" type="button">取消</button>
+      </span>
+    </div>
+  </div>
+</section>
+
+<footer>数据存在服务器上，只有输入工具箱口令的人能看到；页面和代码里没有任何名单内容。人群规则和写法建议来自分析手册，由 Claude 维护。</footer>
+</main>
+</body>
+</html>

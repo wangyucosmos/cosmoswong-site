@@ -15,7 +15,8 @@ export const TARGETS = {
   travel: 'https://indonesia.cosmoswong.com',
   'h5-editor': 'https://h5.cosmoswong.com/editor/',
   marquee: '/marquee',
-  fitness: 'https://jianshen.cosmoswong.com'
+  fitness: 'https://jianshen.cosmoswong.com',
+  'mail-insight': '/mail-insight'
 };
 
 const COOKIE = 'tools_session';
@@ -84,6 +85,12 @@ export async function toolsGate(req, env, path) {
     try { id = decodeURIComponent(path.slice(4)); } catch { /* 乱码地址当作不存在 */ }
     if (!Object.hasOwn(TARGETS, id)) return redirect('/tools');
     return (await toolsAuthed(req, env)) ? redirect(TARGETS[id]) : redirect(unlockUrl(id));
+  }
+  // 邮件名单透视：页面和脚本只是外壳，数据在 /api/mail-insight（src/mail-insight/api.js 自己再校验凭证）
+  if (path === '/mail-insight' || path === '/mail-insight.html' || path.startsWith('/assets/mail-insight/')) {
+    if (await toolsAuthed(req, env)) return null;
+    if (path.startsWith('/assets/')) return json({ error: '需要口令' }, 401);
+    return redirect(unlockUrl('mail-insight'));
   }
   if (path === '/marquee' || path === '/marquee.html' || path.startsWith('/assets/marquee/')) {
     if (await toolsAuthed(req, env)) return null;   // 放行，交给静态资源
