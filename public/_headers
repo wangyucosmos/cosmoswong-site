@@ -35,6 +35,10 @@
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
+# /cases 案例展厅：四个工作案例的交互式原型与设计备注（已脱敏）。只从作品集条目的链接进入，不进导航、不进 sitemap、不收录
+/cases
+  X-Robots-Tag: noindex, nofollow
+
 # 工具箱口令页：不收录（口令门逻辑在 src/tools-gate.js）
 /unlock
   X-Robots-Tag: noindex, nofollow

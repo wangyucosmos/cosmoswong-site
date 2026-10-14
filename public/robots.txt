@@ -33,5 +33,6 @@ Disallow: /unlock
 Disallow: /go/
 Disallow: /marquee
 Disallow: /mail-insight
+Disallow: /cases
 
 Sitemap: https://cosmoswong.com/sitemap.xml
