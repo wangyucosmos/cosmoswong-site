@@ -103,7 +103,7 @@
   const tripCard = (t, big) => {
     const inner = `<div class="cover ph"></div><div class="body">
       <div class="k">${esc(t.dates)}</div><h3>${esc(t.title)}</h3><p>${esc(t.summary)}</p>
-      <div class="pills"><span class="pill ${STATUS[t.status] || ''}">${esc(t.status)}</span>${t.url ? '<span class="pill">打开行程站 →</span>' : ''}</div></div>`;
+      <div class="pills"><span class="pill ${STATUS[t.status] || ''}">${esc(t.status)}</span>${t.url ? `<span class="pill">${esc(t.cta || '打开行程站 →')}</span>` : ''}</div></div>`;
     return t.url ? `<a class="card link${big ? ' big' : ''}" href="${esc(t.url)}" target="_blank" rel="noreferrer">${inner}</a>`
                  : `<article class="card${big ? ' big' : ''}">${inner}</article>`;
   };
