@@ -165,6 +165,14 @@ window.SITE = {
           summary: '单人出发，途中也可约搭子。按天气调整皮皮岛，管理酒店、海况、预算和清单。',
           url: 'https://phuket.cosmoswong.com' }
       ]
+    },
+    {
+      category: '2027 春节',
+      items: [
+        { title: '春节机票价格跟盯', dates: '2027.02.05 — 02.15', status: '进行中',
+          summary: '上海出发 30 城春节机票比价榜单，每周自动更新。含 2 月气候、签证、中转时长，一眼看清最低价。',
+          url: '/trips/2027-spring-tickets/', cta: '查看价格榜单 →' }
+      ]
     }
   ],
 
