@@ -2,6 +2,7 @@
 # 部署：给 css / js 打版本号再上线，避免 Safari 缓存旧代码。
 set -e
 cd "$(dirname "$0")"
+node tools/verify_tools_routing.mjs --local
 # 先从知识库同步公开笔记（源头在 ~/Documents/我的知识库/个人主页/公开笔记.txt）
 node tools/build_notes.mjs
 # 再预渲染导航/页脚/正文并注入分享卡片等 head 元信息（必须在 build_notes 之后，knowledge 页要先生成）
@@ -11,4 +12,6 @@ for f in public/*.html public/knowledge/*.html; do
   sed -i '' -E "s#(/assets/style\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/data\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/app\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/render\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/notes\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/subs\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/unlock\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/kol/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/desk/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/attendance/[a-z]+\.(mjs|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/marquee/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/mail-insight/[a-z]+\.(mjs|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/cases/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#" "$f"
 done
 echo "资源版本 $V"
-npx --yes wrangler@4 deploy
+npx --yes wrangler@4 deploy --config "$PWD/wrangler.toml"
+# 发布完成后必须核对远端配置，并模拟真实浏览器导航。
+node tools/verify_tools_routing.mjs --online

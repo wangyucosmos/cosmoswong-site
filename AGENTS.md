@@ -84,6 +84,7 @@
 - 视频放 `public/media/`（同源，CSP 不用改），控制在几 MB 以内；首页精选卡片点开跳 `/portfolio#<id>`。
 
 ## 工具箱口令门（2026-10-12，用户要求）
+- **部署验收（2026-10-15）**：统一运行deploy.sh，显式读取仓库wrangler.toml，禁止用只上传静态资源的命令替代。脚本部署前检查assets.run_worker_first=true，部署后读取活动版本的resources.script_runtime.assets.raw_run_worker_first确认true，再用Sec-Fetch-Mode:navigate的curl验证工具入口和保护页。普通curl的302不能证明浏览器导航正常。验证脚本tools/verify_tools_routing.mjs，回归tests/tools/deployment.test.mjs。
 - **规则**：工具箱里的工具别人能看到卡片，点进去要口令；补时计算器 `/attendance` **直链不要口令**（同事用直链），只有从工具箱点进去才经过口令门。补时计算器页面里不放任何回主站的链接（左上角 CW 是纯文字）。
 - **做法**：`data.js` 的 `tools[].url` 统一写 `/go/<id>`，真实地址只在 `src/tools-gate.js` 的 `TARGETS`。`/go/*` 有凭证 → 302 到真实地址，没有 → `/unlock?next=<id>`（`public/unlock.html` + `assets/unlock.js`，独立页、不带主站导航）。`/marquee`、`/assets/marquee/*` 也由 Worker 先校验（`wrangler.toml` 的 `run_worker_first`）。**新增工具**：`TARGETS` 加一行 + `data.js` 写 `/go/<新id>`；工具若在主站内，还要把它的路径加进 `run_worker_first` 和 `toolsGate()`。
 - **口令**：Worker secret `TOOLS_PASSWORD`，凭证签名 `TOOLS_COOKIE_KEY`，都不进仓库、知识库不记。凭证 365 天、`Path=/`、HttpOnly、Secure、SameSite=Lax；同一 IP 15 分钟输错 10 次锁定（计数在 KV `SUBS`，前缀 `tools-rl:`）。换口令：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD`（旧凭证全部失效）。
