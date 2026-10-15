@@ -23,7 +23,7 @@ export function assertResponse(check,status,location){
  if(check.next){const target=new URL(location,'https://cosmoswong.com');assert.equal(target.origin,'https://cosmoswong.com');assert.equal(target.pathname,'/unlock');assert.equal(target.searchParams.get('next'),check.next);}
 }
 function cliJSON(args){
- const output=execFileSync('npx',['--yes','wrangler@4',...args,'--json'],{cwd:ROOT,encoding:'utf8',stdio:['ignore','pipe','pipe']});
+ const output=execFileSync('npx',['--yes','wrangler@4.131.0',...args,'--json'],{cwd:ROOT,encoding:'utf8',stdio:['ignore','pipe','pipe']});
  const start=output.search(/(?:^|\n)\s*[\[{]/);assert.ok(start>=0,'没有收到Wrangler JSON');return JSON.parse(output.slice(start).trim());
 }
 export function verifyLocal(){

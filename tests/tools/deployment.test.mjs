@@ -12,3 +12,8 @@ test('导航验收覆盖所有工具入口、私有页面以及补时直链',()=
  for(const path of ['/go/mail-insight','/go/attendance','/go/travel','/resume.pdf','/knowledge/','/mail-insight','/marquee'])assert.ok(CHECKS.some(c=>c.path===path&&c.status===302));
  assert.ok(CHECKS.some(c=>c.path==='/attendance'&&c.status===200));
 });
+
+test('自动发布也必须固定受支持CLI并验收远端，不得绕开本机发布保护',async()=>{
+ const {readFile}=await import('node:fs/promises');const workflow=await readFile(new URL('../../.github/workflows/deploy.yml',import.meta.url),'utf8');
+ assert.match(workflow,/wranglerVersion:\s*'4\.131\.0'/);assert.match(workflow,/node-version:\s*22/);assert.match(workflow,/command: deploy --config wrangler\.toml/);assert.match(workflow,/verify_tools_routing\.mjs --online/);assert.match(workflow,/node --test tests\/tools\/\*\.test\.mjs tests\/attendance\/\*\.test\.mjs/);
+});

@@ -12,6 +12,6 @@ for f in public/*.html public/knowledge/*.html; do
   sed -i '' -E "s#(/assets/style\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/data\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/app\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/render\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/notes\.css)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/subs\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/unlock\.js)(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/kol/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/desk/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/attendance/[a-z]+\.(mjs|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/marquee/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/mail-insight/[a-z]+\.(mjs|css))(\?v=[0-9]+)?\"#\1?v=$V\"#; s#(/assets/cases/[a-z]+\.(js|css))(\?v=[0-9]+)?\"#\1?v=$V\"#" "$f"
 done
 echo "资源版本 $V"
-npx --yes wrangler@4 deploy --config "$PWD/wrangler.toml"
+npx --yes wrangler@4.131.0 deploy --config "$PWD/wrangler.toml"
 # 发布完成后必须核对远端配置，并模拟真实浏览器导航。
 node tools/verify_tools_routing.mjs --online

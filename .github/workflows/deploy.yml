@@ -1,0 +1,44 @@
+name: Deploy to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'public/**'
+      - 'src/**'
+      - 'wrangler.toml'
+      - 'data/**'
+      - 'tools/**'
+      - '.github/workflows/deploy.yml'
+
+concurrency:
+  group: cosmoswong-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm ci
+      - name: Test protected routes
+        run: node --test tests/tools/*.test.mjs tests/attendance/*.test.mjs
+      - name: Check Worker-first configuration
+        run: node tools/verify_tools_routing.mjs --local
+      - name: Rebuild pages
+        run: node tools/build_pages.mjs
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          wranglerVersion: '4.131.0'
+          command: deploy --config wrangler.toml
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Verify deployed configuration and browser navigation
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node tools/verify_tools_routing.mjs --online
