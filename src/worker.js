@@ -13,6 +13,7 @@ import { api as attendanceApi } from './attendance/api.mjs';
 import { secure as attendanceSecure } from './attendance/security.mjs';
 import { toolsGate } from './tools-gate.js';
 import { mailInsightApi } from './mail-insight/api.js';
+import { englishApi } from './english/api.js';
 import { protectedPath } from '../public/assets/tools-next.mjs';
 
 const COOKIE = 'subs_session';
@@ -112,6 +113,7 @@ export default {
     if (path === '/api/kol' || path.startsWith('/api/kol/')) return kolApi(req, env, path);
     if (path === '/api/desk' || path.startsWith('/api/desk/')) return deskApi(req, env, path);
     if (path === '/api/mail-insight' || path.startsWith('/api/mail-insight/')) return mailInsightApi(req, env, path);   // 邮件名单透视（工具箱口令）
+    if (path === '/api/english' || path.startsWith('/api/english/')) return englishApi(req, env, path);   // 英语从零学的学习进度（工具箱口令）
     const gated = await toolsGate(req, env, path);   // 工具箱口令门：/api/tools/login、/go/*、/marquee（见 src/tools-gate.js）
     if (gated) return gated;
     if (path.startsWith('/api/')) return json({ error: '没有这个接口' }, 404);
