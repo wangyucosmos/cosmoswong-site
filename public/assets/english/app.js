@@ -548,6 +548,7 @@ V.settings = () => `<h1>设置</h1>
       ${[[0.6,"很慢"],[0.75,"慢"],[0.85,"稍慢（推荐）"],[1,"正常"]].map(([v,n])=>`<option value="${v}" ${S.settings.rate==v?"selected":""}>${n}</option>`).join("")}</select></label>
     <label class="f"><span>朗读声音</span><select id="voice"><option value="">自动（美式）</option>
       ${voices.map(v=>`<option value="${esc(v.name)}" ${S.settings.voice===v.name?"selected":""}>${esc(v.name)} (${v.lang})</option>`).join("")}</select></label>
+    <label class="f"><span>打字练习音效<br><small class="muted">打对、打错、连击的提示音</small></span><select id="sfx"><option value="1" ${S.settings.sfx!==false?"selected":""}>开</option><option value="0" ${S.settings.sfx===false?"selected":""}>关</option></select></label>
     <div class="row" style="padding-top:12px"><button class="btn sm" data-say="Hello! Nice to meet you. I'm learning English.">🔊 试听</button></div>
   </div>
   <h2>多设备同步</h2>
@@ -569,12 +570,20 @@ V.quiz = () => {
   if(place) return placeView();
   if(quiz) return quizView();
   const n=Object.keys(S.cards).filter(k=>!isSent(k)).length, b=S.best||{};
-  return `<h1>练习</h1><p class="sub">三种练习：听写练听力和拼写，单词测验检查记没记住，水平测评帮你找到该从哪一级开始。</p>
+  return `<h1>练习</h1><p class="sub">打字练习（中译英、连词成句、听写）把句子练到不用想就能打出来；单词测验检查记没记住；水平测评帮你找到起点。</p>
   <div class="grid g2">
+    <div class="card method"><h3>中译英闯关<small>像句乐部那样打字</small></h3>
+      <div class="why">看中文，一个词一个词打出英文，按空格确认。打对亮绿、连对有连击，最后给 C 到 SSS 评级。最练「会说、会写」。</div>
+      <div class="use">${(b.type||{}).zh2en?`最好成绩：${b.type.zh2en.grade}`:"还没玩过"}</div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-tmode="zh2en">开始闯关（10 句）</button></div></div>
+    <div class="card method"><h3>连词成句<small>零基础友好</small></h3>
+      <div class="why">把一句话拆成几段：先打 I like，再打 to eat，再拼成 I like to eat……同一个词反复出现，不用背也记住了。每段都会读给你听。</div>
+      <div class="use">${(b.type||{}).build?`最好成绩：${b.type.build.grade}`:"还没玩过"}</div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-tmode="build">开始（5 句）</button></div></div>
     <div class="card method"><h3>听写<small>听力 · 拼写</small></h3>
-      <div class="why">听一句英文，一个词一个词打出来，按空格确认。打对就亮绿，连对有连击。最适合练「听得懂」和「拼得对」。</div>
+      <div class="why">只听不看，把听到的英文一个词一个词打出来。最适合练「听得懂」和「拼得对」。</div>
       <div class="use">${b.dict?`最好成绩：${b.dict.grade} · 最高连击 ${b.combo||0}`:"还没做过"}</div>
-      <div class="row" style="margin-top:10px"><button class="btn primary" id="dstart">开始听写（10 句）</button></div></div>
+      <div class="row" style="margin-top:10px"><button class="btn primary" data-tmode="dict">开始听写（10 句）</button></div></div>
     <div class="card method"><h3>单词测验<small>记忆检查</small></h3>
       <div class="why">10 道题：看英文选中文、看中文选英文、听音选词。答错的词会安排明天复习。</div>
       <div class="use">${n>=8?`从你已学的 ${n} 个词里出题`:`先用 ${LV_NAME(lvl())} 词库出题`}${b.quiz!=null?` · 最好 ${b.quiz}/10`:""}</div>
@@ -603,64 +612,119 @@ function quizView(){
   <div style="text-align:center;margin-top:14px" id="qnext"></div>`;
 }
 
-/* ---------- 听写 ---------- */
+/* ---------- 打字练习：听写 / 中译英闯关 / 连词成句（共用一套打字引擎） ---------- */
+// 每一「轮」= 要打出来的一串词；听写和中译英一句一轮，连词成句把一句拆成好几轮逐步拼起来
 let dict=null;
+const TMODES = {
+  dict:  {name:"听写", n:10, desc:"听一句英文，一个词一个词打出来"},
+  zh2en: {name:"中译英闯关", n:10, desc:"看中文，把英文打出来"},
+  build: {name:"连词成句", n:5, desc:"听一段、打一段，一步步拼成整句"}
+};
 const tokens = s => s.split(/\s+/).filter(Boolean);
 const clean = w => w.toLowerCase().replace(/[’]/g,"'").replace(/[^a-z0-9']/g,"");
-function makeDict(){
-  const learned=SENT_LIST.filter(x=>S.cards[x.id]);
-  let pool = learned.length>=10 ? learned : [...learned, ...SENT_LIST.filter(x=>x.lv===lvl() && !S.cards[x.id])];
-  if(pool.length<10) pool=SENT_LIST.filter(x=>x.lv<=Math.max(1,lvl()));
-  const items=[...pool].sort(()=>Math.random()-.5).slice(0,10).map(x=>({x, words:tokens(x.en), pos:0, miss:0, tries:0, res:[]}));
-  dict={items, i:0, combo:0, maxCombo:0, right:0, total:0, done:false, hint:false};
+function chunksOf(words){
+  if(words.length<=3) return words.map(w=>[w]);
+  const out=[]; for(let i=0;i<words.length;i+=2) out.push(words.slice(i,i+2));
+  if(out.length>1 && out[out.length-1].length===1){ const last=out.pop(); out[out.length-1].push(...last); }
+  return out;
 }
-function dictItem(){ return dict.items[dict.i]; }
+function buildRounds(x){
+  const cs=chunksOf(tokens(x.en)), rounds=[];
+  rounds.push(cs[0]);
+  for(let k=1;k<cs.length;k++){ rounds.push(cs[k]); rounds.push(cs.slice(0,k+1).flat()); }
+  return rounds.map((words,i)=>({x, words, step:i+1, steps:rounds.length, full:words.length===tokens(x.en).length}));
+}
+function makeTyping(mode){
+  const n=TMODES[mode].n;
+  const learned=SENT_LIST.filter(x=>S.cards[x.id]);
+  let pool = learned.length>=n ? learned : [...learned, ...SENT_LIST.filter(x=>x.lv===lvl() && !S.cards[x.id])];
+  if(pool.length<n) pool=SENT_LIST.filter(x=>x.lv<=Math.max(1,lvl()));
+  const picks=[...pool].sort(()=>Math.random()-.5).slice(0,n);
+  const rounds = mode==="build" ? picks.flatMap(buildRounds) : picks.map(x=>({x, words:tokens(x.en), full:true}));
+  for(const r of rounds){ r.pos=0; r.tries=0; r.res=[]; }
+  dict={mode, items:rounds, i:0, combo:0, maxCombo:0, right:0, total:0, hint:false, showZh: mode!=="dict", fb:"", missed:new Set()};
+}
+const dictItem = () => dict.items[dict.i];
+const roundAudio = it => it.words.join(" ");
 function grade(p){ return p>=.98?"SSS":p>=.95?"SS":p>=.9?"S":p>=.8?"A":p>=.65?"B":"C"; }
 function dictView(){
+  const M=TMODES[dict.mode];
   if(dict.i>=dict.items.length){
-    const p=dict.total?dict.right/dict.total:0, g=grade(p);
-    return `<h1>听写结果</h1><div class="card" style="text-align:center;padding:30px">
+    const p=dict.total?dict.right/dict.total:0, g=grade(p), sents=[...new Map(dict.items.map(it=>[it.x.id,it.x])).values()];
+    return `<h1>${M.name} · 结果</h1><div class="card" style="text-align:center;padding:30px">
       <div class="grade g-${g}">${g}</div>
       <p>正确率 ${Math.round(p*100)}% · 最高连击 ${dict.maxCombo}</p>
-      <div class="dres">${dict.items.map(it=>`<div class="sent"><button class="icon" data-say="${esc(it.x.en)}" aria-label="朗读">🔊</button><div class="txt"><div class="en">${it.res.map((ok,k)=>ok?esc(it.words[k]):`<u style="color:var(--bad)">${esc(it.words[k])}</u>`).join(" ")}</div><div class="zh">${it.x.zh}</div></div></div>`).join("")}</div>
-      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" id="dstart">再来 10 句</button><button class="btn" id="pback">回到练习</button></div></div>`;
+      ${dict.missed.size?`<p class="muted" style="font-size:14px">打错的句子已安排明天复习</p>`:""}
+      <div class="dres">${sents.map(x=>`<div class="sent"><button class="icon" data-say="${esc(x.en)}" aria-label="朗读">🔊</button><div class="txt"><div class="en">${dict.missed.has(x.id)?"✗ ":"✓ "}${esc(x.en)}</div><div class="zh">${x.zh}</div></div></div>`).join("")}</div>
+      <div class="row" style="justify-content:center;margin-top:14px"><button class="btn primary" data-tmode="${dict.mode}">再来一局</button><button class="btn" id="pback">回到练习</button></div></div>`;
   }
   const it=dictItem(), finished=it.pos>=it.words.length;
   const slots=it.words.map((w,k)=> k<it.pos ? `<span class="slot ${it.res[k]?"ok":"bad"}">${esc(w)}</span>`
     : `<span class="slot ${k===it.pos?"cur":""}" style="min-width:${Math.max(2,clean(w).length)*0.62}em">${k===it.pos&&dict.hint?esc(w[0])+"…":""}</span>`).join("");
-  return `<h1>听写</h1>
+  const stepInfo = dict.mode==="build" ? ` · 第 ${it.step} / ${it.steps} 步${it.full?" · 整句":""}` : "";
+  const prompt = dict.mode==="zh2en"
+    ? `<div class="tz">${it.x.zh}</div>`
+    : `<div class="row" style="justify-content:center"><button class="icon bigicon" id="dplay" aria-label="再听一遍">🔊</button></div>
+       ${dict.showZh||finished?`<div class="muted" style="text-align:center;margin-top:8px">${it.x.zh}</div>`:""}`;
+  return `<h1>${M.name}</h1>
   <div class="bar" style="margin:12px 0"><i style="width:${dict.i/dict.items.length*100}%"></i></div>
-  <div class="row muted" style="font-size:14px;justify-content:space-between"><span>第 ${dict.i+1} / ${dict.items.length} 句 · ${lvTag(it.x.lv)} ${it.x.scene}</span><span class="combo ${dict.combo>=5?"hot":""}">连击 ${dict.combo}</span></div>
+  <div class="row muted" style="font-size:14px;justify-content:space-between"><span>${dict.mode==="build"?"":`第 ${dict.i+1} / ${dict.items.length} 句 · `}${lvTag(it.x.lv)} ${it.x.scene}${stepInfo}</span><span class="combo ${dict.combo>=5?"hot":""}" id="combo">连击 ${dict.combo}</span></div>
   <div class="card dcard">
-    <div class="row" style="justify-content:center"><button class="icon bigicon" id="dplay" aria-label="再听一遍">🔊</button></div>
-    <div class="row" style="justify-content:center;margin:6px 0 14px"><button class="btn sm" id="dslow">🐢 慢速</button><button class="btn sm" id="dhint">💡 提示首字母</button><button class="btn sm" id="dzh">看中文</button></div>
-    ${dict.showZh||finished?`<div class="muted" style="text-align:center;margin-bottom:10px">${it.x.zh}</div>`:""}
+    ${prompt}
+    <div class="row" style="justify-content:center;margin:10px 0 14px">
+      ${dict.mode==="zh2en"?`<button class="btn sm" id="dplay">🔊 听答案</button>`:`<button class="btn sm" id="dslow">🐢 慢速</button>`}
+      <button class="btn sm" id="dhint">💡 首字母</button>
+      ${dict.mode==="dict"?`<button class="btn sm" id="dzh">${dict.showZh?"藏起中文":"看中文"}</button>`:""}
+    </div>
+    <div class="fbwrap"><span class="fb ${dict.fb?"fb-"+dict.fb:""}" id="fb">${{perfect:"Perfect!",good:"Good",miss:"Miss"}[dict.fb]||""}</span></div>
     <div class="slots">${slots}</div>
-    ${finished?`<div style="text-align:center;margin-top:16px"><button class="btn primary" id="dnext">${dict.i+1<dict.items.length?"下一句 →（回车）":"看结果"}</button></div>`
-      :`<input id="dinput" class="dinput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="打出听到的词，按空格确认" aria-label="听写输入">`}
+    ${finished?`<div style="text-align:center;margin-top:16px"><button class="btn primary" id="dnext">${dict.i+1<dict.items.length?"下一题 →（回车）":"看结果"}</button></div>`
+      :`<input id="dinput" class="dinput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" placeholder="打一个词，按空格确认" aria-label="输入英文">`}
     <div class="muted" style="font-size:13px;text-align:center;margin-top:10px">每个词有 2 次机会；标点和大小写不用管</div>
   </div>`;
 }
 function dictFocus(){ const el=document.getElementById("dinput"); if(el) el.focus(); }
+function feedback(kind){ dict.fb=kind; sfx(kind); }
 function dictSubmit(val){
   const it=dictItem(); const w=clean(val); if(!w) return;
   const target=clean(it.words[it.pos]);
-  if(w===target){ it.res[it.pos]=true; it.pos++; it.tries=0; dict.combo++; dict.right++; dict.total++; dict.maxCombo=Math.max(dict.maxCombo,dict.combo); dict.hint=false; }
-  else if(it.tries<1){ it.tries++; dict.combo=0; render(); const el=document.getElementById("dinput"); el.classList.add("shake"); el.value=""; el.focus(); return; }
-  else { it.res[it.pos]=false; it.pos++; it.tries=0; dict.combo=0; dict.total++; dict.hint=false; }
-  if(it.pos>=it.words.length){ say(it.x.en); const L=dayLog(); L.dict=(L.dict||0)+1; save(); }
+  if(w===target){ it.res[it.pos]=true; feedback(it.tries?"good":"perfect"); it.pos++; it.tries=0; dict.combo++; dict.right++; dict.total++; dict.maxCombo=Math.max(dict.maxCombo,dict.combo); dict.hint=false; }
+  else if(it.tries<1){ it.tries++; dict.combo=0; dict.fb=""; sfx("wrong"); render(); const el=document.getElementById("dinput"); el.classList.add("shake"); el.value=""; el.focus(); return; }
+  else { it.res[it.pos]=false; feedback("miss"); dict.missed.add(it.x.id); it.pos++; it.tries=0; dict.combo=0; dict.total++; dict.hint=false; }
+  if(it.pos>=it.words.length){ if(it.full) say(it.x.en); else say(roundAudio(it)); if(it.full){ const L=dayLog(); L.dict=(L.dict||0)+1; save(); } }
   render(); dictFocus();
 }
+function playRound(rate){ const it=dictItem(); if(!it) return; say(dict.mode==="build"?roundAudio(it):it.x.en, rate); }
+function startTyping(mode){
+  quiz=null; place=null; makeTyping(mode); render(); window.scrollTo(0,0);
+  setTimeout(()=>{ if(mode!=="zh2en") playRound(); dictFocus(); },200);
+}
 function dictNext(){
-  dict.i++; dict.showZh=false; dict.hint=false;
+  dict.i++; dict.hint=false; dict.fb=""; if(dict.mode==="dict") dict.showZh=false;
   if(dict.i>=dict.items.length){
     const p=dict.total?dict.right/dict.total:0, L=dayLog();
     L.dictRight=(L.dictRight||0)+dict.right; L.dictTotal=(L.dictTotal||0)+dict.total;
-    S.best=S.best||{}; const g=grade(p), order=["C","B","A","S","SS","SSS"];
-    if(!S.best.dict || order.indexOf(g)>order.indexOf(S.best.dict.grade)) S.best.dict={grade:g, date:today()};
-    S.best.combo=Math.max(S.best.combo||0, dict.maxCombo); save(); render(); return;
+    // 打错的句子：已经在复习里的，明天再出现一次
+    for(const id of dict.missed){ const c=S.cards[id]; if(c){ c.box=Math.max(1,c.box-1); c.due=addDays(1); c.t=Date.now(); } }
+    S.best=S.best||{}; S.best.type=S.best.type||{}; const g=grade(p);
+    const prev = dict.mode==="dict" ? S.best.dict : S.best.type[dict.mode];
+    if(!prev || GRADES.indexOf(g)>GRADES.indexOf(prev.grade)){ if(dict.mode==="dict") S.best.dict={grade:g,date:today()}; else S.best.type[dict.mode]={grade:g,date:today()}; }
+    S.best.combo=Math.max(S.best.combo||0, dict.maxCombo); sfx(p>=.9?"win":"done"); save(); render(); return;
   }
-  render(); setTimeout(()=>{ say(dictItem().x.en); dictFocus(); },150);
+  render(); setTimeout(()=>{ if(dict.mode!=="zh2en") playRound(); dictFocus(); },150);
+}
+// 音效：浏览器自己合成几个短音，不加载任何文件；设置里可以关
+let actx=null;
+function sfx(kind){
+  if(S.settings.sfx===false) return;
+  try{
+    actx = actx || new (window.AudioContext||window.webkitAudioContext)();
+    const notes={perfect:[880,1320],good:[660],miss:[220],wrong:[180],win:[523,659,784,1047],done:[523,659]}[kind]; if(!notes) return;
+    notes.forEach((f,i)=>{ const o=actx.createOscillator(), g=actx.createGain(), t=actx.currentTime+i*0.08;
+      o.type = kind==="miss"||kind==="wrong" ? "sawtooth" : "sine"; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(kind==="wrong"?0.05:0.12,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.16);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t+0.18); });
+  }catch(e){}
 }
 
 /* ---------- 水平测评 ---------- */
@@ -750,13 +814,15 @@ V.stats = () => {
     ${row("新学句子",w0.newSent,w1.newSent," 句")}
     ${row("复习次数",w0.reviewed,w1.reviewed," 次")}
     <tr><td>复习答对率</td><td><b>${acc(w0)}</b></td><td class="muted">${acc(w1)}</td></tr>
-    <tr><td>听写正确率</td><td><b>${dacc(w0)}</b></td><td class="muted">${dacc(w1)}</td></tr>
+    <tr><td>打字正确率</td><td><b>${dacc(w0)}</b></td><td class="muted">${dacc(w1)}</td></tr>
   </table></div>
   <div class="grid g2" style="margin-top:12px">
     <div class="card"><h3>最容易忘的词和句子</h3>${forgot.length?forgot.map(([k,c])=>{ const t=isSent(k)?(sentByKey[k]||{}).en||k.slice(2):k, zh=isSent(k)?(sentByKey[k]||{}).zh:(wordByKey[k]||{}).zh;
       return `<div class="sent"><button class="icon" data-say="${esc(t)}" aria-label="朗读">🔊</button><div class="txt"><div class="en">${esc(t)}</div><div class="zh">${zh||""} · 忘了 ${c.lapses} 次</div></div></div>`; }).join(""):`<p class="muted">复习时答「不会」的会记在这里。</p>`}</div>
     <div class="card"><h3>高光时刻</h3><dl class="kv">
       <dt>最长连续</dt><dd>${longestStreak()} 天</dd>
+      <dt>闯关最佳</dt><dd>${(b.type||{}).zh2en?b.type.zh2en.grade:"—"}</dd>
+      <dt>连词成句</dt><dd>${(b.type||{}).build?b.type.build.grade:"—"}</dd>
       <dt>听写最佳</dt><dd>${b.dict?`${b.dict.grade}（${b.dict.date}）`:"—"}</dd>
       <dt>最高连击</dt><dd>${b.combo||"—"}</dd>
       <dt>测验最高</dt><dd>${b.quiz!=null?b.quiz+" / 10":"—"}</dd>
@@ -788,6 +854,7 @@ function mergeDoc(doc){
   S.best.combo=Math.max(S.best.combo||0, b.combo||0);
   if(b.quiz!=null) S.best.quiz=Math.max(S.best.quiz||0, b.quiz);
   if(b.dict && (!S.best.dict || GRADES.indexOf(b.dict.grade)>GRADES.indexOf(S.best.dict.grade))) S.best.dict=b.dict;
+  for(const [m,v] of Object.entries(b.type||{})){ S.best.type=S.best.type||{}; const cur=S.best.type[m]; if(!cur || GRADES.indexOf(v.grade)>GRADES.indexOf(cur.grade)) S.best.type[m]=v; }
   if(doc.startDate && doc.startDate<S.startDate) S.startDate=doc.startDate;
   for(const [dev,lg] of Object.entries(doc.logs||{})){
     if(dev!==S.dev){ S.others[dev]=lg; continue; }
@@ -839,7 +906,7 @@ function render(){ nav(); app.innerHTML = V[cur](); updateStreak(); }
 function setLevel(i){ S.settings.level=i; S.settingsT=Date.now(); wordLv=null; sentLv=null; place=null; save(); render(); toast(`已切换到 ${LV_NAME(i)}`); }
 
 app.addEventListener("click", e => {
-  const t = e.target.closest("[data-say],[data-go],[data-rate],[data-cat],[data-gram],[data-mic],[data-micx],[data-opt],[data-manual],[data-ph],[data-blend],[data-pho],[data-popt],[data-wlv],[data-slv],[data-setlv],[data-copy],button[id]");
+  const t = e.target.closest("[data-say],[data-go],[data-rate],[data-cat],[data-gram],[data-mic],[data-micx],[data-opt],[data-manual],[data-ph],[data-blend],[data-pho],[data-popt],[data-tmode],[data-wlv],[data-slv],[data-setlv],[data-copy],button[id]");
   if(!t) return;
   const d=t.dataset;
   if(d.say){ e.preventDefault(); say(d.say); return; }
@@ -857,6 +924,7 @@ app.addEventListener("click", e => {
   if(d.micx){ listen(d.micx, document.getElementById("sc-x")); return; }
   if(d.opt){ answer(+d.opt, t); return; }
   if(d.popt!==undefined){ placeAnswer(+d.popt); return; }
+  if(d.tmode){ startTyping(d.tmode); return; }
   if(d.manual){ const L=dayLog(), on=dayView()[d.manual]; L[d.manual]=!on; if(on) for(const lg of Object.values(S.others)) if(lg[today()]) lg[today()][d.manual]=false; save(); render(); return; }
   if(d.copy!==undefined){ const txt=document.getElementById("pr-"+d.copy).textContent;
     const sel=()=>{ const r=document.createRange(); r.selectNodeContents(document.getElementById("pr-"+d.copy)); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast("已选中，请手动复制"); };
@@ -876,9 +944,8 @@ app.addEventListener("click", e => {
     case "pback": quiz=null; dict=null; place=null; render(); break;
     case "pstart": quiz=null; dict=null; startPlace(); break;
     case "pstartgo": cur="quiz"; history.replaceState(null,"","#quiz"); quiz=null; dict=null; startPlace(); break;
-    case "dstart": quiz=null; place=null; makeDict(); render(); window.scrollTo(0,0); setTimeout(()=>{ say(dictItem().x.en); dictFocus(); },200); break;
-    case "dplay": say(dictItem().x.en); dictFocus(); break;
-    case "dslow": say(dictItem().x.en,0.55); dictFocus(); break;
+    case "dplay": playRound(); dictFocus(); break;
+    case "dslow": playRound(0.55); dictFocus(); break;
     case "dhint": dict.hint=true; render(); dictFocus(); break;
     case "dzh": dict.showZh=!dict.showZh; render(); dictFocus(); break;
     case "dnext": dictNext(); break;
@@ -897,7 +964,8 @@ app.addEventListener("click", e => {
 });
 app.addEventListener("change", e => {
   const id=e.target.id;
-  if(["npd","nsd","rate","voice"].includes(id)) S.settingsT=Date.now();
+  if(["npd","nsd","rate","voice","sfx"].includes(id)) S.settingsT=Date.now();
+  if(id==="sfx"){ S.settings.sfx = e.target.value==="1"; save(); sfx("perfect"); }
   if(id==="lvsel"){ setLevel(+e.target.value); }
   if(id==="npd"){ S.settings.newPerDay=Math.max(1,Math.min(50,+e.target.value||10)); save(); }
   if(id==="nsd"){ S.settings.newSentPerDay=Math.max(1,Math.min(30,+e.target.value||5)); save(); }

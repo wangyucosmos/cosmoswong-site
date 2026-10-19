@@ -119,3 +119,8 @@
 - 本地检查：`node --test tests/attendance/*.test.mjs`；D1迁移仅操作ATTENDANCE_DB。OCR资源大，请核对上传及网页实际识别，不把单元测试当作线上验收。
 
 自动部署.github/workflows/deploy.yml必须固定Wrangler 4.131.0、Node 22，并执行测试、Worker优先配置检查和verify_tools_routing.mjs --online；用现有CLOUDFLARE_API_TOKEN，不新增secret。不能只看Action上传成功。CLI升级须重新验收浏览器导航及保护页。
+
+## /english 英语从零学（2026-10-19）
+- 源文件不在本仓库维护：在 `~/Documents/claude code new/英语学习/`（`index.html` + `assets/english/`），改完在那里运行 `python3 同步到网站.py` 复制成 `public/english.html` 和 `public/assets/english/*`，再按本仓库流程部署。不要直接改这里的副本，会被下次同步覆盖。
+- 走工具箱口令门：`/english`、`/english.html`、`/assets/english/*` 没凭证分别 302 / 401（`src/tools-gate.js`）；`/english` 在 `_headers` 里单独放开 `microphone=(self)`（跟读打分要用）。
+- 学习进度接口 `src/english/api.js`：`GET/PUT /api/english/progress`，存 KV `SUBS` 的 `en:progress`（`{version, data, updatedAt}`），PUT 带 `base` 做乐观锁，不一致回 409 + 最新数据，由页面合并后重试；写请求要同源 + `x-tools-request: 1`；上限 2MB。测试：`node --test tests/english/*.test.mjs`。
