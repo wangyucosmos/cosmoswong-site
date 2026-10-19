@@ -35,3 +35,63 @@
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
+
+# /cases 案例展厅：四个工作案例的交互式原型与设计备注（已脱敏）。只从作品集条目的链接进入，不进导航、不进 sitemap、不收录
+/cases
+  X-Robots-Tag: noindex, nofollow
+
+# 工具箱口令页：不收录（口令门逻辑在 src/tools-gate.js）
+/unlock
+  X-Robots-Tag: noindex, nofollow
+
+# 跑马灯要口令（Worker 先校验），不收录
+/marquee
+  X-Robots-Tag: noindex, nofollow
+
+# 英语从零学要口令（Worker 先校验），不收录；跟读打分要用麦克风，所以这一页单独放开 microphone=(self)
+/english
+  X-Robots-Tag: noindex, nofollow
+  ! Permissions-Policy
+  Permissions-Policy: geolocation=(), camera=(), microphone=(self)
+
+# 邮件名单透视要口令（Worker 先校验），不收录；数据只经 /api/mail-insight
+/mail-insight
+  X-Robots-Tag: noindex, nofollow
+
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
+/og.png
+  ! Cache-Control
+  Cache-Control: public, max-age=604800
+/favicon.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=604800
+/favicon.ico
+  ! Cache-Control
+  Cache-Control: public, max-age=604800
+/apple-touch-icon.png
+  ! Cache-Control
+  Cache-Control: public, max-age=604800
+
+# 补时计算器：本机OCR需要Worker、WASM及本地图片预览；不收录。
+/attendance
+  X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'
+
+/assets/attendance/*
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; connect-src 'self'; object-src 'none'
+
+# 简历及笔记由Worker鉴权，并在成功响应上强制no-store。
+/resume*
+  X-Robots-Tag: noindex, nofollow
+/knowledge*
+  X-Robots-Tag: noindex, nofollow
+/assets/tools-next.mjs
+  ! Cache-Control
+  Cache-Control: public, max-age=0, must-revalidate
