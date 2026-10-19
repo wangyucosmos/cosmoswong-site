@@ -35,6 +35,14 @@
   ! Content-Security-Policy
   Content-Security-Policy: default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self' https://static.cloudflareinsights.com; connect-src 'self' https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
 
+# /trips/2027-spring-tickets 春节机票榜单：单文件页面，JS 是内联 <script>（每周 cron 自动重建，
+# 脚本内容每次都变，没法用固定 sha256 哈希），且用 data: URI 内嵌快照日期清单。所以这一页的 CSP
+# 单独放行 script-src 'unsafe-inline' 和 connect-src data:；这一页没有首页 JSON-LD，
+# 不需要 /* 里的 sha256（build_pages.mjs 只维护 /* 那一行，不要动）。
+/trips/2027-spring-tickets
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' data: https://cloudflareinsights.com; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'
+
 # /cases 案例展厅：四个工作案例的交互式原型与设计备注（已脱敏）。只从作品集条目的链接进入，不进导航、不进 sitemap、不收录
 /cases
   X-Robots-Tag: noindex, nofollow
