@@ -18,6 +18,10 @@ test('没凭证：/go/* 跳口令页，/marquee 跳口令页，marquee 资源 40
   assert.equal((await call(e, '/marquee')).headers.get('location'), '/unlock?next=marquee');
   assert.equal((await call(e, '/marquee.html')).status, 302);
   assert.equal((await call(e, '/assets/marquee/app.js')).status, 401);
+  assert.equal((await call(e, '/english')).headers.get('location'), '/unlock?next=english');
+  assert.equal((await call(e, '/english.html')).status, 302);
+  assert.equal((await call(e, '/assets/english/words.js')).status, 401);
+  assert.equal((await call(e, '/go/english')).headers.get('location'), '/unlock?next=english');
 });
 
 test('补时计算器直链不要口令；其他页面不受影响', async () => {
@@ -38,6 +42,8 @@ test('口令对：365 天凭证，之后 /go 跳真实地址、/marquee 放行',
   assert.equal((await call(e, '/go/attendance', c)).headers.get('location'), '/attendance');
   assert.equal(await (await call(e, '/marquee', c)).text(), 'asset:/marquee');
   assert.equal(await (await call(e, '/assets/marquee/app.js', c)).text(), 'asset:/assets/marquee/app.js');
+  assert.equal((await call(e, '/go/english', c)).headers.get('location'), '/english');
+  assert.equal(await (await call(e, '/english', c)).text(), 'asset:/english');
 });
 
 test('口令错、伪造凭证、换口令后旧凭证都不行；未知 id 回工具箱', async () => {

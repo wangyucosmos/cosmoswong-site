@@ -47,6 +47,12 @@
 /marquee
   X-Robots-Tag: noindex, nofollow
 
+# 英语从零学要口令（Worker 先校验），不收录；跟读打分要用麦克风，所以这一页单独放开 microphone=(self)
+/english
+  X-Robots-Tag: noindex, nofollow
+  ! Permissions-Policy
+  Permissions-Policy: geolocation=(), camera=(), microphone=(self)
+
 # 邮件名单透视要口令（Worker 先校验），不收录；数据只经 /api/mail-insight
 /mail-insight
   X-Robots-Tag: noindex, nofollow
