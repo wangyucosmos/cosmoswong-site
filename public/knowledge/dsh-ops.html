@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="知识库内容需输入口令后查看。">
 <title>DeepSeek Harness 运维与故障修复手册 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20261015102159">
-<link rel="stylesheet" href="/assets/notes.css?v=20261015102159">
+<link rel="stylesheet" href="/assets/style.css?v=20261019134627">
+<link rel="stylesheet" href="/assets/notes.css?v=20261019134627">
 
 <!--head:auto-->
 <meta name="robots" content="noindex, nofollow">
@@ -880,6 +880,7 @@ DSH_FREE_VISION_CONFIG_PATH=&quot;$HOME/.dsh-rc8-clean/free-vision.json&quot; \
 </tr>
 </tbody></table></div>
 <hr>
+<p>| 桌面端窗口拖不动 | 无边框窗口（titleBarStyle hidden）拖拽区不足 | §21.4；装 drag-strip 皮肤或改用 Magnet 快捷键 |</p>
 <h2>18. 交接与接管提示词</h2>
 <h3>18.1 给 Codex / 其它能直接操作本机的 AI</h3>
 <pre><code>请先完整阅读（按顺序）：
@@ -1099,6 +1100,7 @@ DSH_FREE_VISION_CONFIG_PATH=&quot;$HOME/.dsh-rc8-clean/free-vision.json&quot; \
 <li><strong>macOS（Apple 芯片 / 需 macOS 13+）</strong>：<code>https://download.deepseek.com/desktop/dsh-latest-macos-arm64.dmg</code></li>
 <li><strong>Windows</strong>：<code>https://download.deepseek.com/desktop/dsh-latest-windows-x64.exe</code></li>
 <li><strong>当前版本 = <code>0.2.0-rc.2</code></strong>（取自官方自动更新清单 <code>https://download.deepseek.com/dsh-desk/feeds/mac-arm64/nightly-mac.yml</code>，releaseDate 2026-09-29，mac 包约 374 MB）<ul>
+<li>⚠️ <strong>2026-10-17 更新</strong>：本机实际运行版本已升到 <strong><code>0.2.1-rc.2</code></strong>（首启自更新），家目录 <code>~/.dsh-rc10-desk</code>；迁移与验收记录见 <code>DSH-0.2.1-桌面端迁移验收-20261017.md</code>。</li>
 <li>安装包<strong>内置 Node / pnpm / Python 运行环境</strong>，电脑不用预装任何环境</li>
 </ul>
 </li>
@@ -1139,6 +1141,25 @@ cp -a ~/.dsh-rc9-clean ~/.dsh-rc9-clean.bak-$(date +%Y%m%d)
 <li>确认新客户端能正常跑之前，<strong>别停用 <code>dsh-rc9-start</code> 那一套</strong>。</li>
 </ol>
 <p><strong>零风险的替代</strong>：直接用<strong>浏览器</strong>打开现有环境（<code>~/.local/bin/dsh-rc9-start --open</code>）—— 同一个 UI、什么都不会丢。</p>
+<h3>21.4 桌面端（0.2.1）窗口拖不动：拖拽区不足【已验证·2026-10-17】</h3>
+<ul>
+<li><strong>现象</strong>：鼠标按住窗口顶部拖动毫无反应，容易误以为是系统卡住或 App 死机。</li>
+<li><strong>根因</strong>：桌面端是 <strong><code>titleBarStyle: &quot;hidden&quot;</code> 的无边框窗口</strong>（<code>/lib/main.js</code>：<code>trafficLightPosition {x:21,y:21}</code>）。系统标题栏被隐藏后，<strong>只有带 <code>data-window-drag</code> 属性的元素</strong>才是拖拽区；macOS 上这类元素只有：侧边栏 <code>topStrip</code>（52px 高）/ <code>logoRow</code> / <strong>「还没有会话」时的对话页头部</strong> / 设置页与插件页页头。<strong>正常对话（有标题）时顶部那条是会话标题栏，不是拖拽区</strong> —— 这就是&quot;拖不动&quot;的真相。</li>
+<li><strong>处置（已实装并验证，外观零改动）</strong>：本地皮肤 <strong><code>drag-strip</code>（拖拽增强）</strong><ul>
+<li>位置：<code>$DSH_HOME/skins/drag-strip/</code>（<code>skin.json</code> + <code>skin.css</code> + <code>patches.css</code>）</li>
+<li>原理：<code>skin.css</code> 留空（<strong>不定义任何 token → 外观完全不变</strong>）；<code>patches.css</code> 用 L3 自由选择器补三块拖拽区：<ol>
+<li><code>[class*=&quot;_header&quot;]</code> 整条标题栏（内部 <code>button/a/input/textarea/select/[role=button]/[contenteditable]</code> 显式设 <code>no-drag</code>，点击不受影响）；</li>
+<li><code>[class*=&quot;_topStrip&quot;]</code> / <code>[class*=&quot;_logoRow&quot;]</code>（侧边栏顶部横带补满）；</li>
+<li><code>body::before</code> 窗口最顶 <strong>10px 透明拖拽带</strong>（任何页面都能抓）。</li>
+</ol>
+</li>
+<li>启用：<strong>设置 → 皮肤 → 选「拖拽增强」</strong>（即时生效；也可 POST <code>/api/skin-center/v2/active</code>，body <code>{&quot;active&quot;:&quot;drag-strip&quot;}</code>）。</li>
+<li>回退：设置 → 皮肤 → 选「官方默认」；或删掉该目录并把 <code>skin-center-active.json</code> 的 <code>active</code> 改回 <code>null</code>。</li>
+<li>皮肤 CSS 的两条约束（写自定义皮肤时会踩）：① loader 会把每条选择器<strong>强制前缀</strong> <code>html[data-dsh-skin=&quot;&lt;id&gt;&quot;]</code>；② 安全管线<strong>拒绝 <code>@import</code> 和远程 <code>url()</code></strong>，素材必须放皮肤目录内。</li>
+</ul>
+</li>
+<li><strong>零成本替代</strong>：装窗口管理工具（本机已有 <strong>Magnet</strong>，用 ⌃⌥+方向键直接移动/贴边）；或 ⌃⌘F 全屏再退出可重置窗口位置。</li>
+</ul>
 
   </article>
 </main>
@@ -1149,7 +1170,7 @@ cp -a ~/.dsh-rc9-clean ~/.dsh-rc9-clean.bak-$(date +%Y%m%d)
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20261015102159"></script>
-<script src="/assets/render.js?v=20261015102159"></script><script src="/assets/app.js?v=20261015102159"></script>
+<script src="/assets/data.js?v=20261019134627"></script>
+<script src="/assets/render.js?v=20261019134627"></script><script src="/assets/app.js?v=20261019134627"></script>
 </body>
 </html>
