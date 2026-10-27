@@ -1,7 +1,7 @@
 // 工具箱口令门（2026-10-12 用户要求）：工具箱里的工具，别人能看到卡片，点进去要先输口令。
 //   - 工具箱卡片统一链到 /go/<id>：有口令凭证 → 302 跳到真实地址；没有 → 跳 /unlock?next=<id> 输口令。
 //     真实地址只写在下面的 TARGETS 里（服务端），不出现在公开页面。
-//   - /marquee、/english 本身也挡：直接输网址没有凭证同样进不去。
+//   - /marquee、/english、/toolmap 本身也挡：直接输网址没有凭证同样进不去。
 //   - /attendance 补时计算器例外：同事用直链，不要口令（只有从工具箱点进去才经过口令门）。
 //   - 口令是 Worker secret TOOLS_PASSWORD，凭证签名 key 是 TOOLS_COOKIE_KEY，都不进仓库（仓库是公开的）。
 //     设置 / 换口令：HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD（旧凭证随之全部失效）
@@ -17,7 +17,8 @@ export const TARGETS = {
   marquee: '/marquee',
   fitness: 'https://jianshen.cosmoswong.com',
   'mail-insight': '/mail-insight',
-  english: '/english'
+  english: '/english',
+  toolmap: '/toolmap'
 };
 
 const COOKIE = 'tools_session';
@@ -98,6 +99,12 @@ export async function toolsGate(req, env, path) {
     if (await toolsAuthed(req, env)) return null;
     if (path.startsWith('/assets/')) return json({ error: '需要口令' }, 401);
     return redirect(unlockUrl('english'));
+  }
+  // 工具地图（2026-10-27）：页面和脚本只是外壳，内容在 /api/toolmap（src/toolmap/api.js 自己再校验凭证）
+  if (path === '/toolmap' || path === '/toolmap.html' || path.startsWith('/assets/toolmap/')) {
+    if (await toolsAuthed(req, env)) return null;
+    if (path.startsWith('/assets/')) return json({ error: '需要口令' }, 401);
+    return redirect(unlockUrl('toolmap'));
   }
   if (path === '/marquee' || path === '/marquee.html' || path.startsWith('/assets/marquee/')) {
     if (await toolsAuthed(req, env)) return null;   // 放行，交给静态资源

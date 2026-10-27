@@ -14,7 +14,7 @@
     ['/knowledge', '知识库'],
     ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)],
     ['/subs', '订阅'],   // 入口公开，页面内容要密码（src/worker.js）
-    ['/kol', 'KOL 工作台'],   // 同上：入口公开（用户 2026-10-03 要求加），数据要密码；页面仍 noindex、不进 sitemap
+    ['/toolmap', '工具地图'],   // 2026-10-27 取代「KOL 工作台」入口（/kol 页面照常可直接访问）；内容走工具箱口令门、noindex、不进 sitemap
     ['/desk', '我的工作台'],   // 同上（用户 2026-10-04 要求加，名字要和 KOL 工作台区分开）；页面仍 noindex、不进 sitemap
     ['/go/fitness', '我的健身计划']
   ].filter(([, , show]) => show !== false);

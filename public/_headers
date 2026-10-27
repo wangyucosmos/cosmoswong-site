@@ -58,6 +58,10 @@
 /mail-insight
   X-Robots-Tag: noindex, nofollow
 
+# 工具地图要口令（Worker 先校验），不收录；内容只经 /api/toolmap（KV），不进仓库
+/toolmap
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable

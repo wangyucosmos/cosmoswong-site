@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>工具地图</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <script src="/assets/toolmap/theme.js?v=20261027140452"></script>
+  <link rel="stylesheet" href="/assets/toolmap/style.css?v=20261027140452">
+  <script src="/assets/toolmap/app.js?v=20261027140452" defer></script>
+</head>
+<body>
+<!-- 页面只是外壳：地图内容从 /api/toolmap 读取（要工具箱口令），仓库里没有任何地图内容 -->
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="back" href="/">← 首页</a>
+    <div class="tabs" role="tablist" aria-label="选择版本">
+      <button class="tab" type="button" role="tab" id="tab-claude" data-v="claude" aria-selected="true">Claude 版</button>
+      <button class="tab" type="button" role="tab" id="tab-codex" data-v="codex" aria-selected="false">Codex 版</button>
+    </div>
+    <button class="btn theme-btn" type="button" id="themeBtn" aria-label="切换浅色 / 深色">主题：自动</button>
+  </div>
+</div>
+<main class="wrap" id="root" aria-live="polite">
+  <p class="muted state">正在读取…</p>
+</main>
+</body>
+</html>

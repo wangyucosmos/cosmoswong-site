@@ -14,13 +14,14 @@
   - 同一 IP 15 分钟输错 10 次锁定；登录 cookie 30 天、HttpOnly、只发给 `/api/subs`
   - 本地测试：`.dev.vars` 放测试密码（已 gitignore，不要放真实密码），`npx wrangler@4 dev --port 8788`
   - 导航里有「订阅」入口（用户要求入口公开、内容加密）；页面 noindex，不进 sitemap
-- `/kol` KOL 工作台（2026-10-02 起，私用的海外 KOL 跟进工作台，密码保护，见下方「/kol」一节）。
+- `/kol` KOL 工作台（2026-10-02 起，私用的海外 KOL 跟进工作台，密码保护，见下方「/kol」一节）。2026-10-27 起导航不再有入口，页面直接访问照常可用。
+- `/toolmap` 工具地图（2026-10-27 起，导航入口占了原「KOL 工作台」的位置，工具箱口令门，见下方「/toolmap」一节）。
 - `/desk` 我的工作台（2026-10-04 起，站长自己的工作待办 / 待确认 / 排期台，密码保护，导航有入口「我的工作台」，见下方「/desk」一节）。
 - **零外部请求**：不引 CDN、Web Font、图标库、任何前端依赖。唯一外部脚本是 Cloudflare 自动注入的 Insights beacon。`public/_headers` 里的 CSP 就是按这个前提写的，引任何外部资源都会被拦。
 
 ## /kol KOL 工作台
 - **路由**：页面 `public/kol.html`（独立应用，**不带主站导航和页脚**）+ `public/assets/kol/*.js|css`；接口 `/api/kol/*` 在 `src/kol/`（`api.js` 路由、`auth.js` 密码门、`schema.js` 字段校验），`worker.js` 只做转发。
-- **主站导航有入口、页面本身不带主站骨架、不进 sitemap**：2026-10-03 起用户要求在主站导航加「KOL 工作台」（`render.js` 的 `navItems`，和「订阅」一样入口公开、内容要密码）。`kol.html` 仍然**不在** `tools/build_pages.mjs` 的 `DYNAMIC` / `STATIC` 清单里——**不要把它加进清单**，否则会被注入主站导航/页脚并写进 sitemap。另有三层 noindex：页面 `<meta name="robots">`、`_headers` 的 `/kol` → `X-Robots-Tag`、`robots.txt` 的 `Disallow: /kol`。
+- **主站导航没有入口（2026-10-27 起）、页面本身不带主站骨架、不进 sitemap**：2026-10-03 曾按用户要求在导航加「KOL 工作台」，2026-10-27 用户要求去掉，原位置换成「工具地图」。**只去掉了 `render.js` 里那一行**，页面、脚本、接口、D1 数据都没动，直接打开 `/kol` 照常可用；不要再把入口加回去，除非用户要求。`kol.html` 仍然**不在** `tools/build_pages.mjs` 的 `DYNAMIC` / `STATIC` 清单里——**不要把它加进清单**，否则会被注入主站导航/页脚并写进 sitemap。另有三层 noindex：页面 `<meta name="robots">`、`_headers` 的 `/kol` → `X-Robots-Tag`、`robots.txt` 的 `Disallow: /kol`。
 - **数据**：Cloudflare D1 `cosmoswong-kol`（binding `KOL_DB`，id 见 `wrangler.toml`），**真实 KOL 数据只在 D1，绝不进仓库**。表：`kols` / `kol_tasks` / `activities` / `deals` / `templates` / `saved_views` / `keywords` / `settings` / `kol_meta`（会话签名 key、改过的密码哈希，接口不返回、不进备份）/ `login_fails`。
 - **建表只用迁移**（`migrations/*.sql`）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 migrations apply cosmoswong-kol --remote`（本地用 `--local`）。改表结构 = 新加一个迁移文件，**不要改已执行过的迁移、不要手工在线上跑建表语句**。
 - **鉴权**：初始密码是 Worker secret `KOL_PASSWORD`（和 /subs 分开；设置：`npx wrangler@4 secret put KOL_PASSWORD`，由用户自己输入）。页面「设置 → 改密码」（`POST /api/kol/password`，要已登录 + 原密码正确，原密码输错计入同一个 10 次锁定）改过之后，新密码以 PBKDF2-SHA256（3 万次、随机盐）存在 D1 `kol_meta` 的 `password_hash`，登录优先认它，secret 不再生效。**忘了新密码**：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-kol --remote --command "DELETE FROM kol_meta WHERE key = 'password_hash'"` → 恢复成 secret 里的初始密码（先问用户）。会话 cookie `kol_session` 只发给 `/api/kol`，HttpOnly + Secure + SameSite=Strict，30 天；签名 key = `kol_meta` 里首次登录时随机生成的 key + 当前密码（哈希或 secret）→ 改密码后旧登录全失效，改密码的那台设备会收到新 cookie。同一 IP 15 分钟输错 10 次锁定（D1 `login_fails`）。除 `POST /login`、`POST /logout`、`GET /session`（只回答是否已登录）外全部要登录，未登录 401；写操作必须带请求头 `x-kol-request: 1` 且同源，否则 403。
@@ -34,7 +35,7 @@
 ## /desk 我的工作台
 - **红线：工作内容不进本仓库。** 公司项目名、负责的省份名单、流程原文、内部仓库名、本机路径、Figma 链接——包括代码默认值、注释、演示数据、测试用例——一律不写进来。这些都放在仓库以外的「初始化包」JSON 里，由用户在页面「设置 → 数据 → 导入初始化包」导入到 D1（只新增；已有同名、内容却不同的模板 / 清单会单独列出，用户勾了才换成包里的版本）。代码里只放通用空壳和通用默认值（如内置时间表只有「开工 T−7 / 交付 T−1 / 上线 T」示例，内置提示词模板只有通用版）。
 - **路由**：页面 `public/desk.html`（独立应用，不带主站导航和页脚）+ `public/assets/desk/*.js|css`；接口 `/api/desk/*` 在 `src/desk/`（`api.js` 路由、`auth.js` 密码门、`schema.js` 字段校验），`worker.js` 只做转发。鉴权代码照 `/kol` 复制了一份到 `src/desk/auth.js`（**没有改 `/kol` 的任何文件**），共用的只有 `src/shared.js`。
-- **主站导航有入口、页面本身不带主站骨架、不进 sitemap**：2026-10-04 用户要求在主站导航加「我的工作台」（`render.js` 的 `navItems`，排在「KOL 工作台」后面；和 `/kol` 一样入口公开、内容要密码），**取代**上线当天「不进导航、靠书签访问」的约定。两个工作台的名字要一眼能分清：导航 / 登录页 / 浏览器标签页上 `/desk` 叫「我的工作台」，`/kol` 叫「KOL 工作台」。`desk.html` 仍然**不在** `tools/build_pages.mjs` 的 `DYNAMIC` / `STATIC` 清单里——**不要把它加进清单**，否则会被注入主站导航/页脚并写进 sitemap。三层 noindex 照旧：页面 `<meta name="robots">`、`_headers` 的 `/desk` → `X-Robots-Tag`、`robots.txt` 的 `Disallow: /desk`。
+- **主站导航有入口、页面本身不带主站骨架、不进 sitemap**：2026-10-04 用户要求在主站导航加「我的工作台」（`render.js` 的 `navItems`，2026-10-27 起排在「工具地图」后面；和 `/kol` 一样入口公开、内容要密码），**取代**上线当天「不进导航、靠书签访问」的约定。两个工作台的名字要一眼能分清：导航 / 登录页 / 浏览器标签页上 `/desk` 叫「我的工作台」，`/kol` 叫「KOL 工作台」。`desk.html` 仍然**不在** `tools/build_pages.mjs` 的 `DYNAMIC` / `STATIC` 清单里——**不要把它加进清单**，否则会被注入主站导航/页脚并写进 sitemap。三层 noindex 照旧：页面 `<meta name="robots">`、`_headers` 的 `/desk` → `X-Robots-Tag`、`robots.txt` 的 `Disallow: /desk`。
 - **数据**：Cloudflare D1 `cosmoswong-desk`（binding `DESK_DB`，APAC，id 见 `wrangler.toml`），**不进仓库**。表：`projects` / `deliverables` / `tasks` / `pendings`（待确认）/ `activities`（项目时间线）/ `ideas`（每周玩法创意）/ `wins`（提效记录）/ `inbox`（收集箱）/ `decisions`（已拍板的口径：业务方答复和用户自己的决定，开工提示词会带上）/ `timelines`（时间表模板）/ `checklists` / `prompt_templates` / `links`（v3 起有 `pinned`：钉到今天页「常用」）/ `resources`（v3：本机文件夹 / 小工具 / 文档，只存名字和路径，网页不访问）/ `saved_views` / `settings` / `desk_meta`（会话签名 key、改过的密码哈希，接口不返回、不进备份）/ `login_fails`。主表都有 `deleted_at` 软删除（页面 5 秒内可撤销，24 小时后清理；删项目会连带它的交付物、待办、待确认、时间线，撤销时一起回来）。日期存 `YYYY-MM-DD`，「今天 / 本周 / 逾期」一律按 **Asia/Shanghai** 算（前端 `DESK.today()`、后端 `shToday()`），时间戳存 ISO。
 - **建表只用迁移**，迁移文件单独放 `migrations/desk/`（`wrangler.toml` 里 `DESK_DB` 的 `migrations_dir`，和 `/kol` 的 `migrations/` 互不干扰）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 migrations apply cosmoswong-desk --remote`（本地 `--local`）。**线上只跑迁移，不灌任何数据**；改表结构 = 在 `migrations/desk/` 新加文件。
 - **鉴权**（同 `/kol`，各自独立）：初始密码 Worker secret `DESK_PASSWORD`（和 `/subs`、`/kol` 都分开；`npx wrangler@4 secret put DESK_PASSWORD`，由用户自己输入）。页面「设置 → 改密码」（`POST /api/desk/password`）后新密码以 PBKDF2 加盐哈希存在 D1 `desk_meta` 的 `password_hash`，登录优先认它，其他设备登录失效。**忘了新密码**（先问用户）：`HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 d1 execute cosmoswong-desk --remote --command "DELETE FROM desk_meta WHERE key = 'password_hash'"` → 恢复成 secret 里的初始密码。会话 cookie `desk_session` 只发给 `/api/desk`，HttpOnly + Secure + SameSite=Strict，30 天；同一 IP 15 分钟输错 10 次锁定；除 `POST /login`、`POST /logout`、`GET /session` 外全部要登录（未登录 401），写操作必须带 `x-desk-request: 1` 且同源（否则 403）。
@@ -107,6 +108,15 @@
 - 手册、点评和上传脚本在用户本机工作区（位置记在用户的私有知识库里），不在本仓库。
 - 页面 noindex（`_headers`、`robots.txt`、`<meta>`），不进 build_pages 清单、不进 sitemap；工具箱入口只改 data.js；资源版本号由 `deploy.sh` 的 `/assets/mail-insight/*` 那条 sed 维护。`app.mjs` 不 import `engine.mjs`（避免没版本号的 import 被长缓存），两个都由 html 按顺序加载，引擎挂在 `globalThis.MailInsight`。
 - 测试：`node --test tests/tools/*.test.mjs`（含 `mail-insight.test.mjs`）。
+
+## /toolmap 工具地图（2026-10-27）
+- 用户自己的 AI 工作台全景图（分层地图 + 流程逐步播放 + 分工表 + 信息放哪 + 进度看板 + 乱点）。顶部两个标签「Claude 版 / Codex 版」，各读一份数据，没上传的那份显示"待添加"。导航有入口「工具地图」（`render.js` 的 `navItems`，在「订阅」后面）。
+- **红线：地图内容不进本仓库。** 节点、流程、进度、路径、项目名、仓库名——包括代码默认值、注释、测试用例——一律不写进来。仓库里只有通用外壳：`public/toolmap.html` + `public/assets/toolmap/`（`theme.js` 在 `<head>` 先跑防深色闪白、`app.js` 渲染、`style.css`），测试只用虚构的「示例地图」。
+- **数据**：KV `SUBS` 的 `tm:claude` / `tm:codex`。接口 `src/toolmap/api.js`：只有 `GET /api/toolmap?v=claude|codex`（默认 claude），没凭证 401，没内容回 `{empty:true}`，网页不能写。
+- **更新内容不用部署**：内容 JSON 放在仓库外（位置记在用户的私有知识库），改完运行 `HTTPS_PROXY=http://127.0.0.1:7897 node tools/toolmap_upload.mjs claude <JSON 路径>`（`codex` 同理；`--local` 写本地 KV 给 `wrangler dev` 用，`--check` 只检查）。脚本先查结构（连线、流程步骤、节点详情引用的节点都要存在，节点类型 `c` 只能是 you/ai/ws/mem/kb/gh，进度日期 `YYYY-MM-DD`），不通过就不上传。JSON 结构以 `app.js` 读取的字段为准：`title / badge / badgeNote / lede / map{eyebrow,title,rows,nodes,edges,types,info,flows} / roles{head,rows} / places{items,cmds} / board{today,staleDays,groups,items} / mess{items} / footer`；正文里用反引号包的片段显示成代码样式。
+- **口令门**：和 `/mail-insight` 一样走工具箱口令（TOOLS_PASSWORD / tools_session）：`/toolmap`、`/toolmap.html` 没凭证 302 到 `/unlock?next=toolmap`，`/assets/toolmap/*` 401（`src/tools-gate.js`）；`toolmap` 已登记在 `TARGETS` 和 `TOOL_IDS`。工具箱 `data.js` 里**没有**它的卡片。
+- **前端约束**：零外部请求（系统字体，不用 Web Font）、无内联脚本 / 事件；内容一律 `textContent`；localStorage 只存界面偏好（`toolmap.theme` 自动 / 浅色 / 深色、`toolmap.tab`、`toolmap.flow.<版本>`、`toolmap.filter.<版本>`）。noindex 三层（`<meta>`、`_headers`、`robots.txt`），不进 build_pages 清单、不进 sitemap；资源版本号由 `deploy.sh` 的 `/assets/toolmap/*` 那条 sed 维护。
+- 测试：`node --test tests/tools/*.test.mjs`（含 `toolmap.test.mjs`）。
 
 ## /attendance 补时计算器（2026-10-12）
 

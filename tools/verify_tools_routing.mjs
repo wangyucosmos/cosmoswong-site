@@ -8,13 +8,16 @@ import {setTimeout as wait} from 'node:timers/promises';
 
 const ROOT=resolve(dirname(fileURLToPath(import.meta.url)),'..');
 export const CHECKS=[
- ...['attendance','mail-insight','travel','cosmos-os','h5-editor','marquee','fitness','english'].map(id=>({path:'/go/'+id,status:302,next:id})),
+ ...['attendance','mail-insight','travel','cosmos-os','h5-editor','marquee','fitness','english','toolmap'].map(id=>({path:'/go/'+id,status:302,next:id})),
  ...['/resume','/resume.html','/resume.pdf','/knowledge/','/knowledge/overview'].map(path=>({path,status:302,next:path})),
  {path:'/mail-insight',status:302,next:'mail-insight'},
  {path:'/marquee',status:302,next:'marquee'},
  {path:'/english',status:302,next:'english'},
+ {path:'/toolmap',status:302,next:'toolmap'},
  ...['/attendance','/','/portfolio','/unlock'].map(path=>({path,status:200})),
- {path:'/assets/mail-insight/app.mjs',status:401}
+ {path:'/assets/mail-insight/app.mjs',status:401},
+ {path:'/assets/toolmap/app.js',status:401},
+ {path:'/api/toolmap',status:401}
 ];
 export function assertRuntime(version){
  assert.equal(version?.resources?.script_runtime?.assets?.raw_run_worker_first,true,'线上必须启用run_worker_first；否则浏览器导航可能404或绕过口令门');
