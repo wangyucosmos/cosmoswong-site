@@ -1,8 +1,8 @@
-import { safeNext, nextLocation } from './tools-next.mjs';
+import { safeNext, nextLocation, toolmapReturn } from './tools-next.mjs';
 // 工具箱口令页：输对口令后跳回 /go/<next>（服务端再跳到真实工具地址）。见 src/tools-gate.js
 (() => {
   if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
-    location.replace('https://' + location.host + location.pathname + location.search);
+    location.replace('https://' + location.host + location.pathname + location.search + location.hash);
     return;
   }
   const next = new URLSearchParams(location.search).get('next') || '';
@@ -19,7 +19,7 @@ import { safeNext, nextLocation } from './tools-next.mjs';
     btn.disabled = true;
     try {
       const r = await fetch('/api/tools/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tools-request': '1' }, credentials: 'same-origin', body: JSON.stringify({ password: pw.value, next }) });
-      if (r.ok) { const d = await r.json(); if (d.redirect !== destination) throw new Error('返回地址不正确'); location.replace(destination); return; }
+      if (r.ok) { const d = await r.json(); if (d.redirect !== destination) throw new Error('返回地址不正确'); location.replace(toolmapReturn(destination, location.hash)); return; }
       const d = await r.json().catch(() => ({}));
       err.textContent = d.error || '出错了，请稍后再试';
       pw.select();

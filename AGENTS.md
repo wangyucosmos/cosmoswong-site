@@ -134,3 +134,10 @@
 - 源文件不在本仓库维护：在 `~/Documents/claude code new/英语学习/`（`index.html` + `assets/english/`），改完在那里运行 `python3 同步到网站.py` 复制成 `public/english.html` 和 `public/assets/english/*`，再按本仓库流程部署。不要直接改这里的副本，会被下次同步覆盖。
 - 走工具箱口令门：`/english`、`/english.html`、`/assets/english/*` 没凭证分别 302 / 401（`src/tools-gate.js`）；`/english` 在 `_headers` 里单独放开 `microphone=(self)`（跟读打分要用）。
 - 学习进度接口 `src/english/api.js`：`GET/PUT /api/english/progress`，存 KV `SUBS` 的 `en:progress`（`{version, data, updatedAt}`），PUT 带 `base` 做乐观锁，不一致回 409 + 最新数据，由页面合并后重试；写请求要同源 + `x-tools-request: 1`；上限 2MB。测试：`node --test tests/english/*.test.mjs`。
+
+
+## 工具地图工作区版渲染（2026-10-27）
+- `layout: workspace-v2` 时，Codex 标签由 `public/assets/toolmap/codex.js` 渲染；样式 `codex.css` 在 Shadow DOM 内隔离，沿用工具地图外层主题与口令门。其他版本走原渲染器。
+- 载荷 `workspace` 包含 snapshot、template、data、view、sourcesHTML；实际内容仍只放仓库外 JSON 与 KV。模板只允许白名单 DOM，文本由 textContent 写入，不使用 innerHTML、内联事件、脚本或样式。
+- 上传脚本验证工作区必需字段、节点/工具引用、日期和模板节点；测试只使用虚构数据。切版清理主题观察器与弹窗，不影响其他版本。
+- 登录片段仅保留工具地图的两个已知版本；原 next 白名单与登录响应核对继续执行。

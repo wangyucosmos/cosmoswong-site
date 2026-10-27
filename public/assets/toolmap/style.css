@@ -179,6 +179,9 @@ footer{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padd
   .theme-btn{padding:6px 9px}
   .m{grid-template-columns:1fr} .m .lvl{grid-row:auto;justify-self:start}
 }
+
+/* 工作区地图的样式在独立 Shadow DOM 内，避免影响另一版。 */
+.wrap.workspace-view{max-width:1600px;padding-left:16px;padding-right:16px}
 @media (prefers-reduced-motion:reduce){
   .edge.on.flow{animation:none;stroke-dasharray:none}
   .edge,.node,.node rect{transition:none}

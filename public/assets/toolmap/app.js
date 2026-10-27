@@ -10,6 +10,7 @@
   var cache = {};
   var cur = 'claude';
   var timer = null;
+  var workspaceCleanup = null;
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -87,6 +88,7 @@
     if (!VERSIONS[v]) v = 'claude';
     cur = v;
     stop();
+    if (workspaceCleanup) { workspaceCleanup(); workspaceCleanup = null; }
     save('toolmap.tab', v);
     if (location.hash !== '#' + v) history.replaceState(null, '', '#' + v);
     tabs.forEach(function (b) {
@@ -123,6 +125,10 @@
       return;
     }
     document.title = (d.title || '工具地图') + ' · ' + VERSIONS[v];
+    if (v === 'codex' && d.layout === 'workspace-v2' && d.workspace && window.ToolmapWorkspace) {
+      workspaceCleanup = window.ToolmapWorkspace.mount(root, d.workspace);
+      return;
+    }
     var out = [h('header', { className: 'hd' }, [
       (d.badge || d.badgeNote) ? h('span', { className: 'ver' }, [d.badge ? h('b', { text: d.badge }) : null, str(d.badgeNote)]) : null,
       h('h1', { text: d.title || '工具地图' }),
@@ -396,6 +402,10 @@
     ]);
   }
 
+  window.addEventListener('hashchange', function () {
+    var target = location.hash.slice(1);
+    if (VERSIONS[target] && target !== cur) show(target);
+  });
   var start = location.hash.slice(1);
   show(VERSIONS[start] ? start : (load('toolmap.tab') || 'claude'));
 })();

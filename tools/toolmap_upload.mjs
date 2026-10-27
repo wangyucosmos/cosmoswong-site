@@ -37,6 +37,31 @@ export function validate(d) {
     }));
   }
   for (const it of d.board?.items || []) if (!/^\d{4}-\d{2}-\d{2}$/.test(it.d || '')) errs.push(`进度「${it.t}」的日期 d 要写成 YYYY-MM-DD`);
+  if (d.layout === 'workspace-v2') {
+    const p=d.workspace, idRE=/^[a-zA-Z][a-zA-Z0-9_-]*$/;
+    if(!isObj(p)||!isObj(p.data)||!isObj(p.view)||!Array.isArray(p.template))return ['工作区载荷缺少 data/view/template'];
+    const v=p.view, data=p.data;
+    for(const k of ['tools','workspaces','scenarios','commands','topics','issues','repos'])if(!Array.isArray(data[k]))errs.push('工作区数据缺少数组：'+k);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(p.snapshot||''))errs.push('工作区快照日期格式不对');
+    const list=Array.isArray(v.nodes)?v.nodes:[], ids=list.map(n=>n.id);
+    if(!ids.length||ids.some(id=>!idRE.test(id))||new Set(ids).size!==ids.length)errs.push('工作区节点 ID 缺失、重复或格式不对');
+    for(const n of list){
+      if(!['x','y','w','h'].every(k=>Number.isFinite(n[k]))||n.w<=0||n.h<=0)errs.push('工作区节点坐标或尺寸不对');
+      if(n.tool!==undefined&&(!Number.isInteger(n.tool)||!data.tools?.[n.tool]))errs.push('工作区工具节点引用不存在');
+    }
+    for(const id of ['you','local','cloud','global','project','native','knowledge','github'])if(!ids.includes(id)||!isObj(v.resources?.[id]))errs.push('缺少工作区资源节点或说明：'+id);
+    for(const k of ['toolIds','tokens','toolRead','toolWrite'])if(!Array.isArray(v[k])||v[k].length!==data.tools?.length)errs.push('工具索引长度不一致：'+k);
+    for(const id of v.toolIds||[])if(!ids.includes(id))errs.push('工具索引指向不存在的节点');
+    if(!Array.isArray(v.layers)||!v.layers.length||typeof p.sourcesHTML!=='string')errs.push('工作区缺少分层与来源信息');
+    for(const topic of Array.isArray(data.topics)?data.topics:[])if(topic.date!==null&&!/^\d{4}-\d{2}-\d{2}$/.test(topic.date||''))errs.push('工作区进度日期格式不对');
+    const required=['tool-picker','map-nodes','map-edges','map-context','layer-labels','map-caption','map-tip','mobile-map','inspector','view-map','view-progress','view-routing','tab-map','tab-progress','tab-routing','board','board-status','board-summary','filters','search','scenario-menu','scenario-result','commands-grid','audit-dialog','audit-tabs','audit-title','audit-body','close-audit','toast'];
+    const templateIDs=[];
+    function walk(items){for(const n of items){if(typeof n==='string')continue;if(!isObj(n)||typeof n.tag!=='string'||!Array.isArray(n.children)){errs.push('模板节点结构不对');continue;}if(n.attrs?.id)templateIDs.push(n.attrs.id);if(['script','iframe','object','embed','style','link','img'].includes(n.tag))errs.push('模板包含禁止元素');if(Object.keys(n.attrs||{}).some(k=>/^on/i.test(k)||k==='style'))errs.push('模板包含内联事件或样式');walk(n.children);}}
+    walk(p.template);
+    if(new Set(templateIDs).size!==templateIDs.length)errs.push('模板包含重复 ID');
+    for(const id of required)if(!templateIDs.includes(id))errs.push('模板缺少必要节点：'+id);
+  }
+
   return errs;
 }
 

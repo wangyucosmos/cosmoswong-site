@@ -18,3 +18,10 @@ export function nextLocation(value) {
   const next = safeNext(value);
   return next === null ? null : next.startsWith('/') ? next : '/go/' + next;
 }
+
+
+// 登录返回值仍先经过原白名单；仅保留工具地图已知的版本片段。
+export function toolmapReturn(destination, hash) {
+  return ['/go/toolmap', '/toolmap'].includes(destination) && /^#(?:claude|codex)$/.test(hash)
+    ? '/toolmap' + hash : destination;
+}
