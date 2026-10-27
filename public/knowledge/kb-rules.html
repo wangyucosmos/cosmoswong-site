@@ -6,8 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="知识库内容需输入口令后查看。">
 <title>五个 AI 共用一个知识库的规则 · Cosmos Wong</title>
-<link rel="stylesheet" href="/assets/style.css?v=20261019142013">
-<link rel="stylesheet" href="/assets/notes.css?v=20261019142013">
+<link rel="stylesheet" href="/assets/style.css?v=20261027140807">
+<link rel="stylesheet" href="/assets/notes.css?v=20261027140807">
 
 <!--head:auto-->
 <meta name="robots" content="noindex, nofollow">
@@ -37,7 +37,7 @@
     <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
     <header class="top"><div class="wrap"><nav class="nav">
       <a class="logo" href="/">COSMOS WONG</a>
-      <ul id="menu"><li><a href="/" class="">首页</a></li><li><a href="/portfolio" class="">作品集</a></li><li><a href="/resume" class="">简历</a></li><li><a href="/trips" class="">旅游计划</a></li><li><a href="/tools" class="">工具箱</a></li><li><a href="/knowledge" class="on">知识库</a></li><li><a href="/subs" class="">订阅</a></li><li><a href="/kol" class="">KOL 工作台</a></li><li><a href="/desk" class="">我的工作台</a></li><li><a href="/go/fitness" class="">我的健身计划</a></li></ul>
+      <ul id="menu"><li><a href="/" class="">首页</a></li><li><a href="/portfolio" class="">作品集</a></li><li><a href="/resume" class="">简历</a></li><li><a href="/trips" class="">旅游计划</a></li><li><a href="/tools" class="">工具箱</a></li><li><a href="/knowledge" class="on">知识库</a></li><li><a href="/subs" class="">订阅</a></li><li><a href="/toolmap" class="">工具地图</a></li><li><a href="/desk" class="">我的工作台</a></li><li><a href="/go/fitness" class="">我的健身计划</a></li></ul>
       <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
     </nav></div></header><!--/chrome-top:auto-->
 <main class="wrap">
@@ -196,7 +196,7 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 </ul>
 <p><strong>✅ 2026-09-20 已核实（本条取代上面的疑问）</strong>：ChatGPT 的 GitHub 连接器<strong>可用</strong>，读的是仓库<strong>最新版</strong>。实测两处：① 「我的知识库」Project 答出 INDEX 的 <strong>7 个主题</strong>（含当天新建的「网络内容收藏」）；② 「卓望」Project 直接引用<strong>当天</strong>提交 <code>a66d0d3</code>。因此：新版指令（见 <code>给ChatGPT的Project指令.md</code> §二/§三）<strong>已生效</strong>，旧的「手动上传快照」指令<strong>已停用</strong>；Project「文件 / Files」里的旧快照应清理，避免两份并存；「收工必 push」依然是 ChatGPT 能看到新内容的<strong>唯一</strong>前提。</p>
 <h2>10. 四工具是怎么「自动知道」本库存在的（同步自查）</h2>
-<p>各工具能自动遵守本库规则，靠的是写在<strong>全局入口文件</strong>里的几行话，不是靠记忆。改动这些文件前先看本表：</p>
+<p>各工具通过<strong>全局入口文件</strong>获得知识库指路与个人记忆使用规则。自动加载入口正文，不代表自动全文加载外部记忆文件。改动这些文件前先看本表：</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -207,8 +207,8 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 </thead>
 <tbody><tr>
 <td>DeepSeek Harness</td>
-<td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code></td>
-<td>全局记忆，每次会话开头自动注入</td>
+<td><code>~/.dsh-rc10-desk/AGENTS.md</code></td>
+<td>当前桌面端全局入口；自动加载入口正文，外部记忆按入口指令读取。rc9 为旧环境冷备</td>
 </tr>
 <tr>
 <td>Claude Code / Claude Cowork</td>
@@ -217,8 +217,8 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 </tr>
 <tr>
 <td>Codex</td>
-<td><code>~/.codex/AGENTS.md</code> 中的「个人知识库（四工具共用）」段</td>
-<td>Codex 自己的全局规则文件，该段与上面两份同源</td>
+<td><code>~/.codex/AGENTS.md</code></td>
+<td>包含「个人知识库（四工具共用）」与「全局记忆」段；外部文件按入口指令读取</td>
 </tr>
 <tr>
 <td>ChatGPT 网页版</td>
@@ -228,7 +228,7 @@ deepseek harness/          ← DSH 草稿             │                 ├─
 </tbody></table></div>
 <p>铁律：</p>
 <ul>
-<li><code>~/.dsh-rc9-clean/memory/知识库规则.md</code> 与 <code>~/.claude/CLAUDE.md</code> <strong>必须保持一致</strong>（当前是压缩版：位置 + 开工必读 + 收工必经沉淀提醒）。只改一份 → 两个工具行为不一致。</li>
+<li>Claude、Codex、DSH 的知识库公共条款和个人记忆使用同源规则，各工具保留自己的加载方式及专用说明，不要求整个入口文件逐字一致。Codex 与 DSH 的内嵌核心摘要以 <code>~/.codex/AGENTS.md</code> 为同步基准，须逐字一致；摘要事实仍以上游个人资料与「关于我.md」为准。Claude 保留 <code>@</code> 导入机制，以及第 12 节规定的「Claude 搭建」刻意差异。</li>
 <li>本库根目录的 <code>AGENTS.md</code> / <code>CLAUDE.md</code> 是给<strong>已经进到本目录</strong>的工具看的；上表那几份全局文件是给<strong>还在别的目录开工</strong>的工具看的。职责不同，不要合并。</li>
 <li>没有 push 就等于其他工具（尤其 ChatGPT / Claude 网页版）看不到。<strong>收工必 push。</strong></li>
 </ul>
@@ -276,10 +276,18 @@ deepseek harness/          ← DSH 草稿             │                 ├─
   l=$(git -C &quot;$d&quot; rev-parse HEAD); r=$(git -C &quot;$d&quot; ls-remote origin main 2&gt;/dev/null | cut -f1)
   [ &quot;$l&quot; = &quot;$r&quot; ] &amp;&amp; echo &quot;与 GitHub 一致: $l&quot; || echo &quot;⚠️ 不一致 本地=$l 远程=$r&quot;
 done
-diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.claude/CLAUDE.md&quot; \
-  &amp;&amp; echo &quot;两份全局规则一致&quot; || echo &quot;⚠️ 两份全局规则不一致&quot;
+# 全局入口与摘要另按下方标准核对，不比较不同工具的整个入口文件。
 </code></pre>
-<p>判断标准：两个库都显示「与 GitHub 一致」+「未提交文件数: 0」，且两份全局规则一致 → 四个工具看到的是同一份最新内容；任何一条不满足，先修它再开工/收工。</p>
+<p>同步自查分别核对：</p>
+<ol>
+<li><strong>仓库同步</strong>：分别报告本地提交、GitHub 提交和未提交内容；无关的未跟踪文件不代为提交，不能把远端查询失败当作已同步。</li>
+<li><strong>实际入口</strong>：核对当前进程的 <code>DSH_HOME</code> 与启动配置；本机桌面端应读取 <code>~/.dsh-rc10-desk/AGENTS.md</code>，不能用 rc9 冷备文件代验。</li>
+<li><strong>公共条款</strong>：仅比较「个人知识库（四工具共用）」段，保留 Claude 不含「Claude 搭建」的刻意差异。</li>
+<li><strong>核心摘要</strong>：Codex 与 DSH 的「核心摘要」标题、来源注释和正文须逐字一致，且不超过 16 行。</li>
+<li><strong>会话加载</strong>：文件核对通过不等于会话加载验收通过；DSH 重启后须在新会话验证摘要、按需读取及记忆分流，检查入口是否被省略或截断。</li>
+</ol>
+<p><strong>DSH 当前加载机制（2026-10-27 本机代码核查）</strong>：桌面端 <code>0.2.1-rc.2</code> 的 <code>dsh-agent-instructions</code> 使用 <code>maxBytes: 65536</code>，限制全局与项目指令合并后的 UTF-8 字节数；单个源文件默认上限为 <code>1048576</code> 字节。超预算可能先省略较宽泛的全局文件。旧 rc9 记忆插件的 <code>maxChars: 24000</code> 不适用于桌面端；未发现 Claude 式 <code>@文件</code> 自动展开，外部记忆采用明确的按需读取指令。当前安装包启动和升级相关代码中未发现主动重写用户 <code>AGENTS.md</code> 的逻辑；未来升级仍须复核入口内容与加载结果。</p>
+<p><strong>DSH 信息分工</strong>：DSH 自身环境、版本、迁移等长期结论继续追加工作区 <code>DD.md</code>；个人事实按分流规则进入 <code>~/ai-memory</code>；项目进度和规则进入知识库对应主题。同一类信息只写对应位置，不双写。</p>
 <h2>11. 状态一致性：谁做完谁回写（跨 AI 看板自愈）</h2>
 <p><strong>要解决的问题（真实发生过）</strong>：某个工具（如 Claude）把一件事做完并交付了，但它没有回写 <code>进度.md</code>；于是另外几个工具（Codex／DSH／ChatGPT）下次开工还看到「进行中」或「断的」，重复劳动、或基于过时前提推进。</p>
 <p><strong>规则：</strong></p>
@@ -300,8 +308,8 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
 <p><strong>⭐ 最简触发词（用户不用保存、不用背长句）</strong>：用户对任何工具说「<strong>同步一下</strong>」／「<strong>回写进度</strong>」／「<strong>这事做完了</strong>」／「<strong>我已经交付了</strong>」中任意一句，即等于下达「回写」指令 → 立刻执行上文流程（写 <code>进度.md</code> + commit + push），<strong>不得只口头答应</strong>。</p>
 <p><strong>补充</strong>：各工具的会话日志在本机可读（方法见 <code>个人学习ai 相关/进度.md</code>），可用来核对「对方到底做到哪了」；但<strong>日志只是过程，权威状态仍以 <code>进度.md</code> 为准</strong>。</p>
 <h2>12. 各工具的「全局启动规则」正文（可复制，防丢失）</h2>
-<p>本库能做到&quot;AI 一开工就知道有知识库&quot;，靠的是每个工具安装目录里的<strong>一份全局规则文件</strong>（位置见第 10 条）。这份文件<strong>不在 git 里</strong>（属于各工具本机配置），因此把正文抄在这里存档：<strong>换电脑、装新工具、或某份被改坏时，照下面整段复制即可恢复。</strong></p>
-<p>三处内容必须<strong>完全一致</strong>（2026-09-20 起为下列 4 条）—— <strong>唯一例外见下方「刻意差异」</strong>：</p>
+<p>本库能做到「AI 一开工就知道有知识库」，靠的是每个工具的<strong>全局入口文件</strong>（位置见第 10 节）。下面存档的是「个人知识库（四工具共用）」公共段，恢复时只修复对应段，不覆盖整个入口。个人记忆、核心摘要和工具专用说明按各自入口及 <code>~/ai-memory/README.md</code> 维护；本机配置的备份放 <code>~/ai-memory/backups/</code>。</p>
+<p>三处知识库公共段保持同源，允许下方明确列出的刻意差异；不要求整个入口文件一致。以下存档包含 5 条工作要求：</p>
 <div class="tablewrap"><table>
 <thead>
 <tr>
@@ -315,7 +323,7 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
 </tr>
 <tr>
 <td>DeepSeek Harness</td>
-<td><code>~/.dsh-rc9-clean/memory/知识库规则.md</code></td>
+<td><code>~/.dsh-rc10-desk/AGENTS.md</code> 里的「个人知识库（四工具共用）」段</td>
 </tr>
 <tr>
 <td>Codex</td>
@@ -334,10 +342,10 @@ diff -q &quot;$HOME/.dsh-rc9-clean/memory/知识库规则.md&quot; &quot;$HOME/.
 - 知识库里没有对应主题 → 告诉用户并问是否新建子文件夹（按规则第 6 节结构），新建后登记 `INDEX.md`。
 </code></pre>
 <blockquote>
-<p>改动任一处后，用 <code>diff</code> 核对三处是否一致（第 10 条的自查命令已含 Claude↔DSH 这一对）。</p>
+<p>改动后按第 10 节分别核对知识库公共段、核心摘要和实际会话加载结果；不再比较不同工具的整个入口文件。</p>
 </blockquote>
 <p><strong>刻意差异（2026-10-18 立，见第 15 节）</strong>：<strong>Claude 侧</strong>（<code>~/.claude/CLAUDE.md</code>）的主题列表里**刻意不含「Claude 搭建」**这项 —— 目的是不让 Claude 被引导去读「网络出口/防封」那个目录。Codex 与 DSH 侧保留（它们要维护这套环境）。
-<strong>除这一项外，其余文字仍必须一致。</strong> 改的时候只改这一处，别顺手把别的也改乱。</p>
+<strong>除这一项外，知识库公共段的其余文字保持一致；这不限制公共段以外的工具专用说明。</strong> Codex 与 DSH 的内嵌核心摘要单独保持逐字一致，事实来源与同步方法见第 10 节及 <code>~/ai-memory/README.md</code>。</p>
 <h2>13. 上传内容的标题与说明语言</h2>
 <p>本规则适用于 <strong>ChatGPT、Claude Cowork、Claude Code、Codex、DeepSeek Harness</strong>，以及后续接入本知识库的其他 AI 工具。</p>
 <ul>
@@ -413,6 +421,9 @@ grep -rlE &quot;BEGIN (RSA|OPENSSH|PRIVATE) KEY|password:\s*[&#39;\&quot;]?[A-Za
 <li><p><strong>知道 <code>permissions.deny</code> 的边界</strong>：它只挡 <strong><code>Read</code> 工具</strong>，<strong>挡不住 <code>Bash</code> 里的 <code>cat</code> / <code>git show</code> / <code>python3 -c</code></strong>。所以 deny 是「降低概率」，不是「绝对隔离」；<strong>要绝对隔离，只能把文件移出该 AI 的可达路径</strong>（本例：真值文件放仓库外 <code>~/Documents/claude-isp-secrets/</code>）。
 <strong>推论</strong>：<strong>任何「会被自动注入 / 会被读取」的文件都不能放凭据</strong> —— 首当其冲是 <code>DD.md</code>（长期记忆，每次会话注入）和各工具的 <code>CLAUDE.md</code> / <code>AGENTS.md</code>。2026-10-18 就发生过：<code>DD.md</code> 里藏着 2 处 DECODO 密码。</p>
 </li>
+<li><p><strong><code>permissions.deny</code> 的路径写法（踩过坑）</strong>：Claude Code 的绝对路径规则必须是 <strong><code>Read(//绝对路径)</code>（双斜杠）</strong>；写成 <strong><code>Read(///Users/…)</code>（三斜杠）会被静默忽略、等于没生效</strong>（2026-10-25 实际踩过：12 条规则因此全失效）。为兼容不同版本匹配规则，关键目录<strong>同时写 <code>//绝对路径</code> 与 <code>~/家目录路径</code> 两种形式</strong>最稳。
+改完务必 <code>python3 -m json.tool ~/.claude/settings.json</code> 校验，并<strong>逐条核对是否真的覆盖到目标文件</strong>（不要只看条数）。</p>
+</li>
 </ol>
 <h3>给 AI 看的东西怎么办</h3>
 <ul>
@@ -429,7 +440,7 @@ grep -rlE &quot;BEGIN (RSA|OPENSSH|PRIVATE) KEY|password:\s*[&#39;\&quot;]?[A-Za
       <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
     </footer></div>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
-<script src="/assets/data.js?v=20261019142013"></script>
-<script src="/assets/render.js?v=20261019142013"></script><script src="/assets/app.js?v=20261019142013"></script>
+<script src="/assets/data.js?v=20261027140807"></script>
+<script src="/assets/render.js?v=20261027140807"></script><script src="/assets/app.js?v=20261027140807"></script>
 </body>
 </html>
