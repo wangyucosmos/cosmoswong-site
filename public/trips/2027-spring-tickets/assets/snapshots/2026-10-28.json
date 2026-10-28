@@ -1,0 +1,4739 @@
+{
+  "fx_source": "Google Flights Explore (curr=CNY; storefront zh-CN; browser scrape)",
+  "fx_date": "2026-10-28",
+  "snapshot_date": "2026-10-28",
+  "note": "浏览器实查 Google Flights Explore：上海出发→任意目的地；10组春节日期窗；全球图+亚洲区域图合并；卫星点（如下龙湾、披披群岛、德里辐射点）已并入主机场；航司/票面细节 Explore 未提供；非携程价",
+  "stats": {
+    "ok": 20,
+    "empty": 0,
+    "error": 0,
+    "unparseable": 0,
+    "destinations": 98,
+    "listed_top": 30,
+    "windows_completed": [
+      "2027-02-05/2027-02-13",
+      "2027-02-05/2027-02-14",
+      "2027-02-05/2027-02-15",
+      "2027-02-06/2027-02-13",
+      "2027-02-06/2027-02-14",
+      "2027-02-06/2027-02-15",
+      "2027-02-07/2027-02-14",
+      "2027-02-07/2027-02-15",
+      "2027-02-08/2027-02-15",
+      "2027-02-09/2027-02-15"
+    ],
+    "windows_skipped": []
+  },
+  "cities": [
+    {
+      "dest": "HAN",
+      "name": "河内",
+      "dep": "2027-02-05",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 1655,
+      "price": 1655.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h15m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 1655,
+          "price": 1655.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 1655,
+          "price": 1655.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 1655,
+          "price": 1655.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 1969,
+          "price": 1969.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "7h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 1969,
+          "price": 1969.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "7h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 1969,
+          "price": 1969.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "7h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 1969,
+          "price": 1969.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "7h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 1969,
+          "price": 1969.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "6h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2049,
+          "price": 2049.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "3h55m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "SGN",
+      "name": "胡志明市",
+      "dep": "2027-02-05",
+      "ret": "2027-02-13",
+      "origin": "上海",
+      "cny": 1732,
+      "price": 1732.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h35m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 1732,
+          "price": 1732.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 1732,
+          "price": 1732.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 1732,
+          "price": 1732.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 1732,
+          "price": 1732.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2032,
+          "price": 2032.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2032,
+          "price": 2032.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2232,
+          "price": 2232.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2462,
+          "price": 2462.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 2698,
+          "price": 2698.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "4h25m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "HKG",
+      "name": "香港",
+      "dep": "2027-02-06",
+      "ret": "2027-02-13",
+      "origin": "上海",
+      "cny": 1935,
+      "price": 1935.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "直飞",
+        "直飞"
+      ],
+      "duration": "3h00m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2155,
+          "price": 2155.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 2276,
+          "price": 2276.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "26h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2335,
+          "price": 2335.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2426,
+          "price": 2426.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "3h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2535,
+          "price": 2535.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2555,
+          "price": 2555.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2555,
+          "price": 2555.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2636,
+          "price": 2636.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "17h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2755,
+          "price": 2755.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h50m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "TPE",
+      "name": "台北",
+      "dep": "2027-02-08",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 1938,
+      "price": 1938.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "直飞",
+        "直飞"
+      ],
+      "duration": "2h05m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2138,
+          "price": 2138.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2138,
+          "price": 2138.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2167,
+          "price": 2167.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "6h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2332,
+          "price": 2332.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2332,
+          "price": 2332.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 2369,
+          "price": 2369.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2426,
+          "price": 2426.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2620,
+          "price": 2620.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 2657,
+          "price": 2657.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "MFM",
+      "name": "澳门",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2127,
+      "price": 2127.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "直飞",
+        "直飞"
+      ],
+      "duration": "2h45m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2227,
+          "price": 2227.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2227,
+          "price": 2227.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2327,
+          "price": 2327.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 2427,
+          "price": 2427.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2427,
+          "price": 2427.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2427,
+          "price": 2427.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2527,
+          "price": 2527.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2527,
+          "price": 2527.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 2627,
+          "price": 2627.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h45m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "BKK",
+      "name": "曼谷",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2190,
+      "price": 2190.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "8h15m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2280,
+          "price": 2280.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "15h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2663,
+          "price": 2663.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2764,
+          "price": 2764.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2864,
+          "price": 2864.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3114,
+          "price": 3114.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 3215,
+          "price": 3215.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3314,
+          "price": 3314.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "4h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 3660,
+          "price": 3660.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "14h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3660,
+          "price": 3660.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "14h55m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "MNL",
+      "name": "马尼拉",
+      "dep": "2027-02-06",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2203,
+      "price": 2203.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "24h00m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2203,
+          "price": 2203.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2203,
+          "price": 2203.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2203,
+          "price": 2203.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2505,
+          "price": 2505.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "24h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2505,
+          "price": 2505.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2754,
+          "price": 2754.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2823,
+          "price": 2823.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3104,
+          "price": 3104.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "19h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 3724,
+          "price": 3724.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "6h40m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "DEL",
+      "name": "新德里",
+      "dep": "2027-02-08",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2276,
+      "price": 2276.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "12h00m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 2276,
+          "price": 2276.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2473,
+          "price": 2473.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "12h00m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "ICN",
+      "name": "首尔",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2536,
+      "price": 2536.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "11h55m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 2693,
+          "price": 2693.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 2693,
+          "price": 2693.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 2793,
+          "price": 2793.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2793,
+          "price": 2793.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 2893,
+          "price": 2893.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 2893,
+          "price": 2893.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 2893,
+          "price": 2893.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 2893,
+          "price": 2893.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 2905,
+          "price": 2905.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "23h00m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "SIN",
+      "name": "新加坡",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2675,
+      "price": 2675.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "13h55m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 3157,
+          "price": 3157.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3157,
+          "price": 3157.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3402,
+          "price": 3402.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3488,
+          "price": 3488.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "6h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 3605,
+          "price": 3605.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3605,
+          "price": 3605.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3850,
+          "price": 3850.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 3894,
+          "price": 3894.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3894,
+          "price": 3894.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h45m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "KUL",
+      "name": "吉隆坡",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2736,
+      "price": 2736.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "13h50m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 3086,
+          "price": 3086.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "17h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3086,
+          "price": 3086.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3086,
+          "price": 3086.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3086,
+          "price": 3086.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 3317,
+          "price": 3317.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "17h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3317,
+          "price": 3317.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3317,
+          "price": 3317.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 3589,
+          "price": 3589.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3589,
+          "price": 3589.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "CTU",
+      "name": "成都",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2850,
+      "price": 2850.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 2990,
+          "price": 2990.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3130,
+          "price": 3130.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3410,
+          "price": 3410.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3690,
+          "price": 3690.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 3840,
+          "price": 3840.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3970,
+          "price": 3970.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4230,
+          "price": 4230.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4400,
+          "price": 4400.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4520,
+          "price": 4520.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "CNX",
+      "name": "清迈",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 2968,
+      "price": 2968.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "16h40m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3371,
+          "price": 3371.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "7h25m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3603,
+          "price": 3603.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "19h15m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3922,
+          "price": 3922.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4015,
+          "price": 4015.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4290,
+          "price": 4290.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "19h15m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4609,
+          "price": 4609.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4609,
+          "price": 4609.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4672,
+          "price": 4672.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4672,
+          "price": 4672.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h00m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "DPS",
+      "name": "巴厘岛",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3128,
+      "price": 3128.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "24h55m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3645,
+          "price": 3645.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3865,
+          "price": 3865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4125,
+          "price": 4125.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4125,
+          "price": 4125.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4283,
+          "price": 4283.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4385,
+          "price": 4385.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h30m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4944,
+          "price": 4944.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4978,
+          "price": 4978.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h45m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4978,
+          "price": 4978.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "11h30m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "HKT",
+      "name": "普吉岛",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3165,
+      "price": 3165.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "15h50m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3762,
+          "price": 3762.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3762,
+          "price": 3762.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4001,
+          "price": 4001.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4241,
+          "price": 4241.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "15h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4387,
+          "price": 4387.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4626,
+          "price": 4626.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4689,
+          "price": 4689.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "5h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4847,
+          "price": 4847.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h05m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4910,
+          "price": 4910.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h05m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "DAD",
+      "name": "岘港",
+      "dep": "2027-02-05",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3210,
+      "price": 3210.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h20m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3210,
+          "price": 3210.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 3494,
+          "price": 3494.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "27h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 3560,
+          "price": 3560.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 3560,
+          "price": 3560.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3560,
+          "price": 3560.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3560,
+          "price": 3560.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3580,
+          "price": 3580.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3580,
+          "price": 3580.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3849,
+          "price": 3849.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "21h00m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "HRB",
+      "name": "哈尔滨",
+      "dep": "2027-02-07",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3480,
+      "price": 3480.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 3530,
+          "price": 3530.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3770,
+          "price": 3770.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3830,
+          "price": 3830.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3920,
+          "price": 3920.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 3930,
+          "price": 3930.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4210,
+          "price": 4210.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4370,
+          "price": 4370.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4560,
+          "price": 4560.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4720,
+          "price": 4720.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "KTM",
+      "name": "加德满都",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3499,
+      "price": 3499.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "10h00m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 5447,
+          "price": 5447.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转2次",
+            "中转2次"
+          ],
+          "duration": "45h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 5627,
+          "price": 5627.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转2次",
+            "中转2次"
+          ],
+          "duration": "44h50m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 5711,
+          "price": 5711.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "22h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 5711,
+          "price": 5711.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "22h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5918,
+          "price": 5918.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "22h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5918,
+          "price": 5918.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "22h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 6017,
+          "price": 6017.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "31h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 6363,
+          "price": 6363.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 6363,
+          "price": 6363.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h55m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "PEK",
+      "name": "北京",
+      "dep": "2027-02-05",
+      "ret": "2027-02-13",
+      "origin": "上海",
+      "cny": 3540,
+      "price": 3540.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "直飞",
+        "直飞"
+      ],
+      "duration": "2h20m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 3540,
+          "price": 3540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "直飞",
+            "直飞"
+          ],
+          "duration": "2h20m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "ULN",
+      "name": "乌兰巴托",
+      "dep": "2027-02-06",
+      "ret": "2027-02-13",
+      "origin": "上海",
+      "cny": 3602,
+      "price": 3602.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 5517,
+          "price": 5517.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 5517,
+          "price": 5517.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 5517,
+          "price": 5517.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 5657,
+          "price": 5657.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5697,
+          "price": 5697.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 5717,
+          "price": 5717.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 5867,
+          "price": 5867.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5897,
+          "price": 5897.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 6067,
+          "price": 6067.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "GUM",
+      "name": "关岛",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3837,
+      "price": 3837.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4787,
+          "price": 4787.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "CCU",
+      "name": "加尔各答",
+      "dep": "2027-02-05",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 3981,
+      "price": 3981.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h55m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 3981,
+          "price": 3981.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 3981,
+          "price": 3981.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 3981,
+          "price": 3981.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4491,
+          "price": 4491.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4491,
+          "price": 4491.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4491,
+          "price": 4491.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4491,
+          "price": 4491.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4917,
+          "price": 4917.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5427,
+          "price": 5427.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h55m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "BOM",
+      "name": "孟买",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 4041,
+      "price": 4041.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "11h15m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4513,
+          "price": 4513.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 5055,
+          "price": 5055.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5505,
+          "price": 5505.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 5505,
+          "price": 5505.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "10h35m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "MAA",
+      "name": "钦奈",
+      "dep": "2027-02-05",
+      "ret": "2027-02-14",
+      "origin": "上海",
+      "cny": 4172,
+      "price": 4172.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h16m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4172,
+          "price": 4172.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5535,
+          "price": 5535.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 5535,
+          "price": 5535.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h16m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "ALA",
+      "name": "阿拉木图",
+      "dep": "2027-02-05",
+      "ret": "2027-02-13",
+      "origin": "上海",
+      "cny": 4208,
+      "price": 4208.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4208,
+          "price": 4208.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "URC",
+      "name": "乌鲁木齐",
+      "dep": "2027-02-08",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 4240,
+      "price": 4240.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4240,
+          "price": 4240.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4450,
+          "price": 4450.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4670,
+          "price": 4670.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4890,
+          "price": 4890.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5100,
+          "price": 5100.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 5320,
+          "price": 5320.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 5320,
+          "price": 5320.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5540,
+          "price": 5540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5540,
+          "price": 5540.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "BLR",
+      "name": "班加罗尔",
+      "dep": "2027-02-05",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 4319,
+      "price": 4319.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "9h20m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4319,
+          "price": 4319.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4319,
+          "price": 4319.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4319,
+          "price": 4319.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4319,
+          "price": 4319.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5072,
+          "price": 5072.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 5072,
+          "price": 5072.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5352,
+          "price": 5352.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 5352,
+          "price": 5352.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5352,
+          "price": 5352.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "9h20m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "TAS",
+      "name": "塔什干",
+      "dep": "2027-02-05",
+      "ret": "2027-02-14",
+      "origin": "上海",
+      "cny": 4343,
+      "price": 4343.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4527,
+          "price": 4527.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4527,
+          "price": 4527.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4827,
+          "price": 4827.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4865,
+          "price": 4865.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "CMB",
+      "name": "科伦坡",
+      "dep": "2027-02-05",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 4386,
+      "price": 4386.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "待核实",
+        "待核实"
+      ],
+      "duration": "—",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4386,
+          "price": 4386.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4386,
+          "price": 4386.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4386,
+          "price": 4386.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-09",
+          "ret": "2027-02-15",
+          "cny": 4386,
+          "price": 4386.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 5419,
+          "price": 5419.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 5419,
+          "price": 5419.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 5626,
+          "price": 5626.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 5648,
+          "price": 5648.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5872,
+          "price": 5872.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "待核实",
+            "待核实"
+          ],
+          "duration": "—",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    },
+    {
+      "dest": "UKY",
+      "name": "京都",
+      "dep": "2027-02-09",
+      "ret": "2027-02-15",
+      "origin": "上海",
+      "cny": 4401,
+      "price": 4401.0,
+      "currency": "CNY",
+      "airline": "—",
+      "legs": [
+        "中转1次",
+        "中转1次"
+      ],
+      "duration": "2h15m",
+      "route": [],
+      "visa": "",
+      "climate": "",
+      "other_windows": [
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-14",
+          "cny": 4587,
+          "price": 4587.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-15",
+          "cny": 4587,
+          "price": 4587.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-14",
+          "cny": 4587,
+          "price": 4587.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-07",
+          "ret": "2027-02-15",
+          "cny": 4587,
+          "price": 4587.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-08",
+          "ret": "2027-02-15",
+          "cny": 4587,
+          "price": 4587.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-06",
+          "ret": "2027-02-13",
+          "cny": 4837,
+          "price": 4837.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "16h40m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-15",
+          "cny": 4888,
+          "price": 4888.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "8h10m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-13",
+          "cny": 4899,
+          "price": 4899.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "2h15m",
+          "origin": "上海",
+          "route": []
+        },
+        {
+          "dep": "2027-02-05",
+          "ret": "2027-02-14",
+          "cny": 5338,
+          "price": 5338.0,
+          "currency": "CNY",
+          "airline": "—",
+          "legs": [
+            "中转1次",
+            "中转1次"
+          ],
+          "duration": "2h15m",
+          "origin": "上海",
+          "route": []
+        }
+      ],
+      "window_count": 10
+    }
+  ]
+}
