@@ -141,3 +141,9 @@
 - 载荷 `workspace` 包含 snapshot、template、data、view、sourcesHTML；实际内容仍只放仓库外 JSON 与 KV。模板只允许白名单 DOM，文本由 textContent 写入，不使用 innerHTML、内联事件、脚本或样式。
 - 上传脚本验证工作区必需字段、节点/工具引用、日期和模板节点；测试只使用虚构数据。切版清理主题观察器与弹窗，不影响其他版本。
 - 登录片段仅保留工具地图的两个已知版本；原 next 白名单与登录响应核对继续执行。
+
+## 首页（2026-10-30 起：WebGL 太阳系）
+- `public/index.html` 是自带骨架的页面：`build_pages.mjs` 里首页带 `bare: true`，只注入 head 元信息和 JSON-LD，**不注入主站导航 / 页脚、不预渲染正文**。不要把它改回 `render.js` 的 `home` 模板。
+- 脚本和资源全在 `public/assets/home/`：`three.min.js`（r128，自托管）、`world.js`（WebGL 场景）、`ui.js`（交互）、`tex/`（贴图）、`fonts/` + `fonts.css`。贴图来源与许可写在首页尾部「图片来源」里，必须保留（CC BY）。
+- 作品从 `data.js` 的 `portfolio` 读：`featured` 进作品带，全部进作品总表，点开跳 `/portfolio#<id>`；卡片短标题在 `ui.js` 的 `NAME` 里，新作品没写就按「 · 」自动拆。章节里的作品 / 工具 / 进行中旅行数量也从 `data.js` 算。
+- 字体是子集：**改了首页文字或作品的标题 / 类别 / 摘要后**，要重跑 `HTTPS_PROXY=http://127.0.0.1:7897 node tools/make_home_fonts.mjs`，否则新字回退到系统字体。
