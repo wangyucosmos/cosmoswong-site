@@ -39,21 +39,79 @@
 
   /* ---------- 页头 / 页脚：星点 + 这一页的星球 ---------- */
   const PLANET = { portfolio: 'earth', tools: 'jupiter', knowledge: 'saturn', resume: 'mars', bookmarks: 'moon', trips: 'moon', workbench: 'earth' };
-  function sky(host, density) {
+  /* 真实星空：每个页头 / 页脚是天上的一片真实天区（耶鲁亮星星表 stars.bin，按位置、星等、色温画点光源，亮星带星芒），
+     底下垫一层模糊的全景星图当银河光雾，再加一层近处微尘；鼠标移动、页面滚动时三层按远近错开（视差）。 */
+  const REGION = { portfolio: [83, 0], tools: [266, -28], knowledge: [305, 38], resume: [165, 55], bookmarks: [57, 22], trips: [57, 22], workbench: [195, -60], foot: [160, -58] };
+  let catalog = null, haze = null;
+  const getCatalog = () => catalog || (catalog = fetch('/assets/home/stars.bin').then(r => r.arrayBuffer()).then(ab => {
+    const dv = new DataView(ab), n = ab.byteLength / 8, out = new Array(n);
+    for (let i = 0; i < n; i++) { const o = i * 8; out[i] = [dv.getInt16(o, true) / 32767, dv.getInt16(o + 2, true) / 32767, dv.getInt16(o + 4, true) / 32767, dv.getUint8(o + 6) / 20 - 2, dv.getUint8(o + 7) * 100]; }
+    return out;
+  }).catch(() => []));
+  // 全景星图（赤经 0h 在正中、向左增加）：缩到 1024 宽再左右拼一份，方便跨 0h 取一块
+  const getHaze = () => haze || (haze = new Promise(ok => {
+    const im = new Image(); im.onload = () => { const c = document.createElement('canvas'); c.width = 2048; c.height = 512; const x = c.getContext('2d'); x.drawImage(im, 0, 0, 1024, 512); x.drawImage(im, 1024, 0, 1024, 512); ok(c); }; im.onerror = () => ok(null); im.src = '/assets/home/tex/starmap_2k.webp';
+  }));
+  const kRGB = k => { const t = Math.min(400, Math.max(20, k / 100));
+    const r = t <= 66 ? 255 : Math.min(255, 329.7 * Math.pow(t - 60, -0.1332)), g = t <= 66 ? Math.min(255, 99.47 * Math.log(t) - 161.1) : Math.min(255, 288.1 * Math.pow(t - 60, -0.0755)), b = t >= 66 ? 255 : t <= 19 ? 0 : Math.min(255, 138.5 * Math.log(t - 10) - 305);
+    return `${Math.round(r)},${Math.round(g)},${Math.round(b)}`; };
+  function sky(host, key) {
     const cv = document.createElement('canvas'); cv.className = 'sky'; cv.setAttribute('aria-hidden', 'true'); host.prepend(cv);
-    const g = cv.getContext('2d'), tint = ['#cfe0ff', '#f4f2ed', '#fff3d6', '#ffd9b0', '#b9d2ff'];
-    let W = 0, H = 0, stars = [], on = true;
+    const g = cv.getContext('2d'), [ra0, de0] = (REGION[key] || REGION.foot).map(v => v * Math.PI / 180);
+    let W = 0, H = 0, stars = [], dust = [], hz = null, on = true, mx = 0, my = 0, tx = 0, ty = 0;
+    // 视场中心的切平面基向量（赤道坐标单位向量 x=cosδcosα, y=sinδ, z=-cosδsinα）
+    const C = [Math.cos(de0) * Math.cos(ra0), Math.sin(de0), -Math.cos(de0) * Math.sin(ra0)];
+    const E = [-Math.sin(ra0), 0, -Math.cos(ra0)], Nn = [-Math.sin(de0) * Math.cos(ra0), Math.cos(de0), Math.sin(de0) * Math.sin(ra0)];
+    const FOV = 78 * Math.PI / 180;
+    function build(cat) {
+      const f = W / 2 / Math.tan(FOV / 2);
+      stars = [];
+      for (const [x, y, z, m, k] of cat) {
+        const d = x * C[0] + y * C[1] + z * C[2]; if (d < 0.2) continue;
+        // 天空从地上往上看：东在左，所以横坐标取负
+        const px = W / 2 - f * (x * E[0] + y * E[1] + z * E[2]) / d, py = H / 2 - f * (x * Nn[0] + y * Nn[1] + z * Nn[2]) / d;
+        if (px < -20 || px > W + 20 || py < -20 || py > H + 20) continue;
+        stars.push({ x: px, y: py, m, c: kRGB(k), r: Math.max(0.45, 2.3 - m * 0.33), a: Math.min(1, Math.max(0.12, 1.2 - m * 0.16)), p: Math.random() * 6.28, s: 1 + Math.random() * 2 });
+      }
+      stars.sort((a, b) => b.m - a.m);   // 暗的先画，亮的盖在上面
+    }
     const size = () => {
       const d = Math.min(2, devicePixelRatio || 1); W = cv.clientWidth; H = cv.clientHeight; cv.width = W * d; cv.height = H * d; g.setTransform(d, 0, 0, d, 0, 0);
-      stars = Array.from({ length: Math.round(density * W * H / 1e6) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: Math.random() < .9 ? Math.random() * .9 + .3 : Math.random() * 1.4 + 1, c: tint[(Math.random() * tint.length) | 0], p: Math.random() * 6.28, s: .6 + Math.random() * 1.8 }));
+      dust = Array.from({ length: Math.round(140 * W * H / 1e6) }, () => ({ x: Math.random() * W, y: Math.random() * H, r: 0.3 + Math.random() * 0.6, a: 0.15 + Math.random() * 0.3 }));
+      if (catalog) catalog.then(c => { build(c); draw(performance.now()); });
     };
     const draw = t => {
+      tx += (mx - tx) * 0.06; ty += (my - ty) * 0.06;
+      const sy = Math.min(1, Math.max(-1, (host.getBoundingClientRect().top) / innerHeight));
       g.clearRect(0, 0, W, H);
-      for (const s of stars) { g.globalAlpha = MOTION ? .45 + .55 * (.5 + .5 * Math.sin(t / 1000 * s.s + s.p)) : .8; g.fillStyle = s.c; g.beginPath(); g.arc(s.x, s.y, s.r, 0, 6.283); g.fill(); }
+      if (hz) {   // 银河光雾：取全景图里对应天区的一块，放大后自然变模糊
+        const sw = 2048 / 2 * (FOV / (2 * Math.PI)) * 1.15, sh = sw * H / W, cx = (0.5 - ra0 / (2 * Math.PI)) * 1024 + 1024, cy = (0.5 - de0 / Math.PI) * 512;
+        g.globalAlpha = 0.55; g.globalCompositeOperation = 'lighter';
+        g.drawImage(hz, cx - sw / 2 - tx * 0.02, Math.max(0, Math.min(512 - sh, cy - sh / 2)), sw, Math.min(sh, 512), -10, -10 - sy * 6, W + 20, H + 20);
+        g.globalCompositeOperation = 'source-over';
+      }
+      const ox = tx * 0.25, oy = ty * 0.25 + sy * 14;
+      for (const s of stars) {
+        const tw = MOTION ? 0.82 + 0.18 * Math.sin(t / 1000 * s.s + s.p) : 1, x = s.x + ox, y = s.y + oy;
+        if (s.m < 2.2) {   // 亮星：光晕 + 十字星芒
+          const R = s.r * 5.5, gr = g.createRadialGradient(x, y, 0, x, y, R);
+          gr.addColorStop(0, `rgba(${s.c},${(0.55 * tw).toFixed(3)})`); gr.addColorStop(1, `rgba(${s.c},0)`);
+          g.fillStyle = gr; g.globalAlpha = 1; g.fillRect(x - R, y - R, R * 2, R * 2);
+          g.globalAlpha = 0.45 * tw; g.fillStyle = `rgb(${s.c})`; const L = s.r * 7;
+          g.fillRect(x - L, y - 0.35, L * 2, 0.7); g.fillRect(x - 0.35, y - L, 0.7, L * 2);
+        }
+        g.globalAlpha = s.a * tw; g.fillStyle = `rgb(${s.c})`; g.beginPath(); g.arc(x, y, s.r, 0, 6.283); g.fill();
+      }
+      const dx = tx * 0.9, dy = ty * 0.9 + sy * 40;   // 近处微尘：移动最多
+      g.fillStyle = '#e8ecff';
+      for (const s of dust) { g.globalAlpha = s.a; g.beginPath(); g.arc(((s.x + dx) % W + W) % W, ((s.y + dy) % H + H) % H, s.r, 0, 6.283); g.fill(); }
+      g.globalAlpha = 1;
       if (on && MOTION) requestAnimationFrame(draw);
     };
+    if (FINE && MOTION) addEventListener('pointermove', e => { mx = (e.clientX / innerWidth - 0.5) * -24; my = (e.clientY / innerHeight - 0.5) * -16; }, { passive: true });
     new IntersectionObserver(([e]) => { const was = on; on = e.isIntersecting; if (on && !was && MOTION) requestAnimationFrame(draw); }).observe(cv);
     addEventListener('resize', () => { size(); if (!MOTION) draw(0); });
+    getCatalog(); getHaze().then(c => { hz = c; if (!MOTION) draw(0); });
     size(); requestAnimationFrame(draw);
   }
   if (head) {
@@ -64,9 +122,9 @@
       const load = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
       (window.THREE ? Promise.resolve() : load('/assets/home/three.min.js' + VQ)).then(() => load('/assets/home/planet.js' + VQ)).catch(() => {});
     }
-    sky(head, 520);
+    sky(head, page);
   }
-  if (foot) sky(foot, 420);
+  if (foot) sky(foot, 'foot');
 
   /* ---------- 复制邮箱 ---------- */
   const copy = $('#copyMail');

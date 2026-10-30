@@ -30,7 +30,7 @@
       <div class="foot-links">${S.me.email ? `<button class="mag" id="copyMail" type="button" data-cursor="复制"><span id="mailText">${esc(S.me.email)}</span><span class="mono" id="copyState">复制</span></button>` : ''}
         <a class="mag" href="/resume">简历 →</a>${S.me.links.map(l => `<a class="mag" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}
         <a class="mag" href="/">回到太阳系 ↑</a></div>
-      <div class="foot-row"><span>© ${esc(year)} ${esc(S.me.name)}</span><span class="mono">星球贴图：Solar System Scope（CC BY 4.0）</span></div>
+      <div class="foot-row"><span>© ${esc(year)} ${esc(S.me.name)}</span><span class="mono">星球贴图：Solar System Scope（CC BY 4.0）· 恒星：耶鲁亮星星表 · 星图：NASA SVS</span></div>
     </div></footer>
     <div class="menu-backdrop" aria-hidden="true"></div>`;
   // 子页面页头：深空底 + 星点 + 这一页的星球（星球和星点由 app.js 插入）；en 是大号英文标题，cn 是中文标题

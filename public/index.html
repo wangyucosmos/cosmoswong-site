@@ -62,7 +62,12 @@ main{position:relative;z-index:1}
 #nav .logo .lg-stars circle.on{opacity:1}
 #nav .logo .lg-gold{opacity:.7;transition:opacity .6s}
 #nav .logo .lg-gold.on{opacity:1}
-.nav__role{opacity:.72}
+.nav__role{font-family:var(--f-mono);font-size:13px;letter-spacing:.06em;opacity:.88;white-space:nowrap}
+/* 身份标签：「运营十年 ·」后面的词像翻牌一样轮换，鼠标放上去停住 */
+.role-roll{display:inline-grid;overflow:hidden;vertical-align:bottom;height:1.4em;margin-left:.5em;color:var(--accent);font-family:var(--f-cn);letter-spacing:.02em}
+.role-roll>span{grid-area:1/1;display:block;line-height:1.4em;transition:transform .6s var(--e-out),opacity .45s}
+.role-roll>span.out{transform:translateY(-105%);opacity:0}
+.role-roll>span.pre{transform:translateY(105%);opacity:0}
 .nav__links{display:flex;gap:22px;align-items:center}
 .nav__links a{text-decoration:none;position:relative}
 .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .45s var(--e-out)}
@@ -115,7 +120,20 @@ main{position:relative;z-index:1}
 .pcard span:last-child:nth-child(4){color:var(--glow-2)}
 .warp{position:absolute;left:50%;top:calc(76px + env(safe-area-inset-top,0px));z-index:4;transform:translate(-50%,-8px);padding:6px 14px;border-radius:99px;background:rgba(143,208,255,.16);border:1px solid rgba(143,208,255,.45);color:#cfe9ff;font-size:12px;opacity:0;transition:opacity .3s,transform .4s var(--e-out);pointer-events:none}
 .warp.on{opacity:1;transform:translate(-50%,0)}
-.hint-ix{color:var(--hero-muted);font-size:12px;margin-top:10px}
+/* 玩法清单：做到一项就亮成金色并打勾，全部做到换成一句话 */
+.hint-ix{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px;color:var(--hero-muted);font-size:12px;pointer-events:none}
+.hint-ix .q-lbl{margin-right:2px;opacity:.8}
+.hint-ix .q{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;border:1px solid rgba(244,242,237,.22);background:rgba(5,6,13,.28);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:background .4s,color .4s,border-color .4s}
+.hint-ix .q::before{content:"";width:6px;height:6px;border-radius:50%;border:1px solid currentColor;transition:background .3s,transform .5s cubic-bezier(.34,1.8,.5,1)}
+.hint-ix .q.done{color:var(--accent-ink);background:var(--accent);border-color:var(--accent);animation:qPop .6s cubic-bezier(.34,1.8,.5,1)}
+.hint-ix .q.done::before{content:"✓";width:auto;height:auto;border:0;font-size:11px;line-height:1}
+.hint-ix .q-all{color:var(--accent);font-size:13px;animation:qPop .7s cubic-bezier(.34,1.8,.5,1)}
+@keyframes qPop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:none}}
+/* slogan 百叶窗：每个字绕横轴翻过去，换成下一句；翻的时候带一点金色 */
+.slogan{cursor:pointer;outline:none}
+.slogan .ln>span{perspective:700px}
+.slogan .fc{display:inline-block;transform-origin:50% 50% -.35em;backface-visibility:hidden;will-change:transform}
+.slogan:focus-visible{outline:2px solid var(--accent);outline-offset:6px;border-radius:8px}
 .hero__fallback{position:absolute;inset:0;background:radial-gradient(90% 70% at 30% 100%,#1d3b6e 0,transparent 60%),radial-gradient(60% 50% at 80% 10%,#3a2a5e 0,transparent 70%),var(--space);display:none}
 .no-gl .hero__fallback{display:block}
 .hero__scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(270deg,rgba(5,6,13,.62) 0,rgba(5,6,13,.25) 38%,transparent 62%);opacity:0;transition:opacity .8s var(--e-out)}
@@ -390,7 +408,7 @@ main{position:relative;z-index:1}
 
 <header class="nav pre" id="nav">
   <a class="nav__name" href="#top" aria-label="Cosmos Wong 首页"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><g class="lg-lines" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"><polyline pathLength="1" points="29,19.9 15,19.9 8,32 15,44.1 29,44.1"/><polyline pathLength="1" points="35,20 40,44 46,31 52,44 57,20"/></g><g class="lg-stars" fill="currentColor"><circle cx="29" cy="19.9" r="3.2" style="--d:0"/><circle cx="15" cy="19.9" r="2.6" style="--d:1"/><circle cx="8" cy="32" r="3.5" style="--d:2"/><circle cx="15" cy="44.1" r="2.6" style="--d:3"/><circle cx="29" cy="44.1" r="3.0" style="--d:4"/><circle cx="35" cy="20" r="3.0" style="--d:5"/><circle cx="40" cy="44" r="2.7" style="--d:6"/><circle cx="52" cy="44" r="2.7" style="--d:7"/><circle cx="57" cy="20" r="3.3" style="--d:8"/></g><g class="lg-gold"><circle cx="46" cy="31" r="7.5" fill="#ffc04a" opacity=".22"/><path d="M46 23.2 47 30 53.8 31 47 32 46 38.8 45 32 38.2 31 45 30Z" fill="#ffd27a" opacity=".9"/><circle cx="46" cy="31" r="3.9" fill="#ffc04a"/></g></svg><span>Cosmos Wong</span></a>
-  <span class="nav__role">运营十年 · 游戏 / 活动 / 内容</span>
+  <span class="nav__role" aria-label="运营十年 · 游戏 / 活动 / 内容">运营十年 ·<span class="role-roll" id="roleRoll" aria-hidden="true"><span>游戏</span></span></span>
   <nav class="nav__links" aria-label="主导航">
     <a href="/resume">简历</a>
     <button class="nav__more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button>
@@ -421,9 +439,9 @@ main{position:relative;z-index:1}
       <div class="pcard" id="pcard" aria-hidden="true"></div>
       <div class="warp mono" id="warpHint" aria-hidden="true">时间加速 ×24</div>
       <div class="hero__copy" id="heroCopy">
-        <h1 class="rv"><span class="ln"><span>一起探索宇宙</span></span></h1>
+        <h1 class="rv slogan" id="slogan" tabindex="0" role="button" aria-label="一起探索宇宙（点一下换一句）" data-cursor="点一下 · 换一句"><span class="ln"><span>一起探索宇宙</span></span></h1>
         <div class="hero__hint mono"><i></i>向下滚动，飞向地球</div>
-        <div class="hint-ix mono">试试：拖动行星绕太阳跑 · 拖空白处转视角 · 长按加速时间 · 点太阳</div>
+        <div class="hint-ix" id="quest" aria-label="可以试试的玩法"><span class="q-lbl mono">试试</span><span class="q" data-q="drag">拖动行星</span><span class="q" data-q="rotate">拖空白处转视角</span><span class="q" data-q="warp">长按加速时间</span><span class="q" data-q="sun">点太阳</span></div>
       </div>
       <div class="chapter" id="chapter">
         <div class="chapter__item" data-k="1"><span class="ln"><span class="no">01 / 04 · 地球 · 13 个作品</span></span><h2><span class="ln"><span>Works<small>作品</small></span></span></h2><span class="ln"><span><p>活动策划、交互原型，还有给自己搭的工作台。</p></span></span><span class="ln ln-go"><span><a class="go" href="/portfolio">进入作品集 →</a></span></span></div>
@@ -498,7 +516,7 @@ main{position:relative;z-index:1}
         <button id="toSun" type="button">回到太阳系 ↑</button>
       </div>
     </div>
-    <div class="foot__row stag"><span>© 2026 Cosmos Wong</span><span class="credit-wrap"><button class="credit-btn" id="creditBtn" type="button" aria-expanded="false" aria-controls="credits">图片来源</button><span class="credits" id="credits" role="dialog" aria-label="图片来源"><b>本页用到的天文图片</b><span>行星贴图：<a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a>（CC BY 4.0）</span><span>全天星图：<a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener">NASA/Goddard Space Flight Center Scientific Visualization Studio</a>；Gaia DR2: ESA/Gaia/DPAC</span><span>银河系：<a href="https://science.nasa.gov/photojournal/our-milky-way-gets-a-makeover-artist-concept" target="_blank" rel="noopener">NASA/JPL-Caltech</a>（PIA10748）</span><span>船底座星云：<a href="https://esawebb.org/images/weic2205a/" target="_blank" rel="noopener">NASA, ESA, CSA, and STScI</a>（CC BY 4.0）</span></span></span></div>
+    <div class="foot__row stag"><span>© 2026 Cosmos Wong</span><span class="credit-wrap"><button class="credit-btn" id="creditBtn" type="button" aria-expanded="false" aria-controls="credits">图片来源</button><span class="credits" id="credits" role="dialog" aria-label="图片来源"><b>本页用到的天文图片</b><span>行星贴图：<a href="https://www.solarsystemscope.com/textures/" target="_blank" rel="noopener">Solar System Scope</a>（CC BY 4.0）</span><span>恒星位置：Yale Bright Star Catalog（Hoffleit &amp; Warren，耶鲁亮星星表）</span><span>全天星图：<a href="https://svs.gsfc.nasa.gov/4851" target="_blank" rel="noopener">NASA/Goddard Space Flight Center Scientific Visualization Studio</a>；Gaia DR2: ESA/Gaia/DPAC</span><span>银河系：<a href="https://science.nasa.gov/photojournal/our-milky-way-gets-a-makeover-artist-concept" target="_blank" rel="noopener">NASA/JPL-Caltech</a>（PIA10748）</span><span>船底座星云：<a href="https://esawebb.org/images/weic2205a/" target="_blank" rel="noopener">NASA, ESA, CSA, and STScI</a>（CC BY 4.0）</span></span></span></div>
   </footer>
 </main>
 

@@ -248,10 +248,10 @@
   const skyGeo = new THREE.SphereGeometry(1500, 64, 32);
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false,
-    uniforms: { uMap: { value: T.stars }, uInt: { value: 0.42 }, uSat: { value: 1.65 } },
+    uniforms: { uMap: { value: T.stars }, uInt: { value: 0.5 }, uSat: { value: 1.5 } },   // 2026-10-31：星图只当银河底光（模糊、调暗），星星本身由真实星表的点光源来画
     vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader: `uniform sampler2D uMap; uniform float uInt; uniform float uSat; varying vec2 vUv;
-      void main(){ vec3 c=pow(texture2D(uMap,vec2(1.-vUv.x,vUv.y)).rgb,vec3(2.2)); float l=dot(c,vec3(.2126,.7152,.0722));
+      void main(){ vec3 c=pow(texture2D(uMap,vec2(1.-vUv.x,vUv.y),2.6).rgb,vec3(2.2)); float l=dot(c,vec3(.2126,.7152,.0722));
         c=max(mix(vec3(l),c,uSat),0.); gl_FragColor=vec4(c*uInt,1.); }`
   });
   lateHooks.push((k, t) => { if (k === 'stars') skyMat.uniforms.uMap.value = t; });
@@ -390,6 +390,46 @@
   const hs = new THREE.Scene();
   const hc = new THREE.PerspectiveCamera(40, 1, 0.05, 4000);
   const sky = new THREE.Mesh(skyGeo, skyMat); sky.rotation.set(0.62, 0.4, 0.28); hs.add(sky);
+  // ---------- 真实恒星：耶鲁亮星星表（BSC5，9096 颗肉眼可见恒星，tools/make_stars.py 生成 stars.bin） ----------
+  // 每颗按真实位置、星等、色温画成锐利的点光源，挂在天空球里跟着一起转；最亮的几颗带十字星芒
+  const catMat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uTime: { value: 0 }, uPx: { value: 1 } },
+    vertexShader: `attribute float aMag; attribute vec3 aCol; attribute float aPh; uniform float uTime; uniform float uPx; varying vec3 vC; varying float vB; varying float vSpk;
+      void main(){ float b=clamp(1.15-aMag*.16,.07,1.);
+        float tw=.88+.12*sin(uTime*(1.3+fract(aPh*.37)*3.)+aPh*6.2831);
+        vB=b*tw; vC=aCol; vSpk=smoothstep(1.9,-.6,aMag);
+        gl_PointSize=uPx*(1.6+max(0.,3.4-aMag)*1.7+vSpk*14.);
+        gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+    fragmentShader: `varying vec3 vC; varying float vB; varying float vSpk;
+      void main(){ vec2 c=gl_PointCoord-.5; float d=length(c);
+        float core=exp(-d*d*(vSpk>.01?260.:40.));
+        float halo=exp(-d*d*18.)*.35*vSpk;
+        float spk=(max(0.,1.-abs(c.x)*40.)*max(0.,1.-abs(c.y)*2.1)+max(0.,1.-abs(c.y)*40.)*max(0.,1.-abs(c.x)*2.1))*vSpk*.55;
+        gl_FragColor=vec4(vC*(core+halo+spk)*vB*1.6,1.); }`
+  });
+  const kColor = (k) => { // 色温 → 颜色（近似黑体）
+    const t = Math.min(40000, Math.max(2000, k)) / 100;
+    const r = t <= 66 ? 1 : Math.min(1, 1.2929 * Math.pow(t - 60, -0.1332));
+    const g = t <= 66 ? Math.min(1, 0.3901 * Math.log(t) - 0.6318) : Math.min(1, 1.1299 * Math.pow(t - 60, -0.0755));
+    const b = t >= 66 ? 1 : t <= 19 ? 0 : Math.min(1, 0.5432 * Math.log(t - 10) - 1.1963);
+    return [r, g, b];
+  };
+  fetch('/assets/home/stars.bin').then((r) => r.arrayBuffer()).then((ab) => {
+    const dv = new DataView(ab), n = ab.byteLength / 8, R = 1380;
+    const pos = new Float32Array(n * 3), mag = new Float32Array(n), col = new Float32Array(n * 3), ph = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const o = i * 8;
+      pos[i * 3] = (dv.getInt16(o, true) / 32767) * R; pos[i * 3 + 1] = (dv.getInt16(o + 2, true) / 32767) * R; pos[i * 3 + 2] = (dv.getInt16(o + 4, true) / 32767) * R;
+      mag[i] = dv.getUint8(o + 6) / 20 - 2; col.set(kColor(dv.getUint8(o + 7) * 100), i * 3); ph[i] = Math.random();
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('aMag', new THREE.BufferAttribute(mag, 1));
+    g.setAttribute('aCol', new THREE.BufferAttribute(col, 3)); g.setAttribute('aPh', new THREE.BufferAttribute(ph, 1));
+    const pts = new THREE.Points(g, catMat); pts.frustumCulled = false; sky.add(pts);
+  }).catch(() => {});
+  // 近处星尘：在镜头和远处星空之间的一层极淡的微粒，转视角 / 滚动时近快远慢，立体感主要来自这层
+  hs.add(new THREE.Points(makeStars(S.tier === 'high' ? 900 : 400, [[140, 260, 0.55]]), starMat));
   hs.add(new THREE.Points(starGeo, starMat));
   // 韦伯星云（可开关）
   const nebulae = [];
@@ -728,9 +768,10 @@
   function localXY(e) { const r = stage.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
   // 两根手指 = 缩放：记下所有按在首屏上的触点；第二根手指落下时取消拖动 / 转视角 / 长按加速，改成按两指距离缩放
   const PTRS = new Map();
+  const act = (k) => world.onAction && world.onAction(k);   // 玩法清单：拖行星 / 转视角 / 长按加速 / 点太阳 / 双指缩放，由 ui.js 点亮
   const pinchDist = () => { const [a, b] = [...PTRS.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
   stage.addEventListener('pointerdown', (e) => {
-    if (!interactive() || IX.chase || e.target.closest('a,button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    if (!interactive() || IX.chase || e.target.closest('a,button,.slogan') || (e.pointerType === 'mouse' && e.button !== 0)) return;
     const [x, y] = localXY(e);
     if (e.pointerType !== 'mouse') {
       PTRS.set(e.pointerId, { x, y });
@@ -739,7 +780,7 @@
         if (IX.drag) { IX.drag.spin = 0; IX.drag = null; }
         IX.down = null; IX.rot = false; IX.view.vaz = 0; IX.view.vel = 0;
         if (IX.warpTarget !== 1) { IX.warpTarget = 1; warpHint.classList.remove('on'); }
-        IX.pinch = { d0: pinchDist(), z0: IX.zoom };
+        IX.pinch = { d0: pinchDist(), z0: IX.zoom }; act('pinch');
         return;
       }
     }
@@ -749,7 +790,7 @@
     if (p && p !== 'sun' && p !== 'comet') { IX.drag = p; p.dragV = 0; p.spin = 0; try { stage.setPointerCapture(e.pointerId); } catch (er) {} }
     else if (!p && !LOW) {
       clearTimeout(IX.holdTimer);
-      IX.holdTimer = setTimeout(() => { if (IX.down && IX.down.moved < 8) { IX.warpTarget = 24; warpHint.classList.add('on'); } }, 380);
+      IX.holdTimer = setTimeout(() => { if (IX.down && IX.down.moved < 8) { IX.warpTarget = 24; warpHint.classList.add('on'); act('warp'); } }, 380);
     }
   });
   addEventListener('pointermove', (e) => {
@@ -762,8 +803,9 @@
       if (IX.drag) {
         const a = eclipticAngle(x, y);
         if (a !== null) { const d = wrapPi(a - IX.drag.theta); IX.drag.theta += d * 0.5; IX.drag.dragV = lerp(IX.drag.dragV, (d * 0.5) / dtt, 0.4); }
+        if (IX.down.moved > 12) act('drag');
       } else if (!IX.down.p && IX.down.moved > 8 && IX.warpTarget === 1) {
-        IX.rot = true;
+        IX.rot = true; act('rotate');
         IX.view.az -= dx * 0.006; IX.view.vaz = (-dx * 0.006) / dtt;
         if (IX.down.type === 'mouse') { IX.view.el = Math.max(-0.36, Math.min(0.95, IX.view.el + dy * 0.004)); IX.view.vel = (dy * 0.004) / dtt; }
       }
@@ -788,7 +830,7 @@
       else p.spin = Math.max(-3.5, Math.min(3.5, p.dragV || 0)) - p.omega;
     } else if (d.moved < 6) IX.tap = null;   // 点空白处收起介绍卡片
     if (d.p === 'sun' && d.moved < 6 && !LOW) {
-      IX.shockT = 0.0001; IX.shockOn = true;
+      IX.shockT = 0.0001; IX.shockOn = true; act('sun');
     } else if (d.p === 'comet' && d.moved < 6) {
       // 点彗星：镜头追上去跟拍一小段，再交给 ui 跃迁到尾页「等你来信」
       if (LOW) world.onComet && world.onComet(); else { IX.chase = 0.0001; IX.chaseSent = false; }
@@ -994,13 +1036,14 @@
     W = innerWidth; H = innerHeight;
     PR = Math.min(devicePixelRatio || 1, S.tier === 'high' ? 2 : 1.5);
     R.setPixelRatio(PR); R.setSize(W, H, false);
-    starMat.uniforms.uPx.value = PR; galStarMat.uniforms.uPx.value = PR; trailPtsMat.uniforms.uPx.value = PR; dustMat.uniforms.uPx.value = PR; tailMats.forEach((m) => (m.uniforms.uPx.value = PR)); fgMat.uniforms.uPx.value = PR;
+    starMat.uniforms.uPx.value = PR; catMat.uniforms.uPx.value = PR; galStarMat.uniforms.uPx.value = PR; trailPtsMat.uniforms.uPx.value = PR; dustMat.uniforms.uPx.value = PR; tailMats.forEach((m) => (m.uniforms.uPx.value = PR)); fgMat.uniforms.uPx.value = PR;
   };
   world.update = (dt) => {
     const u = heroU(); curU = u;
     const active = updateDom(u);
     const T0 = S.time, moving = !LOW;
     starMat.uniforms.uTime.value = moving ? T0 : 0;
+    catMat.uniforms.uTime.value = moving ? T0 : 0;
     sunMesh.material.uniforms.uTime.value = moving ? T0 : 0;
     if (moving) sky.rotation.y += dt * 0.004;
     nebulae.forEach((m, i) => moving && m.rotateZ(dt * (i ? -0.004 : 0.003)));

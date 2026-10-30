@@ -8,8 +8,70 @@
   root.classList.add('js');
   const LOW = S.tier === 'low';
   const FINE = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  // 手机：首屏提示换成触屏的玩法（双指缩放、轻点看介绍）
-  if (matchMedia('(hover: none) and (pointer: coarse)').matches) { const h = document.querySelector('.hint-ix'); if (h) h.textContent = '试试：拖动行星绕太阳跑 · 拖空白处转视角 · 双指缩放 · 长按加速时间 · 轻点行星看介绍'; }
+  // ---------- 首屏小互动：slogan 百叶窗、身份标签翻牌、玩法清单 ----------
+  (function () {
+    const TOUCHY = matchMedia('(hover: none) and (pointer: coarse)').matches;
+    // 1. slogan：点一下，每个字依次绕横轴翻过去，换成下一句
+    const SLOGANS = ['一起探索宇宙', '做活动的人，也做工具', '十年运营，还在好奇', '把好玩的事，做成好用的东西'];
+    const sl = document.getElementById('slogan'), box = sl && sl.querySelector('.ln > span');
+    if (sl && box) {
+      let idx = 0, busy = false;
+      const cells = () => [...box.querySelectorAll('.fc')];
+      box.innerHTML = [...SLOGANS[0]].map((c) => `<span class="fc">${c}</span>`).join('');
+      const flip = () => {
+        if (busy) return; busy = true;
+        idx = (idx + 1) % SLOGANS.length;
+        const next = [...SLOGANS[idx]], cur = cells();
+        while (cur.length < next.length) { const s = document.createElement('span'); s.className = 'fc'; box.appendChild(s); cur.push(s); }
+        sl.setAttribute('aria-label', SLOGANS[idx] + '（点一下换一句）');
+        const STEP = 42, OUT = 220, IN = 380;
+        cur.forEach((el, i) => setTimeout(() => {
+          const out = el.textContent ? el.animate([{ transform: 'rotateX(0)' }, { transform: 'rotateX(90deg)' }], { duration: OUT, easing: 'cubic-bezier(.5,0,.75,0)' }) : null;
+          const swap = () => {
+            el.textContent = next[i] || '';
+            if (next[i]) el.animate([{ transform: 'rotateX(-90deg)', color: '#ffd27a' }, { transform: 'rotateX(0)', color: '#ffd27a', offset: 0.6 }, { transform: 'rotateX(0)' }], { duration: IN + 260, easing: 'cubic-bezier(.16,1,.3,1)' });
+          };
+          out ? out.finished.then(swap) : swap();
+        }, i * STEP));
+        setTimeout(() => { cells().forEach((el) => { if (!el.textContent) el.remove(); }); busy = false; }, cur.length * STEP + OUT + IN + 300);
+      };
+      sl.addEventListener('click', flip);
+      sl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+    }
+    // 2. 导航身份标签：「运营十年 ·」后面的词每 2.4 秒翻一次，鼠标放上去停住
+    const roll = document.getElementById('roleRoll');
+    if (roll && !LOW) {
+      const WORDS = ['游戏', '活动', '内容', '原型', 'AI 协作'];
+      let w = 0, hold = false;
+      roll.parentElement.addEventListener('pointerenter', () => (hold = true));
+      roll.parentElement.addEventListener('pointerleave', () => (hold = false));
+      setInterval(() => {
+        if (hold || document.hidden) return;
+        w = (w + 1) % WORDS.length;
+        const old = roll.firstElementChild, nu = document.createElement('span');
+        nu.className = 'pre'; nu.textContent = WORDS[w]; roll.appendChild(nu);
+        nu.getBoundingClientRect(); nu.classList.remove('pre'); old.classList.add('out');
+        setTimeout(() => old.remove(), 650);
+      }, 2400);
+    }
+    // 3. 玩法清单：world.js 报告玩过哪一项，就把那一项点亮；全部点亮换成一句话（只记在这台设备）
+    const quest = document.getElementById('quest');
+    if (quest) {
+      if (TOUCHY) { const r = quest.querySelector('[data-q="warp"]'); r.dataset.q = 'pinch'; r.textContent = '双指缩放'; }
+      let done = new Set();
+      try { done = new Set(JSON.parse(localStorage.getItem('cw-quest') || '[]')); } catch (e) {}
+      const items = [...quest.querySelectorAll('.q')];
+      const finish = () => { quest.innerHTML = '<span class="q-all">✦ 全部解锁：你已经玩明白这个太阳系了</span>'; };
+      const paint = () => { items.forEach((q) => q.classList.toggle('done', done.has(q.dataset.q))); if (items.every((q) => done.has(q.dataset.q))) setTimeout(finish, 900); };
+      items.forEach((q) => q.classList.toggle('done', done.has(q.dataset.q)));
+      if (items.every((q) => done.has(q.dataset.q))) finish();
+      CW.world.onAction = (k) => {
+        if (done.has(k) || !items.some((q) => q.dataset.q === k)) return;
+        done.add(k); try { localStorage.setItem('cw-quest', JSON.stringify([...done])); } catch (e) {}
+        paint();
+      };
+    }
+  })();
 
   const E = {
     expoOut: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
