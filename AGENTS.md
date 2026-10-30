@@ -152,6 +152,8 @@
 ## 子页面外观（2026-10-30 起和首页同一套「深空 + 纸面」）
 - 导航 / ⋯ 菜单 / 页脚都由 `render.js` 的 `renderHeader` / `renderFooter` 生成：导航只有 CW 星座标 + 简历 + ⋯；菜单分「公开 / 私人 · 需口令」两组（`navItems` 返回 `{ pub, priv }`）；页脚是「在银河一角 / 等你来信」+ 复制邮箱。
 - 动态页的页头用 `pageHead({ planet, eyebrow, meta, en, cn, lede, extra })`；星点画布和星球由 `app.js` 插入（`data-planet`，静态页按 `PLANET` 表补）。贴图直接用 `/assets/home/tex/`。
+- 星球是真实渲染（2026-10-31 起）：`app.js` 插入 `.planet` 后按需加载 `/assets/home/three.min.js` + `planet.js`（沿用 app.js 的 `?v=`），和首页同一套贴图与光照；地球带昼夜、云层、大气辉光，开场把上海转到正对镜头并有金色光点闪烁。没有 WebGL 时保留 CSS 平铺贴图版。
+- 首页开场：`<html class="boot">` 藏住首屏文字、星球标签和按钮，CW 遮罩完全展开后由 `ui.js` 的 `unboot()` 淡入；遮罩着色器必须无条件采样再乘方框内掩码（放在分支里采样会在方框边缘出现细线）。
 - `body.paper`（`build_pages.mjs` 的 `PAPER` 集合）= 正文在纸面上：在 `body.paper main` 里把 `--fg / --muted / --line …` 换成纸面色，页头和案例弹窗再换回深空色，组件不用写两套。`/workbench`、`/subs`、404 不在 PAPER 里，整页深空。
 - 动效都在 `app.js`，只在允许动效时给 `<html>` 加 `.fx`（逐字升起、依次浮现、页头随滚动淡出、数字滚动）；精细指针才有卡片 3D 倾斜 + 光斑、按钮磁吸、金色光标。新画出来的内容调 `window.CWFX.scan(el)` 接上浮现动效。
 - 工具箱按 `data.js` 的 `toolGroups` 分组，`tools[].group` 写组名；旅行组自动带上 `trips` 里的行程。**旅游计划并入工具箱**：`/trips`、`/trips.html` 由 worker 301 到 `/tools#travel`（子路径 `/trips/<行程>/` 不受影响），`trips.html` 不进 sitemap。

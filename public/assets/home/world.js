@@ -362,7 +362,9 @@
           float d=rbox(px-(lo+hi)*.5,hb,min(uRad,min(hb.x,hb.y)));
           float al=1.-smoothstep(-1.,.5,d);
           if(uMaskOn>.5){ vec2 mu=vec2(46./64.,31./64.)+(px-uMaskPivot)/uMaskPx; // 以金星为中心缩放
-            float ma=(mu.x<0.||mu.y<0.||mu.x>1.||mu.y>1.)?0.:texture2D(uMask,vec2(mu.x,1.-mu.y)).a; al=min(al,ma); }
+            // 先无条件采样、再乘「是否在方框内」：放在条件分支里采样，方框边缘的 mip 级会算错，出现一圈细线
+            vec2 mc=clamp(mu,0.,1.); float inside=step(0.,mu.x)*step(0.,mu.y)*step(mu.x,1.)*step(mu.y,1.);
+            float ma=texture2D(uMask,vec2(mc.x,1.-mc.y)).a*inside; al=min(al,ma); }
           gl_FragColor=vec4(col,al);
         }`
     });

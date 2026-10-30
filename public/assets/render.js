@@ -117,7 +117,7 @@
   const toolCard = (g, x) => {
     const trip = !!x.dates, tag = trip ? `<span class="tag ${STATUS[x.status] || ''}">${esc(x.status)}</span>` : `<span class="tag">${LOCK}需口令</span>`;
     const inner = `<div class="tc-top"><span class="tc-grp"><i class="dot"></i>${esc(g.name)}</span>${tag}</div>
-      <div class="tc-txt"><h3>${esc(x.title || x.name)}</h3><p>${esc(x.summary || x.desc)}</p></div>
+      <div class="tc-txt"><h3>${esc(x.title || x.name)}</h3><p>${esc((x.summary || x.desc).replace(/需口令才能使用。?/, '').trim())}</p></div>
       <div class="tc-foot"><span class="when">${trip ? esc(x.dates) : '输入口令后使用'}</span>${x.url ? `<span class="go">${trip ? esc((x.cta || '打开').replace(/\s*→$/, '')) : '打开'} <i>→</i></span>` : '<span class="go">筹备中</span>'}</div>`;
     return x.url ? `<a class="tcard" data-g="${g.id}" href="${esc(x.url)}" target="_blank" rel="noreferrer" data-cursor="打开">${inner}</a>` : `<div class="tcard" data-g="${g.id}">${inner}</div>`;
   };

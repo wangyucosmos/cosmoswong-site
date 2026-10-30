@@ -669,17 +669,19 @@
     const lgStars = $$('.s', lg);
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     scrollTo(0, 0);
-    if (LOW) { S.clip = { t: 0, r: 0, b: 0, l: 0, rad: 0 }; loader.remove(); nav.classList.remove('pre'); S.intro = 1; return; }
+    // <html class="boot">：开场前藏住首屏文字、星球标签和按钮；遮罩完全展开后再一起淡入（.unboot 只在淡入那 0.8 秒加过渡）
+    const unboot = () => { root.classList.add('unboot'); root.classList.remove('boot'); setTimeout(() => root.classList.remove('unboot'), 900); };
+    if (LOW) { S.clip = { t: 0, r: 0, b: 0, l: 0, rad: 0 }; loader.remove(); nav.classList.remove('pre'); S.intro = 1; unboot(); return; }
     h1.classList.add('wait');
     document.body.classList.add('locked');
-    await wait(120);
+    await wait(60);
     loader.classList.add('show');
     let shown = 0, done = false;
     const t0 = performance.now();
     CW.world.ready.then(() => (done = true));
     await new Promise((res) => {
       (function step() {
-        const minT = Math.min(1, (performance.now() - t0) / 1200);
+        const minT = Math.min(1, (performance.now() - t0) / 900);
         const goal = Math.min(minT, done ? 1 : Math.max(CW.world.progress, 0.05) * 0.95);
         shown = lerp(shown, goal, 0.12);
         if (done && minT >= 1 && shown > 0.995) shown = 1;
@@ -690,7 +692,7 @@
     });
     lgStars.forEach((s) => s.classList.add('in'));
     lg.classList.add('done'); pct.style.opacity = '0';
-    await wait(1000);
+    await wait(720);
     // 星座 CW 变成窗口：太阳系先出现在字母笔画里，再以金星为中心向外扩散，金星铺满屏幕
     const lr = lg.getBoundingClientRect(), base = lr.width;
     const gx = lr.left + (46 / 64) * base, gy = lr.top + (31 / 64) * base;
@@ -699,10 +701,11 @@
     S.mask = { on: true, x: gx, y: gy, size: base };
     S.clip = { t: 0, r: 0, b: 0, l: 0, rad: 0 };
     loader.classList.add('out');
-    await wait(650);
-    tween(2600, E.expoOut, (t) => (S.intro = t));
-    await tween(1500, (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2), (t) => (S.mask.size = base * Math.pow(endSize / base, t)));
+    await wait(460);
+    tween(2100, E.expoOut, (t) => (S.intro = t));
+    await tween(1150, (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2), (t) => (S.mask.size = base * Math.pow(endSize / base, t)));
     S.mask = { on: false };
+    unboot();
     loader.remove();
     nav.classList.remove('pre');
     h1.classList.remove('wait');

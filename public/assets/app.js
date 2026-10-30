@@ -4,6 +4,8 @@
    这里的接管是幂等的：骨架已存在就不再插，<main data-prerendered> 就不再重画，但事件绑定无条件执行。 */
 (() => {
   const S = window.SITE, RENDER = window.RENDER;
+  // 本脚本的 ?v= 版本号，按需加载的脚本沿用它（/assets 是长缓存）
+  const VQ = (document.currentScript && /\?v=\d+/.exec(document.currentScript.src) || [''])[0];
   const $ = (s, r = document) => r.querySelector(s);
   const { workModal, workGallery, workIndex } = RENDER;
   const page = document.body.dataset.page || 'home';
@@ -32,6 +34,7 @@
     nav.classList.toggle('solid', paper && hb < 64 && ft > 64);
     nav.classList.toggle('dim', !paper && y > 40 && ft > 64);
     if (Math.abs(y - lastY) > 6) { nav.classList.toggle('hide', y > lastY && y > 320 && !menu.classList.contains('open')); lastY = y; }
+    document.body.classList.toggle('nav-hidden', nav.classList.contains('hide'));   // 吸顶的筛选条跟着顶到最上面
   };
 
   /* ---------- 页头 / 页脚：星点 + 这一页的星球 ---------- */
@@ -55,7 +58,12 @@
   }
   if (head) {
     const pl = head.dataset.planet || PLANET[page];
-    if (pl && page !== 'subs') { head.dataset.planet = pl; head.insertAdjacentHTML('afterbegin', '<div class="planet" aria-hidden="true"></div>'); }
+    if (pl && page !== 'subs') {
+      head.dataset.planet = pl; head.insertAdjacentHTML('afterbegin', '<div class="planet" aria-hidden="true"></div>');
+      // 真实星球：按需加载 three.min.js + planet.js（和首页同一套贴图与光照）；失败时保留 CSS 版
+      const load = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = no; document.body.appendChild(s); });
+      (window.THREE ? Promise.resolve() : load('/assets/home/three.min.js' + VQ)).then(() => load('/assets/home/planet.js' + VQ)).catch(() => {});
+    }
     sky(head, 520);
   }
   if (foot) sky(foot, 420);
