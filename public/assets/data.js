@@ -11,7 +11,7 @@ window.SITE = {
   /* ---------- 基本信息 ---------- */
   me: {
     name: 'Cosmos Wong',                     // 首页标题、导航、页脚
-    title: '运营十年 · 游戏 / 活动 / 社群 / 内容',
+    title: '运营十年 · 游戏 / 活动 / 内容',
     tagline: '',                              // 留空则首页不显示 slogan
     email: 'wangyuwangxinxin@gmail.com',     // 公开邮箱；留空则不显示
     location: '上海',

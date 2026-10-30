@@ -49,7 +49,8 @@ const JSONLD_HASH = "'sha256-" + createHash('sha256').update(JSONLD, 'utf8').dig
 /* ---------- 页面清单 ---------- */
 // 动态页：正文由 RENDER.pages[page](SITE) 生成
 const DYNAMIC = [
-  { path: '/', file: 'index.html', page: 'home', type: 'profile' },
+  // 首页（2026-10-30 起）是自带骨架的 WebGL 页面：只注入 head 元信息和 JSON-LD，不注入导航 / 页脚、不预渲染正文
+  { path: '/', file: 'index.html', page: 'home', type: 'profile', bare: true },
   { path: '/portfolio', file: 'portfolio.html', page: 'portfolio' },
   { path: '/resume', file: 'resume.html', page: 'resume', type: 'profile', nosite: true, protected: true },
   { path: '/trips', file: 'trips.html', page: 'trips' },
@@ -136,14 +137,16 @@ function build(p) {
 
   // 2. 骨架：header（body 开头）、footer + 菜单遮罩（放在 <script> 之前——app.js 是同步执行的，
   //    骨架必须先进 DOM，它的幂等判断才看得到，否则会插出第二份页脚）
-  html = upsert(html, 'chrome-top', RENDER.renderHeader(SITE, here), attr(html, /(<body[^>]*>)/), 'after');
-  html = upsert(html, 'chrome-bottom', RENDER.renderFooter(SITE, YEAR), '<script src="/assets/data.js', 'before');
+  if (!p.bare) {
+    html = upsert(html, 'chrome-top', RENDER.renderHeader(SITE, here), attr(html, /(<body[^>]*>)/), 'after');
+    html = upsert(html, 'chrome-bottom', RENDER.renderFooter(SITE, YEAR), '<script src="/assets/data.js', 'before');
+  }
 
   // 3. 内页给 body 加 .inner（app.js 也会加，这里是为了无 JS 时背景亮度一致）
   if (p.page !== 'home') html = html.replace(/<body(?![^>]*\bclass=)([^>]*)>/, '<body class="inner"$1>');
 
   // 4. 动态页正文
-  if (p.page) {
+  if (p.page && !p.bare) {
     const data = p.page === 'resume' ? { ...SITE, resume: privateResume, me: { ...SITE.me, fullName: privateResume.fullName } } : SITE;
     const body = RENDER.pages[p.page](data);
     html = html.replace(/<main class="wrap"[^>]*>[\s\S]*?<\/main>/, `<main class="wrap" data-prerendered="1">${body}\n</main>`);
