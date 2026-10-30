@@ -58,3 +58,5 @@ v0.2上线未执行数据迁移，原记录保持不变；新的读取和计算�
 工具分组来自 `data.js` 的 `toolGroups`、`tools[].group`；旅行组同时读取原 `trips`，不迁移或删除行程。`render.js` 保持纯函数，`app.js` 管分类、菜单、逐字入场和卡片交互。插图沿用既有 SVG，仅修改主题样式。
 
 手机成功横滑后仅在当前浏览器保存 `cw-swiped=1`，隐藏首次提示；手势取消、失败或多指操作不写入。作品集沿用 `portfolio.view` 偏好。本批不修改 D1、KV、鉴权规则、Worker secret 或业务记录。
+
+构建器从页面既有 style.css 链接提取 assetVersion，并用于共用 fonts.css 链接；不改变字体文件、用户数据或内容来源。

@@ -17,3 +17,16 @@ test('自动发布也必须固定受支持CLI并验收远端，不得绕开本�
  const {readFile}=await import('node:fs/promises');const workflow=await readFile(new URL('../../.github/workflows/deploy.yml',import.meta.url),'utf8');
  assert.match(workflow,/wranglerVersion:\s*'4\.131\.0'/);assert.match(workflow,/node-version:\s*22/);assert.match(workflow,/command: deploy --config wrangler\.toml/);assert.match(workflow,/verify_tools_routing\.mjs --online/);assert.match(workflow,/node --test tests\/tools\/\*\.test\.mjs tests\/attendance\/\*\.test\.mjs/);
 });
+
+// A CI rebuild must retain the deployed cache key for the shared font stylesheet.
+test('subpage font CSS retains the main stylesheet cache version', async () => {
+ const {readFile}=await import('node:fs/promises');
+ for(const file of ['tools.html','portfolio.html','resume.html','knowledge/index.html']){
+  const html=await readFile(new URL('../../public/'+file,import.meta.url),'utf8');
+  const style=html.match(/href="\/assets\/style\.css(\?v=\d+)"/);
+  const fonts=html.match(/href="\/assets\/home\/fonts\.css(\?v=\d+)"/);
+  assert.ok(style,file+' is missing its stylesheet cache version');
+  assert.ok(fonts,file+' is missing its font stylesheet cache version');
+  assert.equal(fonts[1],style[1],file);
+ }
+});

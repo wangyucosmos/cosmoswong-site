@@ -89,3 +89,5 @@ CW图标及文字可读性已部署：`048dd20f-0a59-4d37-aead-a6afce736f66`；�
 修改文件：`public/index.html`、`public/assets/app.js`、`public/assets/style.css`、`public/assets/notes.css`、`public/assets/home/world.js`、`public/assets/home/ui.js`；新增 `tests/home/swipe.test.mjs`、`tests/tools/trips-redirect.test.mjs`；`.github/workflows/deploy.yml` 纳入手势测试；并更新四份维护文档。
 
 验证：81 项自动测试通过；本地 Worker 的 25 项浏览器导航方式检查及 2 项旅行旧链接检查通过；页面连续构建两次一致。浏览器检查桌面和手机布局、分类、菜单、作品弹窗与 Esc 返回，以及手机宽度首页飞向地球；所查页面未见控制台错误。手机横滑为执行真实源码的模拟触摸回归，iPhone/微信真机仍待实测；系统减少动效开关和新打印 PDF 未实测。当前待审阅、未部署。
+
+上线前补修自动构建的字体缓存链路：build_pages.mjs 保留 fonts.css 与 style.css 相同的资源版本；新增 deployment.test.mjs 回归，共82项自动测试通过。子页面HTML均由生成器重建。

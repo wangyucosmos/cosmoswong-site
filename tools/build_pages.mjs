@@ -89,6 +89,7 @@ const attr = (html, re) => (html.match(re) || [])[1] || '';
 function headMeta(p, html) {
   const title = attr(html, /<title>([^<]*)<\/title>/);
   const desc = attr(html, /<meta name="description" content="([^"]*)"/);
+  const assetVersion = attr(html, /\/assets\/style\.css(\?v=\d+)?"/);
   const lines = [
     ...(p.protected ? ['<meta name="robots" content="noindex, nofollow">'] : []),
     // ?v= 跟着图标图形走（浏览器对 favicon 缓存很顽固），换图标时改 ICON_V
@@ -97,7 +98,7 @@ function headMeta(p, html) {
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=${ICON_V}">`,
     `<meta name="theme-color" content="${THEME}">`,
     // 子页面和首页共用一套自托管字体（tools/make_home_fonts.mjs 生成；首页自己的 head 里已经写了）
-    ...(p.bare ? [] : ['<link rel="stylesheet" href="/assets/home/fonts.css">'])
+    ...(p.bare ? [] : [`<link rel="stylesheet" href="/assets/home/fonts.css${assetVersion}">`])
   ];
   if (p.path) {
     // canonical 统一不带尾斜杠（wrangler 是 auto-trailing-slash），首页是 https://cosmoswong.com/
