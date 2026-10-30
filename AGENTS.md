@@ -155,3 +155,4 @@
 - `body.paper`（`build_pages.mjs` 的 `PAPER` 集合）= 正文在纸面上：在 `body.paper main` 里把 `--fg / --muted / --line …` 换成纸面色，页头和案例弹窗再换回深空色，组件不用写两套。`/workbench`、`/subs`、404 不在 PAPER 里，整页深空。
 - 动效都在 `app.js`，只在允许动效时给 `<html>` 加 `.fx`（逐字升起、依次浮现、页头随滚动淡出、数字滚动）；精细指针才有卡片 3D 倾斜 + 光斑、按钮磁吸、金色光标。新画出来的内容调 `window.CWFX.scan(el)` 接上浮现动效。
 - 工具箱按 `data.js` 的 `toolGroups` 分组，`tools[].group` 写组名；旅行组自动带上 `trips` 里的行程。**旅游计划并入工具箱**：`/trips`、`/trips.html` 由 worker 301 到 `/tools#travel`（子路径 `/trips/<行程>/` 不受影响），`trips.html` 不进 sitemap。
+- 子页面 fonts.css 链接必须继承 style.css 的资源版本；自动部署重新运行 build_pages.mjs 后也要保留，避免长缓存旧字体。回归见 tests/tools/deployment.test.mjs。
