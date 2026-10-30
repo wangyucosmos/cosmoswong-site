@@ -56,13 +56,13 @@
           vec3 c=vec3(1.,.98,.95)*max(ndl,0.)*2.2+vec3(1.,.5,.25)*smoothstep(.2,0.,abs(ndl))*.6+vec3(.01,.012,.02);
           gl_FragColor=outc(c,a*smoothstep(-.3,.1,ndl)*.92); }` }));
     spin.add(clouds);
-    // 大气辉光：比地球大一圈的背面壳，越靠边越亮，夜面暗下去
-    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.09, 64, 48), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
+    // 大气层：贴着地表的一道细蓝边（真实大气只有地球半径的 1% 多，这里取 2.5%），越靠边越亮，夜面暗下去
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.025, 96, 64), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, side: THREE.BackSide, blending: THREE.AdditiveBlending,
       uniforms: { uSun: U.uSun }, vertexShader: VERT,
       fragmentShader: `uniform vec3 uSun; varying vec3 vNw; varying vec3 vPw;
-        void main(){ vec3 N=normalize(vNw); vec3 V=normalize(cameraPosition-vPw); float e=pow(clamp(1.-abs(dot(N,V))*1.05,0.,1.),2.2);
+        void main(){ vec3 N=normalize(vNw); vec3 V=normalize(cameraPosition-vPw); float e=pow(clamp(1.-abs(dot(N,V))*1.02,0.,1.),3.);
           float lit=smoothstep(-.4,.6,dot(N,normalize(uSun-vPw)));
-          gl_FragColor=vec4(vec3(.35,.62,1.)*e*lit*1.1,1.); }` })));
+          gl_FragColor=vec4(vec3(.35,.62,1.)*e*lit*.85,1.); }` })));
     // 上海（31.23°N, 121.47°E）：Three 球体 u=0 在经度 -180°
     const lat = (31.23 * Math.PI) / 180, phi = ((121.47 + 180) / 360) * Math.PI * 2;
     const SH = new V3(-Math.cos(phi) * Math.cos(lat), Math.sin(lat), Math.sin(phi) * Math.cos(lat));
