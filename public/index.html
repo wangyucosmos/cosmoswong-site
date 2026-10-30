@@ -72,8 +72,25 @@ main{position:relative;z-index:1}
 .nav__links a{text-decoration:none;position:relative}
 .nav__links a::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .45s var(--e-out)}
 .nav__links a:hover::after{transform:scaleX(1);transform-origin:left}
-.nav__more{width:30px;height:30px;display:grid;place-items:center;border-radius:99px;border:1px solid currentColor}
-.menu{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));right:var(--gxr);z-index:51;min-width:200px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);
+/* ⋯ 按钮：三颗等距小圆点 + 很淡的毛玻璃底；悬停圆点散开一点，打开菜单时变成 ×（跟着导航明暗自动换色） */
+.nav__more{position:relative;width:40px;height:40px;display:block;border-radius:50%;border:1px solid color-mix(in oklab,currentColor 50%,transparent);background:color-mix(in oklab,currentColor 7%,transparent);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:0;transition:background .3s,border-color .3s,transform .5s var(--e-out)}
+.nav__more:hover{background:color-mix(in oklab,currentColor 15%,transparent);border-color:currentColor}
+.nav__more i{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:2px;background:currentColor;
+  transition:transform .5s var(--e-out),width .4s var(--e-out),height .4s var(--e-out),margin .4s var(--e-out),opacity .25s}
+.nav__more i:nth-child(1){transform:translateX(-7px)}.nav__more i:nth-child(3){transform:translateX(7px)}
+.nav__more:hover i:nth-child(1){transform:translateX(-8.5px)}.nav__more:hover i:nth-child(3){transform:translateX(8.5px)}
+.nav__more[aria-expanded="true"] i{width:16px;height:1.6px;margin:-.8px 0 0 -8px}
+.nav__more[aria-expanded="true"] i:nth-child(1){transform:rotate(45deg)}.nav__more[aria-expanded="true"] i:nth-child(3){transform:rotate(-45deg)}
+.nav__more[aria-expanded="true"] i:nth-child(2){opacity:0;transform:scale(0)}
+/* 滚动条：深色细条，融进深空背景（不然「始终显示滚动条」时右边是一条浅色） */
+html{scrollbar-width:thin;scrollbar-color:rgba(244,242,237,.3) #05060d}
+::-webkit-scrollbar{width:10px;height:10px;background:#05060d}
+::-webkit-scrollbar-thumb{background:rgba(244,242,237,.26);border-radius:10px;border:2px solid #05060d}
+::-webkit-scrollbar-thumb:hover{background:rgba(244,242,237,.42)}
+/* 电脑上导航左右各留 32px，⋯ 不再贴着右边；下拉菜单跟着对齐 */
+@media (min-width:900px){.nav{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}.menu{right:max(32px,env(safe-area-inset-right,0px))}}
+.menu{position:fixed;top:calc(70px + env(safe-area-inset-top,0px));right:var(--gxr);z-index:51;min-width:200px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);
   box-shadow:0 20px 60px rgba(5,6,13,.28);display:grid;opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .25s,transform .4s var(--e-out)}
 .menu{visibility:hidden}
 .menu.open{visibility:visible;opacity:1;transform:none;pointer-events:auto}
@@ -433,7 +450,7 @@ main{position:relative;z-index:1}
   <span class="nav__role" aria-label="运营十年 · 游戏 / 活动 / 内容">运营十年 ·<span class="role-roll" id="roleRoll" aria-hidden="true"><span>游戏</span></span></span>
   <nav class="nav__links" aria-label="主导航">
     <a class="resume-pill" href="/resume" data-cursor="看看我的经历"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.4 5v9.2H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 1.9V5.2h3.3M6 8.3h4.3M6 10.9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>简历</a>
-    <button class="nav__more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button>
+    <button class="nav__more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button>
   </nav>
 </header>
 <div class="menu" id="menu" role="menu" aria-label="更多入口">

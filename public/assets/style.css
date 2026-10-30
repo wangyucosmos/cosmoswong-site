@@ -59,9 +59,23 @@ header.top.dim{background:rgba(5,6,13,.62);backdrop-filter:blur(14px);-webkit-ba
 .nav-link{position:relative;font-size:15px}
 .nav-link::after{content:"";position:absolute;left:0;right:0;bottom:-3px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:right;transition:transform .45s var(--e-out)}
 .nav-link:hover::after,.nav-link[aria-current]::after{transform:scaleX(1);transform-origin:left}
-.more{width:36px;height:36px;display:grid;place-items:center;border-radius:99px;border:1px solid currentColor;font-size:15px;line-height:1;transition:background .3s,color .3s}
-.more[aria-expanded="true"]{background:currentColor}
-.more[aria-expanded="true"]::first-line{color:var(--space)}
+/* ⋯ 按钮：三颗等距小圆点 + 很淡的毛玻璃底；悬停圆点散开一点，打开菜单时变成 ×（跟着导航明暗自动换色） */
+.more{position:relative;width:40px;height:40px;display:block;border-radius:50%;border:1px solid color-mix(in oklab,currentColor 50%,transparent);background:color-mix(in oklab,currentColor 7%,transparent);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font-size:0;transition:background .3s,border-color .3s,transform .5s var(--e-out)}
+.more:hover{background:color-mix(in oklab,currentColor 15%,transparent);border-color:currentColor}
+.more i{position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px 0 0 -2px;border-radius:2px;background:currentColor;
+  transition:transform .5s var(--e-out),width .4s var(--e-out),height .4s var(--e-out),margin .4s var(--e-out),opacity .25s}
+.more i:nth-child(1){transform:translateX(-7px)}.more i:nth-child(3){transform:translateX(7px)}
+.more:hover i:nth-child(1){transform:translateX(-8.5px)}.more:hover i:nth-child(3){transform:translateX(8.5px)}
+.more[aria-expanded="true"] i{width:16px;height:1.6px;margin:-.8px 0 0 -8px}
+.more[aria-expanded="true"] i:nth-child(1){transform:rotate(45deg)}.more[aria-expanded="true"] i:nth-child(3){transform:rotate(-45deg)}
+.more[aria-expanded="true"] i:nth-child(2){opacity:0;transform:scale(0)}
+/* 滚动条：深色细条，融进深空背景（不然「始终显示滚动条」时右边是一条浅色） */
+html{scrollbar-width:thin;scrollbar-color:rgba(244,242,237,.3) #05060d}
+::-webkit-scrollbar{width:10px;height:10px;background:#05060d}
+::-webkit-scrollbar-thumb{background:rgba(244,242,237,.26);border-radius:10px;border:2px solid #05060d}
+::-webkit-scrollbar-thumb:hover{background:rgba(244,242,237,.42)}
+@media (min-width:900px){header.top{padding-left:max(32px,env(safe-area-inset-left,0px));padding-right:max(32px,env(safe-area-inset-right,0px))}.menu{right:max(32px,env(safe-area-inset-right,0px))}}
 .menu{position:fixed;top:calc(68px + env(safe-area-inset-top,0px));right:var(--gxr);z-index:51;width:230px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);
   box-shadow:0 24px 60px rgba(0,0,0,.35);opacity:0;transform:translateY(-8px) scale(.97);transform-origin:top right;pointer-events:none;transition:opacity .25s,transform .4s var(--e-out)}
 .menu{visibility:hidden}

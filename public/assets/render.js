@@ -19,7 +19,7 @@
     const N = navItems(S), on = h => (h !== '/' && h[0] === '/' && here.startsWith(h)) ? ' aria-current="page"' : '';
     return `
     <header class="top" id="nav"><a class="brand" href="/" aria-label="${esc(S.me.name)} 首页">${LOGO}<span>${esc(S.me.name)}</span></a>
-      <nav class="nav-r" aria-label="主导航"><a class="resume-pill mag"${on('/resume')} href="/resume" data-cursor="看看我的经历"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.4 5v9.2H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 1.9V5.2h3.3M6 8.3h4.3M6 10.9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>简历</a><button class="more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button></nav></header>
+      <nav class="nav-r" aria-label="主导航"><a class="resume-pill mag"${on('/resume')} href="/resume" data-cursor="看看我的经历"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.4 5v9.2H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 1.9V5.2h3.3M6 8.3h4.3M6 10.9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>简历</a><button class="more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu"><i></i><i></i><i></i></button></nav></header>
     <div class="menu" id="menu" role="menu" aria-label="更多入口">${N.pub.map(([h, t]) => `<a role="menuitem" href="${h}"${on(h)}>${t}</a>`).join('')}
       <hr><span class="grp">私人 · 需口令</span>${N.priv.map(([h, t]) => `<a role="menuitem" href="${h}"${on(h)}>${t}</a>`).join('')}</div>`;
   };
