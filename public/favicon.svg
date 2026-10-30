@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- 星座 CW（2026-10-30 起）：深空底 + 两组连线 + 九颗星 + 金星；位图版由 tools/make_icons.py 按同一组坐标画 -->
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#7c3aed"/><stop offset=".55" stop-color="#ec4899"/><stop offset="1" stop-color="#06b6d4"/>
-    </linearGradient>
+    <radialGradient id="b" cx="40%" cy="35%" r="80%"><stop offset="0" stop-color="#1c2250"/><stop offset="1" stop-color="#070916"/></radialGradient>
   </defs>
-  <rect width="64" height="64" rx="16" fill="url(#g)"/>
-  <text x="32" y="43" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif"
-        font-size="30" font-weight="800" fill="#fff" letter-spacing="-1">CW</text>
+  <rect width="64" height="64" rx="15" fill="url(#b)"/>
+  <g fill="none" stroke="#dfe5ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".55"><polyline points="29,19.9 15,19.9 8,32 15,44.1 29,44.1"/><polyline points="35,20 40,44 46,31 52,44 57,20"/></g>
+  <g fill="#f4f2ed"><circle cx="29" cy="19.9" r="3.4"/><circle cx="15" cy="19.9" r="2.8"/><circle cx="8" cy="32" r="3.7"/><circle cx="15" cy="44.1" r="2.8"/><circle cx="29" cy="44.1" r="3.2"/><circle cx="35" cy="20" r="3.2"/><circle cx="40" cy="44" r="2.9"/><circle cx="52" cy="44" r="2.9"/><circle cx="57" cy="20" r="3.5"/></g>
+  <path d="M46 22 47.3 29.7 55 31 47.3 32.3 46 40 44.7 32.3 37 31 44.7 29.7Z" fill="#ffd27a"/><circle cx="46" cy="31" r="4.2" fill="#ffc04a"/>
 </svg>

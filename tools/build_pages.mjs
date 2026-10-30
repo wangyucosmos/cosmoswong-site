@@ -17,6 +17,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUB = join(ROOT, 'public');
 const ORIGIN = 'https://cosmoswong.com';
 const THEME = '#0e0a1a';
+const ICON_V = 'cw2';   // 2026-10-30 换成「星座 CW」图标
 const YEAR = new Date().getFullYear();
 
 /* ---------- 在假 window 上跑 data.js + render.js，拿到 SITE 和 RENDER ---------- */
@@ -88,9 +89,10 @@ function headMeta(p, html) {
   const desc = attr(html, /<meta name="description" content="([^"]*)"/);
   const lines = [
     ...(p.protected ? ['<meta name="robots" content="noindex, nofollow">'] : []),
-    `<link rel="icon" href="/favicon.svg" type="image/svg+xml">`,
-    `<link rel="icon" href="/favicon.ico" sizes="32x32">`,
-    `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`,
+    // ?v= 跟着图标图形走（浏览器对 favicon 缓存很顽固），换图标时改 ICON_V
+    `<link rel="icon" href="/favicon.svg?v=${ICON_V}" type="image/svg+xml">`,
+    `<link rel="icon" href="/favicon.ico?v=${ICON_V}" sizes="16x16 32x32 48x48">`,
+    `<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=${ICON_V}">`,
     `<meta name="theme-color" content="${THEME}">`
   ];
   if (p.path) {
