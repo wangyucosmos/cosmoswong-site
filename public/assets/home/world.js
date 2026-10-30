@@ -147,7 +147,7 @@
   function lateLoad(k, f) { LB.load('/assets/home/tex/' + f, (t) => { t.anisotropy = maxAniso; T[k] = t; lateHooks.forEach((h) => h(k, t)); }); }
   ready.then(() => {
     PLANETS.filter((p) => p.hi).forEach((p) => lateLoad(p.key, p.hi));
-    lateLoad('nebA', 'nebula_a.webp');
+    lateLoad('nebA', 'nebula_carina_2k.webp');   // 2026-10-31：韦伯原图重新裁的 2048 高清版（旧的 768 版放大后发糊）
     lateLoad('galaxy', 'galaxy.webp');
     if (S.tier === 'high') lateLoad('stars', 'starmap_4k.webp');
   });
@@ -248,12 +248,34 @@
   const skyGeo = new THREE.SphereGeometry(1500, 64, 32);
   const skyMat = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false,
-    uniforms: { uMap: { value: T.stars }, uInt: { value: 0.5 }, uSat: { value: 1.5 } },   // 2026-10-31：星图只当银河底光（模糊、调暗），星星本身由真实星表的点光源来画
-    vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-    fragmentShader: `uniform sampler2D uMap; uniform float uInt; uniform float uSat; varying vec2 vUv;
-      void main(){ vec3 c=pow(texture2D(uMap,vec2(1.-vUv.x,vUv.y),2.6).rgb,vec3(2.2)); float l=dot(c,vec3(.2126,.7152,.0722));
-        c=max(mix(vec3(l),c,uSat),0.); gl_FragColor=vec4(c*uInt,1.); }`
+    // 2026-10-31：星图当银河底光（uBias 模糊档位，把图里糊掉的星点抹成光雾）；
+    // 再按银河的明暗（越亮星越密）在每个像素上算出几十万颗极暗的小星——没有分辨率上限，放多大都是针尖（uProc 控制强度）
+    uniforms: { uMap: { value: T.stars }, uInt: { value: 0.42 }, uSat: { value: 1.5 }, uBias: { value: 2.6 }, uProc: { value: 1 } },
+    vertexShader: `varying vec2 vUv; varying vec3 vDir; void main(){ vUv=uv; vDir=normalize(position); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
+    fragmentShader: `uniform sampler2D uMap; uniform float uInt; uniform float uSat; uniform float uBias; uniform float uProc; varying vec2 vUv; varying vec3 vDir;
+      float h1(vec3 p){ p=fract(p*vec3(.1031,.1030,.0973)); p+=dot(p,p.yxz+33.33); return fract((p.x+p.y)*p.z); }
+      vec3 h3(vec3 p){ p=fract(p*vec3(.1031,.1030,.0973)); p+=dot(p,p.yxz+33.33); return fract((p.xxy+p.yxx)*p.zyx); }
+      // 一层程序星点：方向向量放大到网格里，每格最多一颗、位置随机；dens=这一格有星的概率，px=一个像素对应的角度
+      vec3 layer(vec3 d, float sc, float dens, float px, float gain){
+        vec3 q=d*sc, id=floor(q); vec3 h=h3(id);
+        if(h1(id+3.7)>dens) return vec3(0.);
+        vec3 sp=normalize((id+.15+.7*h)/sc); float a=length(sp-d);
+        float b=pow(h1(id+9.1),5.)*gain+gain*.06;   // 绝大多数是极暗的针尖，少数亮一些
+        float core=exp(-a*a/(px*px*.7));
+        vec3 tint=mix(vec3(.75,.85,1.15),vec3(1.15,.9,.7),h.z); tint=mix(vec3(1.),tint,.55);
+        return tint*core*b;
+      }
+      void main(){
+        vec3 m=pow(texture2D(uMap,vec2(1.-vUv.x,vUv.y),uBias).rgb,vec3(2.2)); float l=dot(m,vec3(.2126,.7152,.0722));
+        vec3 c=max(mix(vec3(l),m,uSat),0.)*uInt;
+        vec3 d=normalize(vDir); float px=max(length(fwidth(d)),1e-5);
+        float dens=clamp(.22+l*14.,.22,.9);   // 银河带里更密
+        // 三层：暗星最多（约 12 像素一颗）、中等（约 25 像素）、亮一些的最少（约 60 像素）
+        vec3 st=layer(d,62.,dens*.75,px,.55)+layer(d,29.,dens*.45,px*1.1,.9)+layer(d,12.,.18+dens*.15,px*1.25,1.5);
+        st*=mix(vec3(1.),normalize(m+.02)*1.7,.25);   // 星色略带所在天区的色调
+        gl_FragColor=vec4(c+st*uProc*.55,1.); }`
   });
+  skyMat.extensions = { derivatives: true };
   lateHooks.push((k, t) => { if (k === 'stars') skyMat.uniforms.uMap.value = t; });
   // 星点：按恒星温度上色（蓝 / 蓝白 / 白 / 黄 / 橙 / 红），三层远近
   const STAR_COLS = [[0.62, 0.74, 1.3, 0.1], [0.82, 0.88, 1.15, 0.2], [1, 1, 1, 0.25], [1.1, 0.95, 0.72, 0.24], [1.15, 0.78, 0.5, 0.13], [1.15, 0.56, 0.42, 0.08]];
@@ -287,7 +309,7 @@
         gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
     fragmentShader: `uniform float uInt; varying float vA; varying vec3 vTint;
       void main(){ vec2 c=gl_PointCoord-.5; float d=length(c);
-        float core=smoothstep(.5,.0,d); float spike=max(0.,1.-abs(c.x)*16.)*max(0.,1.-abs(c.y)*2.2)+max(0.,1.-abs(c.y)*16.)*max(0.,1.-abs(c.x)*2.2);
+        float core=exp(-d*d*42.)+exp(-d*d*9.)*.12; float spike=max(0.,1.-abs(c.x)*16.)*max(0.,1.-abs(c.y)*2.2)+max(0.,1.-abs(c.y)*16.)*max(0.,1.-abs(c.x)*2.2);
         gl_FragColor=vec4(vTint*(core+spike*.35)*vA*1.5*uInt,1.); }`
   });
   const NSTAR = S.tier === 'high' ? 3200 : 1400;
@@ -434,10 +456,10 @@
   // 韦伯星云（可开关）
   const nebulae = [];
   // 船底座星云：左下一大块、上方一小块（创生之柱已按用户意见去掉）
-  [['nebA', new V3(-0.55, -0.42, -0.72), 1050, 0.0], ['nebA', new V3(0.1, 0.55, -0.83), 760, 2.3]].forEach(([k, dir, size, rot], i) => {
+  [['nebA', new V3(-0.55, -0.42, -0.72), 820, 0.0], ['nebA', new V3(0.1, 0.55, -0.83), 600, 2.3]].forEach(([k, dir, size, rot], i) => {   // 比原来小一圈，像远处的一团光
     const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-      uniforms: { uMap: { value: blank }, uOp: { value: i === 1 ? 0.28 : 0.45 } },
+      uniforms: { uMap: { value: blank }, uOp: { value: i === 1 ? 0.24 : 0.4 } },
       vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
       fragmentShader: `uniform sampler2D uMap; uniform float uOp; varying vec2 vUv; void main(){ vec4 t=texture2D(uMap,vUv); gl_FragColor=vec4(pow(t.rgb,vec3(2.2))*t.a*uOp*1.6,1.); }`
     }));
@@ -705,6 +727,7 @@
     moon.position.set(EARTH.pos.x + Math.cos(moonTheta) * 2.6, 0.25 * Math.sin(moonTheta), EARTH.pos.z - Math.sin(moonTheta) * 2.6);
   }
   const heroPost = makePost();
+  heroPost.u.uGrain.value = 0.008;   // 首屏星空不要胶片噪点（暗部会显得画质低），只留一点点防色带
 
   // ---------- 镜头 ----------
   const camPos = new V3(), camTgt = new V3();

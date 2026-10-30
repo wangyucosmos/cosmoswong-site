@@ -83,6 +83,9 @@ main{position:relative;z-index:1}
 .menu hr{border:0;border-top:1px solid var(--line);margin:6px 8px}
 .menu .grp{display:block;padding:6px 12px 2px;color:var(--muted);font:12px var(--f-mono);letter-spacing:.06em}
 @media (max-width:760px){.nav{grid-template-columns:1fr auto}.nav__role{display:none}}
+/* 中等宽度：身份标签会把左边的名字挤成两行，先藏起来；名字本身不换行 */
+.nav__name{white-space:nowrap}
+@media (max-width:1000px){.nav__role{display:none}}
 
 /* ---------- 入场 ---------- */
 .boot #satLabels,.boot #heroCopy,.boot #chapter,.boot .hero__ctrl,.boot #pcard,.boot #warpHint{opacity:0!important;pointer-events:none}
