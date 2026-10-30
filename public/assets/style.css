@@ -110,8 +110,10 @@ body:not(.paper) .page-head{padding-bottom:40px;background:transparent}
 [data-planet="saturn"] .planet::before{content:"";position:absolute;left:-42%;right:-42%;top:50%;height:34%;transform:translateY(-50%) rotate(-14deg);border-radius:50%;
   background:radial-gradient(closest-side,transparent 62%,rgba(230,205,160,.55) 66%,rgba(200,175,130,.25) 74%,rgba(240,220,180,.5) 80%,transparent 86%);z-index:2}
 @media(max-width:820px){
-  .page-head{padding-top:calc(118px + env(safe-area-inset-top,0px));padding-bottom:104px}
-  .planet{right:-28%;top:22%;width:66vw;opacity:.85}
+  /* 手机：星球放在标题上方的右侧，文字从星球下面开始，两者不再叠在一起 */
+  .page-head{padding-top:calc(58vw + 96px + env(safe-area-inset-top,0px));padding-bottom:104px}
+  .planet{right:8vw;top:calc(76px + env(safe-area-inset-top,0px));width:50vw;transform:translateY(var(--py,0px))}
+  [data-planet="saturn"] .planet{right:20vw;width:40vw}   /* 土星环比星球宽一倍多，往左收一点，免得环被屏幕右边裁掉 */
 }
 
 /* ---------- 按钮 ---------- */
