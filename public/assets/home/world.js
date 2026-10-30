@@ -9,7 +9,7 @@
 (function () {
   const CW = (window.CW = window.CW || {});
   const S = (CW.state = CW.state || {
-    sy: 0, sys: 0, vy: 0, vh: innerHeight, vw: innerWidth,
+    sy: 0, sys: 0, vy: 0, vh: innerHeight, vw: document.documentElement.clientWidth || innerWidth,
     mx: 0, my: 0, mxs: 0, mys: 0, mvx: 0, mvy: 0,
     tier: 'high', time: 0, intro: 0, exit: 0,
     clip: { t: 0, r: 0, b: 0, l: 0, rad: 0 }
@@ -1056,7 +1056,8 @@
   // ---------- 每帧 ----------
   const satWorld = new V3();
   world.resize = () => {
-    W = innerWidth; H = innerHeight;
+    // 用不含滚动条的可见宽度：滚动条固定占位时（macOS「始终显示滚动条」/ 接鼠标），innerWidth 会多出一条滚动条宽，画面被压窄、最右边露出一条底色
+    W = document.documentElement.clientWidth || innerWidth; H = innerHeight;
     PR = Math.min(devicePixelRatio || 1, S.tier === 'high' ? 2 : 1.5);
     R.setPixelRatio(PR); R.setSize(W, H, false);
     starMat.uniforms.uPx.value = PR; catMat.uniforms.uPx.value = PR; galStarMat.uniforms.uPx.value = PR; trailPtsMat.uniforms.uPx.value = PR; dustMat.uniforms.uPx.value = PR; tailMats.forEach((m) => (m.uniforms.uPx.value = PR)); fgMat.uniforms.uPx.value = PR;

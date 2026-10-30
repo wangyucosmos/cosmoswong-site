@@ -728,7 +728,7 @@
     if (FINE) { updateCursor(dt); updatePeek(); if ((++labelTick & 7) === 0) setLabel(document.elementFromPoint(C.tx, C.ty)); }
     requestAnimationFrame(frame);
   }
-  function resize() { S.vw = innerWidth; S.vh = innerHeight; CW.world.resize(); measure(); }
+  function resize() { S.vw = document.documentElement.clientWidth || innerWidth; S.vh = innerHeight; CW.world.resize(); measure(); }   // 不含滚动条的宽度，和页面布局一致
   addEventListener('resize', resize);
 
   // ---------- 入场 ----------
@@ -785,7 +785,7 @@
     document.body.classList.remove('locked');
   }
 
-  S.clip = LOW ? { t: 0, r: 0, b: 0, l: 0, rad: 0 } : { t: innerHeight / 2, b: innerHeight / 2, l: innerWidth / 2, r: innerWidth / 2, rad: 18 };
+  S.clip = LOW ? { t: 0, r: 0, b: 0, l: 0, rad: 0 } : { t: innerHeight / 2, b: innerHeight / 2, l: S.vw / 2, r: S.vw / 2, rad: 18 };
   resize();
   requestAnimationFrame((t) => { last = t; requestAnimationFrame(frame); });
   (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => {
