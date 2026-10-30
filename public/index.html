@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Cosmos Wong · 运营十年 · 游戏 / 活动 / 内容</title>
 <meta name="description" content="Cosmos Wong 的作品展示、实用工具与个人计划。">
-<link rel="preload" href="/assets/home/fonts/unbounded-800.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/home/fonts.css?v=20261030163619">
 <style>
 /* 布局概念：一块固定在最底层的 WebGL 画布，按页面上的占位框分区绘制（首屏太阳系 / 作品卡片 / 底部地球）；
@@ -75,6 +74,8 @@ main{position:relative;z-index:1}
 .menu a{padding:9px 12px;border-radius:10px;text-decoration:none;display:flex;justify-content:space-between;gap:16px}
 .menu a:hover{background:var(--paper-2)}
 .menu a span{color:var(--muted);font-size:12px}
+.menu hr{border:0;border-top:1px solid var(--line);margin:6px 8px}
+.menu .grp{display:block;padding:6px 12px 2px;color:var(--muted);font:12px var(--f-mono);letter-spacing:.06em}
 @media (max-width:760px){.nav{grid-template-columns:1fr auto}.nav__role{display:none}}
 
 /* ---------- 入场 ---------- */
@@ -145,6 +146,11 @@ main{position:relative;z-index:1}
 .go:active{transform:scale(.96);transition-duration:.1s}
 .hero__ctrl{position:absolute;left:0;right:0;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:3;display:flex;justify-content:center;align-items:center;gap:18px}
 .dots{display:flex;gap:4px}
+.swipe-hint{position:absolute;left:50%;bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:6;transform:translate(-50%,8px);display:flex;gap:10px;align-items:center;padding:7px 14px;border-radius:999px;background:rgba(5,6,13,.45);border:1px solid rgba(244,242,237,.22);color:var(--hero-fg);font-size:12px;letter-spacing:.06em;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .5s,transform .6s var(--e-out);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.swipe-hint.on{opacity:1;transform:translate(-50%,0)}
+.swipe-hint i{font-style:normal;opacity:.7;animation:nudge 1.6s ease-in-out infinite}
+.swipe-hint i:last-child{animation-direction:reverse}
+@keyframes nudge{50%{transform:translateX(-4px)}}
 .dots button{width:44px;height:24px;display:grid;place-items:center}
 .dots button i{display:block;width:22px;height:2px;background:var(--hero-fg);opacity:.3;transition:opacity .3s,width .5s var(--e-out)}
 .dots button.on i{opacity:1;width:38px}
@@ -350,7 +356,7 @@ main{position:relative;z-index:1}
 <link rel="icon" href="/favicon.svg?v=cw2" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico?v=cw2" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=cw2">
-<meta name="theme-color" content="#0e0a1a">
+<meta name="theme-color" content="#05060d">
 <link rel="canonical" href="https://cosmoswong.com/">
 <meta property="og:type" content="profile">
 <meta property="og:site_name" content="Cosmos Wong">
@@ -383,16 +389,14 @@ main{position:relative;z-index:1}
   </nav>
 </header>
 <div class="menu" id="menu" role="menu" aria-label="更多入口">
-  <a href="#works" role="menuitem">作品</a>
-  <a href="/tools" role="menuitem">实验室</a>
-  <a href="#contact" role="menuitem">联系</a>
-  <a href="/trips" role="menuitem">旅游计划</a>
+  <a href="/portfolio" role="menuitem">作品集</a>
+  <a href="/tools" role="menuitem">工具箱</a>
   <a href="/knowledge" role="menuitem">知识库</a>
-  <a href="/bookmarks" role="menuitem">收藏</a>
-  <a href="/subs" role="menuitem">订阅 <span>需口令</span></a>
-  <a href="/toolmap" role="menuitem">工具地图 <span>需口令</span></a>
-  <a href="/desk" role="menuitem">我的工作台 <span>需口令</span></a>
-  <a href="/go/fitness" role="menuitem">我的健身计划</a>
+  <a href="#contact" role="menuitem">联系</a>
+  <hr><span class="grp">私人 · 需口令</span>
+  <a href="/subs" role="menuitem">订阅</a>
+  <a href="/toolmap" role="menuitem">工具地图</a>
+  <a href="/desk" role="menuitem">我的工作台</a>
 </div>
 
 <div class="loader" id="loader" aria-hidden="true">
@@ -415,7 +419,7 @@ main{position:relative;z-index:1}
       </div>
       <div class="chapter" id="chapter">
         <div class="chapter__item" data-k="1"><span class="ln"><span class="no">01 / 04 · 地球 · 13 个作品</span></span><h2><span class="ln"><span>Works<small>作品</small></span></span></h2><span class="ln"><span><p>活动策划、交互原型，还有给自己搭的工作台。</p></span></span><span class="ln"><span><a class="go" href="/portfolio">进入作品集 →</a></span></span></div>
-        <div class="chapter__item" data-k="2"><span class="ln"><span class="no">02 / 04 · 火星 · 2 条进行中</span></span><h2><span class="ln"><span>Trips<small>旅行</small></span></span></h2><span class="ln"><span><p>多人协作行程站，和每周自动更新的春节机票榜单。</p></span></span><span class="ln"><span><a class="go" href="/trips">进入旅游计划 →</a></span></span></div>
+        <div class="chapter__item" data-k="2"><span class="ln"><span class="no">02 / 04 · 火星 · 2 条进行中</span></span><h2><span class="ln"><span>Trips<small>旅行</small></span></span></h2><span class="ln"><span><p>多人协作行程站，和每周自动更新的春节机票榜单。</p></span></span><span class="ln"><span><a class="go" href="/tools#travel">进入旅游计划 →</a></span></span></div>
         <div class="chapter__item" data-k="3"><span class="ln"><span class="no">03 / 04 · 木星 · 7 个工具</span></span><h2><span class="ln"><span>Tools<small>工具箱</small></span></span></h2><span class="ln"><span><p>补时计算器、动效 H5 编辑器、跑马灯 GIF 生成器……都是自己用得上的。</p></span></span><span class="ln"><span><a class="go" href="/tools">进入工具箱 →</a></span></span></div>
         <div class="chapter__item" data-k="4"><span class="ln"><span class="no">04 / 04 · 土星 · 持续更新</span></span><h2><span class="ln"><span>Notes<small>知识库</small></span></span></h2><span class="ln"><span><p>方法论和技术笔记，和 AI 一起干活的记录。</p></span></span><span class="ln"><span><a class="go" href="/knowledge">进入知识库 →</a></span></span></div>
       </div>

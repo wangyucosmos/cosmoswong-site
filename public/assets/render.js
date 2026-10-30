@@ -5,34 +5,39 @@
 (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  /* ---------- 公共骨架：背景、导航、页脚 ---------- */
-  // 导航按数据过滤：数据为空的板块不给入口（页面本身保留，直链仍可访问）
-  const navItems = S => [
-    ['/', '首页'], ['/portfolio', '作品集'], ['/resume', '简历'],
-    ['/trips', '旅游计划', S.trips.some(c => c.items.length)],
-    ['/tools', '工具箱', S.tools.length > 0],
-    ['/knowledge', '知识库'],
-    ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)],
-    ['/subs', '订阅'],   // 入口公开，页面内容要密码（src/worker.js）
-    ['/toolmap', '工具地图'],   // 2026-10-27 取代「KOL 工作台」入口（/kol 页面照常可直接访问）；内容走工具箱口令门、noindex、不进 sitemap
-    ['/desk', '我的工作台'],   // 同上（用户 2026-10-04 要求加，名字要和 KOL 工作台区分开）；页面仍 noindex、不进 sitemap
-    ['/go/fitness', '我的健身计划']
-  ].filter(([, , show]) => show !== false);
+  /* ---------- 公共骨架：导航、更多菜单、页脚（2026-10-30 起和首页同一套「深空 + 纸面」外观） ---------- */
+  // ⋯ 菜单分两组：公开入口 / 私人（要口令）。数据为空的板块不给入口（页面本身保留，直链仍可访问）
+  const navItems = S => ({
+    pub: [['/', '首页 · 太阳系'], ['/portfolio', '作品集'], ['/tools', '工具箱', S.tools.length > 0], ['/knowledge', '知识库'],
+      ['/bookmarks', '收藏', S.bookmarks.some(c => c.items.length)], ['#contact', '联系']].filter(([, , show]) => show !== false),
+    priv: [['/subs', '订阅'], ['/toolmap', '工具地图'], ['/desk', '我的工作台']]   // 入口公开、内容要口令；/kol 不给入口（2026-10-27 用户要求）
+  });
+  // 星座 CW 标（和首页导航同一个图形；连线描出来、星点依次亮起的动画在 style.css）
+  const LOGO = `<svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><g class="lg-lines" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"><polyline pathLength="1" points="29,19.9 15,19.9 8,32 15,44.1 29,44.1"/><polyline pathLength="1" points="35,20 40,44 46,31 52,44 57,20"/></g><g class="lg-stars" fill="currentColor">${[[29, 19.9, 3.2], [15, 19.9, 2.6], [8, 32, 3.5], [15, 44.1, 2.6], [29, 44.1, 3], [35, 20, 3], [40, 44, 2.7], [52, 44, 2.7], [57, 20, 3.3]].map(([x, y, r], i) => `<circle cx="${x}" cy="${y}" r="${r}" style="--d:${i}"/>`).join('')}</g><g class="lg-gold"><circle cx="46" cy="31" r="7.5" fill="#ffc04a" opacity=".22"/><path d="M46 23.2 47 30 53.8 31 47 32 46 38.8 45 32 38.2 31 45 30Z" fill="#ffd27a" opacity=".9"/><circle cx="46" cy="31" r="3.9" fill="#ffc04a"/></g></svg>`;
   // here：当前路径（无尾斜杠，首页为 '/'）
-  const renderHeader = (S, here) => `
-    <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
-    <header class="top"><div class="wrap"><nav class="nav">
-      <a class="logo" href="/">${esc(S.me.name).toUpperCase()}</a>
-      <ul id="menu">${navItems(S).map(([h, t]) => `<li><a href="${h}" class="${(h === '/' ? here === '/' : here.startsWith(h)) ? 'on' : ''}">${t}</a></li>`).join('')}</ul>
-      <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
-    </nav></div></header>`;
+  const renderHeader = (S, here) => {
+    const N = navItems(S), on = h => (h !== '/' && h[0] === '/' && here.startsWith(h)) ? ' aria-current="page"' : '';
+    return `
+    <header class="top" id="nav"><a class="brand" href="/" aria-label="${esc(S.me.name)} 首页">${LOGO}<span>${esc(S.me.name)}</span></a>
+      <nav class="nav-r" aria-label="主导航"><a class="nav-link"${on('/resume')} href="/resume">简历</a><button class="more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button></nav></header>
+    <div class="menu" id="menu" role="menu" aria-label="更多入口">${N.pub.map(([h, t]) => `<a role="menuitem" href="${h}"${on(h)}>${t}</a>`).join('')}
+      <hr><span class="grp">私人 · 需口令</span>${N.priv.map(([h, t]) => `<a role="menuitem" href="${h}"${on(h)}>${t}</a>`).join('')}</div>`;
+  };
   // year 由调用方传入：浏览器传 new Date().getFullYear()，构建脚本传构建时年份
   const renderFooter = (S, year) => `
-    <div class="wrap"><footer>
-      <span>© ${esc(year)} ${esc(S.me.name)}</span>
-      <span>${S.me.email ? `<a href="mailto:${esc(S.me.email)}">${esc(S.me.email)}</a>` : ''}${S.me.links.map(l => ` · <a href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)}</a>`).join('')}</span>
-    </footer></div>
+    <footer class="foot" id="contact"><div class="wrap">
+      <h2 class="foot-title"><span>在银河一角</span><span>等你来信</span></h2>
+      <div class="foot-links">${S.me.email ? `<button class="mag" id="copyMail" type="button" data-cursor="复制"><span id="mailText">${esc(S.me.email)}</span><span class="mono" id="copyState">复制</span></button>` : ''}
+        <a class="mag" href="/resume">简历 →</a>${S.me.links.map(l => `<a class="mag" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}
+        <a class="mag" href="/">回到太阳系 ↑</a></div>
+      <div class="foot-row"><span>© ${esc(year)} ${esc(S.me.name)}</span><span class="mono">星球贴图：Solar System Scope（CC BY 4.0）</span></div>
+    </div></footer>
     <div class="menu-backdrop" aria-hidden="true"></div>`;
+  // 子页面页头：深空底 + 星点 + 这一页的星球（星球和星点由 app.js 插入）；en 是大号英文标题，cn 是中文标题
+  const pageHead = ({ planet, eyebrow, meta, en, cn, lede, extra = '' }) => `
+    <section class="page-head" data-planet="${planet}">
+      <p class="eyebrow mono">${eyebrow ? `<b>${eyebrow}</b>` : ''}${meta ? `<span>${meta}</span>` : ''}</p>
+      <h1><span class="en">${en}</span><span class="cn">${cn}</span></h1>${lede ? `<p class="lede">${lede}</p>` : ''}${extra}</section>`;
 
   /* ---------- 渲染小工具 ---------- */
   /* ---------- 作品集（2026-10-12 重构）：画廊卡片 / 目录行 / 案例详情（内容块） ---------- */
@@ -107,6 +112,17 @@
     return t.url ? `<a class="card link${big ? ' big' : ''}" href="${esc(t.url)}" target="_blank" rel="noreferrer">${inner}</a>`
                  : `<article class="card${big ? ' big' : ''}">${inner}</article>`;
   };
+  // 工具箱卡片（2026-10-30 起分组展示；旅行组混着行程和工具）
+  const LOCK = '<svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+  const toolCard = (g, x) => {
+    const trip = !!x.dates, tag = trip ? `<span class="tag ${STATUS[x.status] || ''}">${esc(x.status)}</span>` : `<span class="tag">${LOCK}需口令</span>`;
+    const inner = `<div class="tc-top"><span class="tc-grp"><i class="dot"></i>${esc(g.name)}</span>${tag}</div>
+      <div class="tc-txt"><h3>${esc(x.title || x.name)}</h3><p>${esc(x.summary || x.desc)}</p></div>
+      <div class="tc-foot"><span class="when">${trip ? esc(x.dates) : '输入口令后使用'}</span>${x.url ? `<span class="go">${trip ? esc((x.cta || '打开').replace(/\s*→$/, '')) : '打开'} <i>→</i></span>` : '<span class="go">筹备中</span>'}</div>`;
+    return x.url ? `<a class="tcard" data-g="${g.id}" href="${esc(x.url)}" target="_blank" rel="noreferrer" data-cursor="打开">${inner}</a>` : `<div class="tcard" data-g="${g.id}">${inner}</div>`;
+  };
+  const toolGroups = S => (S.toolGroups || []).map(g => ({ ...g,
+    items: [...(g.id === 'travel' ? S.trips.flatMap(c => c.items) : []), ...S.tools.filter(t => t.group === g.name)] })).filter(g => g.items.length);
   const toolRow = t => t.url
     ? `<a class="row" href="${esc(t.url)}" target="_blank" rel="noreferrer"><span class="ic">${esc(t.icon)}</span><span class="t"><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></span><span class="arrow">→</span></a>`
     : `<div class="row"><span class="ic">${esc(t.icon)}</span><span class="t"><h3>${esc(t.name)}</h3><p>${esc(t.desc)}</p></span><span class="pill dim">筹备中</span></div>`;
@@ -139,8 +155,7 @@
   R.portfolio = S => {
     const W = S.portfolio, cats = ['全部', ...new Set(W.map(w => w.category))];
     const n = c => c === '全部' ? W.length : W.filter(w => w.category === c).length;
-    return `
-    <section class="page-head"><p class="eyebrow">Selected work</p><h1>作品集</h1><p>做过的项目和小工具。按类别筛选，点开看完整案例。</p></section>
+    return pageHead({ planet: 'earth', eyebrow: '01 / 04 · 地球', meta: `<i data-count="${W.length}">${W.length}</i> 个作品`, en: 'Works', cn: '作品集', lede: '做过的活动、原型和给自己搭的工具。按类别筛选，点开看完整案例。' }) + `
     <div class="pbar"><div class="filters" id="filters">${cats.map((c, i) => `<button data-c="${esc(c)}" aria-pressed="${i === 0}">${esc(c)}<b>${n(c)}</b></button>`).join('')}</div>
       <div class="vtoggle" id="views" role="group" aria-label="显示方式">
         <button data-v="index" aria-pressed="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 3.5h9.5M5 8h9.5M5 12.5h9.5"/><circle cx="2" cy="3.5" r=".8" fill="currentColor"/><circle cx="2" cy="8" r=".8" fill="currentColor"/><circle cx="2" cy="12.5" r=".8" fill="currentColor"/></svg>目录</button>
@@ -153,10 +168,9 @@
 
   R.resume = S => {
     const r = S.resume, m = S.me;
-    return `
-    <section class="page-head"><h1>${esc(m.fullName)}</h1><p>${esc(m.title)}</p>
-      <div class="cta" style="margin-top:22px">${r.pdf ? `<a class="btn solid" href="${esc(r.pdf)}" download>下载 PDF 简历</a>` : `<span class="btn glass" aria-disabled="true">PDF 简历 · 待上传</span>`}
-        ${m.email ? `<a class="btn glass" href="mailto:${esc(m.email)}">写邮件</a>` : ''}</div></section>
+    return pageHead({ planet: 'mars', eyebrow: '关于我', meta: esc(m.title), en: 'Resume', cn: esc(m.fullName),
+      extra: `<div class="cta">${r.pdf ? `<a class="btn solid mag" href="${esc(r.pdf)}" download>下载 PDF 简历</a>` : `<span class="btn glass" aria-disabled="true">PDF 简历 · 待上传</span>`}
+        ${m.email ? `<a class="btn glass mag" href="mailto:${esc(m.email)}">写邮件</a>` : ''}</div>` }) + `
     <div class="resume">
       <div>
         <div class="rbox"><h2>关于我</h2><p style="color:var(--muted);font-size:15.5px">${esc(r.summary)}</p></div>
@@ -174,17 +188,21 @@
       </aside></div>`;
   };
 
-  R.trips = S => `
-    <section class="page-head"><h1>旅游计划</h1><p>去过的、在走的、想去的。有独立行程站的会直接跳过去。</p></section>
+  // /trips 已由 worker 跳到 /tools#travel（2026-10-30）；页面保留给本地预览和直接打开 trips.html 的情况
+  R.trips = S => pageHead({ planet: 'moon', eyebrow: '旅行', en: 'Trips', cn: '旅游计划', lede: '旅游计划已经并进工具箱的「旅行」分组。', extra: '<div class="cta"><a class="btn solid mag" href="/tools#travel">去工具箱看 →</a></div>' }) + `
     ${S.trips.map(c => `<section class="sec" style="padding-top:34px"><div class="sec-head"><h2 style="font-size:24px">${esc(c.category)}</h2><span class="pill dim">${c.items.length} 次</span></div>
       ${c.items.length ? `<div class="grid wide">${c.items.map(t => tripCard(t, false)).join('')}</div>` : '<div class="empty">这个分类还是空的</div>'}</section>`).join('')}`;
 
-  R.tools = S => `
-    <section class="page-head"><h1>工具箱</h1><p>自己做的小工具，和一些常用的东西。</p></section>
-    <div class="rows" style="margin-top:26px">${S.tools.map(toolRow).join('') || '<div class="empty">还没有工具</div>'}</div>`;
+  R.tools = S => {
+    const G = toolGroups(S), total = G.reduce((n, g) => n + g.items.length, 0);
+    return pageHead({ planet: 'jupiter', eyebrow: '03 / 04 · 木星', meta: `<i data-count="${total}">${total}</i> 个工具 · ${G.length} 类`, en: 'Tools', cn: '工具箱',
+      lede: '做活动时顺手给自己做的小工具，加上出门旅行用的行程站。卡片谁都能看，工具点进去要口令；旅行页面可以直接打开。' }) + `
+    <div class="chips" id="chips" role="group" aria-label="按用途筛选"><button class="chip mag" type="button" data-f="all" aria-pressed="true">全部<b>${total}</b></button>${G.map(g => `<button class="chip mag" type="button" data-f="${g.id}" data-g="${g.id}" aria-pressed="false"><i class="dot"></i>${esc(g.name)}<b>${g.items.length}</b></button>`).join('')}</div>
+    ${G.map(g => `<section class="tgroup" id="${g.id}" data-g="${g.id}"><div class="tg-head"><span class="mono">${String(g.items.length).padStart(2, '0')} 个</span><h2><i class="dot"></i>${esc(g.name)}</h2><p>${esc(g.note)}</p></div>
+      <div class="tcards">${g.items.map(x => toolCard(g, x)).join('')}</div></section>`).join('') || '<div class="empty">还没有工具</div>'}`;
+  };
 
-  R.bookmarks = S => `
-    <section class="page-head"><h1>收藏</h1><p>看到的好东西。</p></section>
+  R.bookmarks = S => pageHead({ planet: 'moon', eyebrow: '收藏', en: 'Saved', cn: '收藏', lede: '看到的好东西。' }) + `
     ${S.bookmarks.map(c => `<section class="sec" style="padding-top:34px"><div class="sec-head"><h2 style="font-size:24px">${esc(c.category)}</h2></div>
       ${c.items.length ? `<div class="rows">${c.items.map(b => b.url
         ? `<a class="row" href="${esc(b.url)}" target="_blank" rel="noreferrer"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span><span class="arrow">↗</span></a>`
@@ -209,5 +227,5 @@
   };
 
   // 同时兼容浏览器和 Node（build_pages.mjs 用 vm 跑这个文件，window 由它注入）
-  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, workCard, workRow, workGallery, workIndex, workBlocks, tripCard, toolRow, workModal, pages: R };
+  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, pageHead, toolCard, toolGroups, workCard, workRow, workGallery, workIndex, workBlocks, tripCard, toolRow, workModal, pages: R };
 })();

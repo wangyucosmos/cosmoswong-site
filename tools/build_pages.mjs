@@ -16,8 +16,10 @@ import { execFileSync } from 'node:child_process';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const PUB = join(ROOT, 'public');
 const ORIGIN = 'https://cosmoswong.com';
-const THEME = '#0e0a1a';
+const THEME = '#05060d';
 const ICON_V = 'cw2';   // 2026-10-30 换成「星座 CW」图标
+// 正文放在纸面上的页面（2026-10-30 起）；/workbench、/subs、404 保持整页深空
+const PAPER = new Set(['portfolio', 'resume', 'trips', 'tools', 'bookmarks', 'knowledge']);
 const YEAR = new Date().getFullYear();
 
 /* ---------- 在假 window 上跑 data.js + render.js，拿到 SITE 和 RENDER ---------- */
@@ -54,7 +56,7 @@ const DYNAMIC = [
   { path: '/', file: 'index.html', page: 'home', type: 'profile', bare: true },
   { path: '/portfolio', file: 'portfolio.html', page: 'portfolio' },
   { path: '/resume', file: 'resume.html', page: 'resume', type: 'profile', nosite: true, protected: true },
-  { path: '/trips', file: 'trips.html', page: 'trips' },
+  { path: '/trips', file: 'trips.html', page: 'trips', nosite: true },   // 2026-10-30 起 /trips 由 worker 跳到 /tools#travel，不进 sitemap
   { path: '/tools', file: 'tools.html', page: 'tools' },
   { path: '/bookmarks', file: 'bookmarks.html', page: 'bookmarks' }
 ];
@@ -93,7 +95,9 @@ function headMeta(p, html) {
     `<link rel="icon" href="/favicon.svg?v=${ICON_V}" type="image/svg+xml">`,
     `<link rel="icon" href="/favicon.ico?v=${ICON_V}" sizes="16x16 32x32 48x48">`,
     `<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=${ICON_V}">`,
-    `<meta name="theme-color" content="${THEME}">`
+    `<meta name="theme-color" content="${THEME}">`,
+    // 子页面和首页共用一套自托管字体（tools/make_home_fonts.mjs 生成；首页自己的 head 里已经写了）
+    ...(p.bare ? [] : ['<link rel="stylesheet" href="/assets/home/fonts.css">'])
   ];
   if (p.path) {
     // canonical 统一不带尾斜杠（wrangler 是 auto-trailing-slash），首页是 https://cosmoswong.com/
@@ -144,8 +148,12 @@ function build(p) {
     html = upsert(html, 'chrome-bottom', RENDER.renderFooter(SITE, YEAR), '<script src="/assets/data.js', 'before');
   }
 
-  // 3. 内页给 body 加 .inner（app.js 也会加，这里是为了无 JS 时背景亮度一致）
-  if (p.page !== 'home') html = html.replace(/<body(?![^>]*\bclass=)([^>]*)>/, '<body class="inner"$1>');
+  // 3. 内页给 body 加 .inner（app.js 也会加，这里是为了无 JS 时背景一致）；PAPER 里的页面再加 .paper（纸面正文，见 style.css 开头）
+  if (p.page !== 'home') {
+    const key = p.page || attr(html, /<body[^>]*\bdata-page="([^"]+)"/);
+    const cls = ['inner', ...(PAPER.has(key) ? ['paper'] : [])].join(' ');
+    html = html.replace(/<body([^>]*)>/, (m, a) => `<body class="${cls}"${a.replace(/\s*\bclass="[^"]*"/, '')}>`);
+  }
 
   // 4. 动态页正文
   if (p.page && !p.bare) {

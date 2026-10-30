@@ -106,6 +106,8 @@ export default {
     if (/[\\\u0000-\u001f\u007f]/.test(decodedPath)) return json({ error: '地址不正确' }, 400);
     if (!rawPath.startsWith('/go/') && decodedPath.includes('%')) return json({ error: '地址不正确' }, 400);
     const path = decodedPath.replace(/\/+/g, '/').replace(/\/+$/, '');
+    // 2026-10-30 旅游计划并入工具箱：旧地址跳到工具箱的「旅行」组（子路径 /trips/<行程>/ 不受影响）
+    if (path === '/trips' || path === '/trips.html') return new Response(null, { status: 301, headers: { Location: '/tools#travel' } });
     if (path === '/api/attendance' || path.startsWith('/api/attendance/')) {
       if (new URL(req.url).protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(new URL(req.url).hostname)) return Response.redirect(req.url.replace(/^http:/, 'https:'), 308);
       return attendanceSecure(await attendanceApi(req, env.ATTENDANCE_DB));

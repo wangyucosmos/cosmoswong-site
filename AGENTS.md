@@ -146,4 +146,12 @@
 - `public/index.html` 是自带骨架的页面：`build_pages.mjs` 里首页带 `bare: true`，只注入 head 元信息和 JSON-LD，**不注入主站导航 / 页脚、不预渲染正文**。不要把它改回 `render.js` 的 `home` 模板。
 - 脚本和资源全在 `public/assets/home/`：`three.min.js`（r128，自托管）、`world.js`（WebGL 场景）、`ui.js`（交互）、`tex/`（贴图）、`fonts/` + `fonts.css`。贴图来源与许可写在首页尾部「图片来源」里，必须保留（CC BY）。
 - 作品从 `data.js` 的 `portfolio` 读：`featured` 进作品带，全部进作品总表，点开跳 `/portfolio#<id>`；卡片短标题在 `ui.js` 的 `NAME` 里，新作品没写就按「 · 」自动拆。章节里的作品 / 工具 / 进行中旅行数量也从 `data.js` 算。
-- 字体是子集：**改了首页文字或作品的标题 / 类别 / 摘要后**，要重跑 `HTTPS_PROXY=http://127.0.0.1:7897 node tools/make_home_fonts.mjs`，否则新字回退到系统字体。
+- 字体是全站共用的子集（首页 + 子页面，2026-10-30 起）：**改了 data.js、简历、静态页或模板里的中文文字后**，要重跑 `HTTPS_PROXY=http://127.0.0.1:7897 node tools/make_home_fonts.mjs`，否则新字回退到系统字体。中文按 260 字一批下载、`unicode-range` 拼起来；文件名带内容哈希（/assets 是长缓存），旧文件脚本会自己清掉。
+- 手机上在各星球章节左右滑动换星球（`world.js` 里 `TOUCH` 一段），电脑不变。
+
+## 子页面外观（2026-10-30 起和首页同一套「深空 + 纸面」）
+- 导航 / ⋯ 菜单 / 页脚都由 `render.js` 的 `renderHeader` / `renderFooter` 生成：导航只有 CW 星座标 + 简历 + ⋯；菜单分「公开 / 私人 · 需口令」两组（`navItems` 返回 `{ pub, priv }`）；页脚是「在银河一角 / 等你来信」+ 复制邮箱。
+- 动态页的页头用 `pageHead({ planet, eyebrow, meta, en, cn, lede, extra })`；星点画布和星球由 `app.js` 插入（`data-planet`，静态页按 `PLANET` 表补）。贴图直接用 `/assets/home/tex/`。
+- `body.paper`（`build_pages.mjs` 的 `PAPER` 集合）= 正文在纸面上：在 `body.paper main` 里把 `--fg / --muted / --line …` 换成纸面色，页头和案例弹窗再换回深空色，组件不用写两套。`/workbench`、`/subs`、404 不在 PAPER 里，整页深空。
+- 动效都在 `app.js`，只在允许动效时给 `<html>` 加 `.fx`（逐字升起、依次浮现、页头随滚动淡出、数字滚动）；精细指针才有卡片 3D 倾斜 + 光斑、按钮磁吸、金色光标。新画出来的内容调 `window.CWFX.scan(el)` 接上浮现动效。
+- 工具箱按 `data.js` 的 `toolGroups` 分组，`tools[].group` 写组名；旅行组自动带上 `trips` 里的行程。**旅游计划并入工具箱**：`/trips`、`/trips.html` 由 worker 301 到 `/tools#travel`（子路径 `/trips/<行程>/` 不受影响），`trips.html` 不进 sitemap。

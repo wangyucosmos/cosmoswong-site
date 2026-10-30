@@ -11,7 +11,8 @@
 <link rel="icon" href="/favicon.svg?v=cw2" type="image/svg+xml">
 <link rel="icon" href="/favicon.ico?v=cw2" sizes="16x16 32x32 48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=cw2">
-<meta name="theme-color" content="#0e0a1a">
+<meta name="theme-color" content="#05060d">
+<link rel="stylesheet" href="/assets/home/fonts.css">
 <link rel="canonical" href="https://cosmoswong.com/tools">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Cosmos Wong">
@@ -29,24 +30,54 @@
 <meta name="twitter:image" content="https://cosmoswong.com/og.png">
 <!--/head:auto-->
 </head>
-<body class="inner" data-page="tools">
+<body class="inner paper" data-page="tools">
 <!--chrome-top:auto-->
-    <div class="mesh" aria-hidden="true"><i></i><i></i><i></i></div>
-    <header class="top"><div class="wrap"><nav class="nav">
-      <a class="logo" href="/">COSMOS WONG</a>
-      <ul id="menu"><li><a href="/" class="">首页</a></li><li><a href="/portfolio" class="">作品集</a></li><li><a href="/resume" class="">简历</a></li><li><a href="/trips" class="">旅游计划</a></li><li><a href="/tools" class="on">工具箱</a></li><li><a href="/knowledge" class="">知识库</a></li><li><a href="/subs" class="">订阅</a></li><li><a href="/toolmap" class="">工具地图</a></li><li><a href="/desk" class="">我的工作台</a></li><li><a href="/go/fitness" class="">我的健身计划</a></li></ul>
-      <button class="burger" aria-label="菜单" aria-expanded="false">☰</button>
-    </nav></div></header><!--/chrome-top:auto-->
+    <header class="top" id="nav"><a class="brand" href="/" aria-label="Cosmos Wong 首页"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><g class="lg-lines" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"><polyline pathLength="1" points="29,19.9 15,19.9 8,32 15,44.1 29,44.1"/><polyline pathLength="1" points="35,20 40,44 46,31 52,44 57,20"/></g><g class="lg-stars" fill="currentColor"><circle cx="29" cy="19.9" r="3.2" style="--d:0"/><circle cx="15" cy="19.9" r="2.6" style="--d:1"/><circle cx="8" cy="32" r="3.5" style="--d:2"/><circle cx="15" cy="44.1" r="2.6" style="--d:3"/><circle cx="29" cy="44.1" r="3" style="--d:4"/><circle cx="35" cy="20" r="3" style="--d:5"/><circle cx="40" cy="44" r="2.7" style="--d:6"/><circle cx="52" cy="44" r="2.7" style="--d:7"/><circle cx="57" cy="20" r="3.3" style="--d:8"/></g><g class="lg-gold"><circle cx="46" cy="31" r="7.5" fill="#ffc04a" opacity=".22"/><path d="M46 23.2 47 30 53.8 31 47 32 46 38.8 45 32 38.2 31 45 30Z" fill="#ffd27a" opacity=".9"/><circle cx="46" cy="31" r="3.9" fill="#ffc04a"/></g></svg><span>Cosmos Wong</span></a>
+      <nav class="nav-r" aria-label="主导航"><a class="nav-link" href="/resume">简历</a><button class="more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button></nav></header>
+    <div class="menu" id="menu" role="menu" aria-label="更多入口"><a role="menuitem" href="/">首页 · 太阳系</a><a role="menuitem" href="/portfolio">作品集</a><a role="menuitem" href="/tools" aria-current="page">工具箱</a><a role="menuitem" href="/knowledge">知识库</a><a role="menuitem" href="#contact">联系</a>
+      <hr><span class="grp">私人 · 需口令</span><a role="menuitem" href="/subs">订阅</a><a role="menuitem" href="/toolmap">工具地图</a><a role="menuitem" href="/desk">我的工作台</a></div><!--/chrome-top:auto-->
 <main class="wrap" data-prerendered="1">
-    <section class="page-head"><h1>工具箱</h1><p>自己做的小工具，和一些常用的东西。</p></section>
-    <div class="rows" style="margin-top:26px"><a class="row" href="/go/attendance" target="_blank" rel="noreferrer"><span class="ic">⏱</span><span class="t"><h3>补时计算器</h3><p>上传 OA 截图，自动核算每日盈亏和月度补时余额；按月查看日历与历史记录。每个人自行注册，记录独立保存，截图在本机识别。</p></span><span class="arrow">→</span></a><a class="row" href="/go/cosmos-os" target="_blank" rel="noreferrer"><span class="ic">🖥</span><span class="t"><h3>Cosmos OS</h3><p>macOS 个人工作系统，把日常流程做成自己的操作系统。开发中。</p></span><span class="arrow">→</span></a><a class="row" href="/go/travel" target="_blank" rel="noreferrer"><span class="ic">🧭</span><span class="t"><h3>旅行协作站</h3><p>扫码进组一起编辑行程、清单、预算。印尼这次在用，之后每次旅行都能复用。</p></span><span class="arrow">→</span></a><a class="row" href="/go/h5-editor" target="_blank" rel="noreferrer"><span class="ic">🎞</span><span class="t"><h3>动效 H5 编辑器</h3><p>把长图和 GIF 叠在一起，发布成手机上手动滑动、动图原地播放的 H5 页面。带图层、修图（智能修补、仿制图章、画笔）和静态图生成摆动、飘落动效。需口令才能使用。</p></span><span class="arrow">→</span></a><a class="row" href="/go/marquee" target="_blank" rel="noreferrer"><span class="ic">📢</span><span class="t"><h3>跑马灯 GIF 生成器</h3><p>输入一段公告文字，调字号、颜色和速度，直接导出透明背景的滚动字幕 GIF，放进活动页面就能用。全部在浏览器里生成，文字不上传。</p></span><span class="arrow">→</span></a><a class="row" href="/go/mail-insight" target="_blank" rel="noreferrer"><span class="ic">📬</span><span class="t"><h3>邮件名单透视</h3><p>拖入 Mailchimp 导出的表格，自动生成人群画像、退订诊断和每期变化，附单封邮件诊断器。表格在浏览器里计算，只保存汇总数字。需口令才能使用。</p></span><span class="arrow">→</span></a><a class="row" href="/go/english" target="_blank" rel="noreferrer"><span class="ic">🌱</span><span class="t"><h3>英语从零学</h3><p>从零到商务英语的 6 级学习系统：自然拼读、1700+ 分级单词和近 500 个场景句子的间隔复习、40 多课语法、跟读打分和学习方法。带听写、水平测评和学习记录；手机和电脑的进度自动同步。需口令才能使用。</p></span><span class="arrow">→</span></a></div>
+    <section class="page-head" data-planet="jupiter">
+      <p class="eyebrow mono"><b>03 / 04 · 木星</b><span><i data-count="11">11</i> 个工具 · 4 类</span></p>
+      <h1><span class="en">Tools</span><span class="cn">工具箱</span></h1><p class="lede">做活动时顺手给自己做的小工具，加上出门旅行用的行程站。卡片谁都能看，工具点进去要口令；旅行页面可以直接打开。</p></section>
+    <div class="chips" id="chips" role="group" aria-label="按用途筛选"><button class="chip mag" type="button" data-f="all" aria-pressed="true">全部<b>11</b></button><button class="chip mag" type="button" data-f="work" data-g="work" aria-pressed="false"><i class="dot"></i>工作工具<b>4</b></button><button class="chip mag" type="button" data-f="travel" data-g="travel" aria-pressed="false"><i class="dot"></i>旅行<b>4</b></button><button class="chip mag" type="button" data-f="life" data-g="life" aria-pressed="false"><i class="dot"></i>学习与生活<b>2</b></button><button class="chip mag" type="button" data-f="dev" data-g="dev" aria-pressed="false"><i class="dot"></i>开发中<b>1</b></button></div>
+    <section class="tgroup" id="work" data-g="work"><div class="tg-head"><span class="mono">04 个</span><h2><i class="dot"></i>工作工具</h2><p>活动策划、物料制作、数据复盘里反复做的事，做成了工具。</p></div>
+      <div class="tcards"><a class="tcard" data-g="work" href="/go/attendance" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>工作工具</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>补时计算器</h3><p>上传 OA 截图，自动核算每日盈亏和月度补时余额；按月查看日历与历史记录。每个人自行注册，记录独立保存，截图在本机识别。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="work" href="/go/h5-editor" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>工作工具</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>动效 H5 编辑器</h3><p>把长图和 GIF 叠在一起，发布成手机上手动滑动、动图原地播放的 H5 页面。带图层、修图（智能修补、仿制图章、画笔）和静态图生成摆动、飘落动效。需口令才能使用。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="work" href="/go/marquee" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>工作工具</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>跑马灯 GIF 生成器</h3><p>输入一段公告文字，调字号、颜色和速度，直接导出透明背景的滚动字幕 GIF，放进活动页面就能用。全部在浏览器里生成，文字不上传。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="work" href="/go/mail-insight" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>工作工具</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>邮件名单透视</h3><p>拖入 Mailchimp 导出的表格，自动生成人群画像、退订诊断和每期变化，附单封邮件诊断器。表格在浏览器里计算，只保存汇总数字。需口令才能使用。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a></div></section><section class="tgroup" id="travel" data-g="travel"><div class="tg-head"><span class="mono">04 个</span><h2><i class="dot"></i>旅行</h2><p>每次出门的行程站和比价榜单；原来的「旅游计划」并在这里。</p></div>
+      <div class="tcards"><a class="tcard" data-g="travel" href="https://indonesia.cosmoswong.com" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>旅行</span><span class="tag live">进行中</span></div>
+      <div class="tc-txt"><h3>印尼 · 科莫多 / 巴厘岛 / 布罗莫</h3><p>Padar 山海、罗威纳海豚、布罗莫日出。协作行程站，搭子一起编辑。</p></div>
+      <div class="tc-foot"><span class="when">2026.10.01 — 10.09</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="travel" href="https://phuket.cosmoswong.com" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>旅行</span><span class="tag dim">规划中</span></div>
+      <div class="tc-txt"><h3>2026 国庆 · 普吉岛</h3><p>单人出发，途中也可约搭子。按天气调整皮皮岛，管理酒店、海况、预算和清单。</p></div>
+      <div class="tc-foot"><span class="when">2026.10.03 — 10.08</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="travel" href="/trips/2027-spring-tickets/" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>旅行</span><span class="tag live">进行中</span></div>
+      <div class="tc-txt"><h3>春节机票价格跟盯</h3><p>上海出发 30 城春节机票比价榜单，每周自动更新。含 2 月气候、签证、中转时长，一眼看清最低价。</p></div>
+      <div class="tc-foot"><span class="when">2027.02.05 — 02.15</span><span class="go">查看价格榜单 <i>→</i></span></div></a><a class="tcard" data-g="travel" href="/go/travel" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>旅行</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>旅行协作站</h3><p>扫码进组一起编辑行程、清单、预算。印尼这次在用，之后每次旅行都能复用。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a></div></section><section class="tgroup" id="life" data-g="life"><div class="tg-head"><span class="mono">02 个</span><h2><i class="dot"></i>学习与生活</h2><p>下班以后给自己用的。</p></div>
+      <div class="tcards"><a class="tcard" data-g="life" href="/go/english" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>学习与生活</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>英语从零学</h3><p>从零到商务英语的 6 级学习系统：自然拼读、1700+ 分级单词和近 500 个场景句子的间隔复习、40 多课语法、跟读打分和学习方法。带听写、水平测评和学习记录；手机和电脑的进度自动同步。需口令才能使用。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a><a class="tcard" data-g="life" href="/go/fitness" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>学习与生活</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>我的健身计划</h3><p>健身计划子站，从工具箱进入需要口令。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a></div></section><section class="tgroup" id="dev" data-g="dev"><div class="tg-head"><span class="mono">01 个</span><h2><i class="dot"></i>开发中</h2><p>还没做完，但已经在用。</p></div>
+      <div class="tcards"><a class="tcard" data-g="dev" href="/go/cosmos-os" target="_blank" rel="noreferrer" data-cursor="打开"><div class="tc-top"><span class="tc-grp"><i class="dot"></i>开发中</span><span class="tag"><svg class="lock" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.2" width="8" height="5.8" rx="1.4" fill="currentColor"/><path d="M4 5.2V3.8a2 2 0 0 1 4 0v1.4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>需口令</span></div>
+      <div class="tc-txt"><h3>Cosmos OS</h3><p>macOS 个人工作系统，把日常流程做成自己的操作系统。开发中。</p></div>
+      <div class="tc-foot"><span class="when">输入口令后使用</span><span class="go">打开 <i>→</i></span></div></a></div></section>
 </main>
 
 <!--chrome-bottom:auto-->
-    <div class="wrap"><footer>
-      <span>© 2026 Cosmos Wong</span>
-      <span><a href="mailto:wangyuwangxinxin@gmail.com">wangyuwangxinxin@gmail.com</a> · <a href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub</a></span>
-    </footer></div>
+    <footer class="foot" id="contact"><div class="wrap">
+      <h2 class="foot-title"><span>在银河一角</span><span>等你来信</span></h2>
+      <div class="foot-links"><button class="mag" id="copyMail" type="button" data-cursor="复制"><span id="mailText">wangyuwangxinxin@gmail.com</span><span class="mono" id="copyState">复制</span></button>
+        <a class="mag" href="/resume">简历 →</a><a class="mag" href="https://github.com/wangyucosmos" target="_blank" rel="noreferrer">GitHub ↗</a>
+        <a class="mag" href="/">回到太阳系 ↑</a></div>
+      <div class="foot-row"><span>© 2026 Cosmos Wong</span><span class="mono">星球贴图：Solar System Scope（CC BY 4.0）</span></div>
+    </div></footer>
     <div class="menu-backdrop" aria-hidden="true"></div><!--/chrome-bottom:auto-->
 <script src="/assets/data.js?v=20261030163619"></script>
 <script src="/assets/render.js?v=20261030163619"></script><script src="/assets/app.js?v=20261030163619"></script>

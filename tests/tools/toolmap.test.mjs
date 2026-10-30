@@ -46,7 +46,9 @@ test('接口只读、只认两个版本', async () => {
 });
 
 test('导航：去掉 KOL 工作台入口、换成工具地图；/kol 页面照常放行', async () => {
-  const items = globalThis.RENDER.navItems({ trips: [], tools: [], bookmarks: [] }).map(([h]) => h);
+  // 2026-10-30 起 navItems 分「公开 / 私人」两组（⋯ 菜单），合起来检查顺序
+  const N = globalThis.RENDER.navItems({ trips: [], tools: [], bookmarks: [] });
+  const items = [...N.pub, ...N.priv].map(([h]) => h);
   assert.ok(!items.includes('/kol'));
   assert.equal(items.indexOf('/toolmap'), items.indexOf('/subs') + 1);
   assert.equal(await (await call(env(), '/kol')).text(), 'asset:/kol');
