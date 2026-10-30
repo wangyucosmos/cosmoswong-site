@@ -70,7 +70,8 @@ main{position:relative;z-index:1}
 .nav__more{width:30px;height:30px;display:grid;place-items:center;border-radius:99px;border:1px solid currentColor}
 .menu{position:fixed;top:calc(58px + env(safe-area-inset-top,0px));right:var(--gxr);z-index:51;min-width:200px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);
   box-shadow:0 20px 60px rgba(5,6,13,.28);display:grid;opacity:0;transform:translateY(-6px) scale(.98);transform-origin:top right;pointer-events:none;transition:opacity .25s,transform .4s var(--e-out)}
-.menu.open{opacity:1;transform:none;pointer-events:auto}
+.menu{visibility:hidden}
+.menu.open{visibility:visible;opacity:1;transform:none;pointer-events:auto}
 .menu a{padding:9px 12px;border-radius:10px;text-decoration:none;display:flex;justify-content:space-between;gap:16px}
 .menu a:hover{background:var(--paper-2)}
 .menu a span{color:var(--muted);font-size:12px}
@@ -339,10 +340,6 @@ main{position:relative;z-index:1}
 .cursor.label .cursor__pill{transform:scale(1);opacity:1}
 .cursor.label .cursor__dot{transform:scale(0)}
 
-/* ---------- 样稿专用：标题字体切换 ---------- */
-  background:color-mix(in oklab,var(--paper) 88%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);color:var(--ink);font-size:12px}
-#nebBtn{font-family:var(--f-cn)!important;font-weight:500!important}
-@media (max-width:760px){
 @media (prefers-reduced-motion:reduce){
   .hero__hint i{animation:none}
   .js .rv.wait .ch,.js .fade.wait,.js .row.wait,.js .stag>*{transform:none;opacity:1;filter:none}

@@ -73,6 +73,8 @@
   // 把元素里的文字拆成一个个字（标签和图标原样保留），配合 .fx .split 的 CSS 从下往上升起
   function split(el, d0 = 0) {
     if (!el || el.classList.contains('split')) return;
+    const heading = el.closest('h1,h2,h3,h4,h5,h6');
+    if (heading && !heading.hasAttribute('aria-label')) heading.setAttribute('aria-label', heading.textContent.trim());
     let i = 0;
     const walk = n => [...n.childNodes].forEach(c => {
       if (c.nodeType === 3) {

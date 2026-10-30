@@ -64,7 +64,8 @@ header.top.dim{background:rgba(5,6,13,.62);backdrop-filter:blur(14px);-webkit-ba
 .more[aria-expanded="true"]::first-line{color:var(--space)}
 .menu{position:fixed;top:calc(68px + env(safe-area-inset-top,0px));right:var(--gxr);z-index:51;width:230px;padding:8px;border-radius:16px;background:var(--paper);color:var(--ink);
   box-shadow:0 24px 60px rgba(0,0,0,.35);opacity:0;transform:translateY(-8px) scale(.97);transform-origin:top right;pointer-events:none;transition:opacity .25s,transform .4s var(--e-out)}
-.menu.open{opacity:1;transform:none;pointer-events:auto}
+.menu{visibility:hidden}
+.menu.open{visibility:visible;opacity:1;transform:none;pointer-events:auto}
 .menu a{display:block;padding:9px 12px;border-radius:10px;font-size:15px;transition:background .2s,padding .3s var(--e-out)}
 .menu a:hover{background:var(--paper-2);padding-left:16px}
 .menu a[aria-current]{background:var(--paper-2);font-weight:600}
@@ -145,6 +146,7 @@ body:not(.paper) .page-head{padding-bottom:40px;background:transparent}
 .chip[aria-pressed="true"]{background:var(--fg);color:var(--on-fg);border-color:var(--fg)}
 .chip[aria-pressed="true"] b{color:inherit;opacity:.6}
 .tgroup{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:28px 48px;padding:44px 0;border-top:1px solid var(--line);scroll-margin-top:140px}
+.tgroup[hidden]{display:none}
 .tgroup:first-of-type{border-top:0}
 .tg-head{display:grid;gap:10px;align-content:start;position:sticky;top:150px}
 .tg-head h2{display:flex;align-items:center;gap:12px;font:900 26px/1.2 var(--f-cn)}
@@ -502,6 +504,8 @@ body.paper .kb{--line-strong:rgba(20,20,27,.22);--code-bg:rgba(20,20,27,.07);--l
 body.paper .kb .thesis{background:var(--paper-3);backdrop-filter:none}
 
 @media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .fx .rv,.fx .split .ch{opacity:1;transform:none;filter:none;transition:none}
   .planet{animation:none}
   .logo .lg-lines polyline{animation:none;stroke-dashoffset:0}
   .logo .lg-stars circle,.logo .lg-gold{animation:none;transform:none}
@@ -527,6 +531,8 @@ body.paper .kb .thesis{background:var(--paper-3);backdrop-filter:none}
   body.paper main{--fg:#111;--muted:#444;--faint:#666;--line:#ccc;--acc-ink:#333}
   .page-head{display:flex;flex-direction:column;margin:0;padding:0 0 6px;background:none!important;color:#111}
   .page-head::after{display:none}
+  .fx .rv,.fx .split .ch{opacity:1!important;transform:none!important;filter:none!important;transition:none}
+  .page-head>*{opacity:1!important;transform:none!important}
   .page-head h1{order:-1}
   .page-head h1 .en{display:none}
   .page-head h1 .cn{margin:0;font-size:26px;letter-spacing:-.5px;color:#111}

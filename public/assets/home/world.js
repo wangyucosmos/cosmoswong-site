@@ -78,7 +78,7 @@
   world.chapterTo = (k) => scrollTo({ top: hero.offsetTop + k * S.vh, behavior: S.tier === 'low' ? 'auto' : 'smooth' });
   dotBtns.forEach((b, i) => b.addEventListener('click', () => world.chapterTo(i)));
   // 手机：在各星球章节里左右滑动换星球（向左 = 下一颗，向右 = 上一颗；在地球往右滑回到太阳系全景）。全景页仍是拖动转视角；电脑不变
-  const TOUCH = matchMedia('(hover: none) and (pointer: coarse)').matches;
+  const TOUCH = matchMedia('(max-width: 820px) and (hover: none) and (pointer: coarse)').matches;
   let swipe = null, swiped = false, swipeHint = null;
   try { swiped = localStorage.getItem('cw-swiped') === '1'; } catch (e) {}
   if (TOUCH) {
@@ -86,11 +86,15 @@
     swipeHint.innerHTML = '<i>←</i>左右滑动换星球<i>→</i>'; stage.appendChild(swipeHint);
     stage.addEventListener('touchstart', (e) => {
       if (e.touches.length !== 1) { swipe = null; return; }
-      const t = e.touches[0]; swipe = { x: t.clientX, y: t.clientY, t: performance.now(), u: heroU() };
+      const t = e.touches[0]; swipe = { id: t.identifier, x: t.clientX, y: t.clientY, t: performance.now(), u: heroU() };
     }, { passive: true });
+    stage.addEventListener('touchmove', (e) => { if (e.touches.length !== 1) swipe = null; }, { passive: true });
+    stage.addEventListener('touchcancel', () => { swipe = null; }, { passive: true });
     stage.addEventListener('touchend', (e) => {
-      if (!swipe) return;
-      const t = e.changedTouches[0], dx = t.clientX - swipe.x, dy = t.clientY - swipe.y, dt = performance.now() - swipe.t, u = swipe.u;
+      if (!swipe || e.touches.length) { swipe = null; return; }
+      const t = [...e.changedTouches].find(t => t.identifier === swipe.id);
+      if (!t) { swipe = null; return; }
+      const dx = t.clientX - swipe.x, dy = t.clientY - swipe.y, dt = performance.now() - swipe.t, u = swipe.u;
       swipe = null;
       if (u < 0.6 || dt > 800 || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
       const k = Math.round(u), to = Math.max(0, Math.min(4, k + (dx < 0 ? 1 : -1)));

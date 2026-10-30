@@ -332,6 +332,7 @@
   moreBtn.addEventListener('click', (e) => { e.stopPropagation(); const o = !menu.classList.contains('open'); menu.classList.toggle('open', o); moreBtn.setAttribute('aria-expanded', String(o)); });
   document.addEventListener('click', (e) => { if (!menu.contains(e.target)) closeMenu(); });
   menu.addEventListener('click', (e) => { if (e.target.closest('a')) closeMenu(); });
+  addEventListener('keydown', (e) => { if (e.key === 'Escape' && menu.classList.contains('open')) { closeMenu(); moreBtn.focus(); } });
   let navY = 0;
   function updateNav() {
     const past = $('#intro').getBoundingClientRect().top <= 40;

@@ -26,7 +26,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Test protected routes
-        run: node --test tests/tools/*.test.mjs tests/attendance/*.test.mjs tests/trips/*.test.mjs
+        run: node --test tests/tools/*.test.mjs tests/attendance/*.test.mjs tests/trips/*.test.mjs tests/home/*.test.mjs
       - name: Check Worker-first configuration
         run: node tools/verify_tools_routing.mjs --local
       - name: Rebuild pages
