@@ -15,7 +15,7 @@
   R.setClearColor(0x000000, 0);
 
   // 画布比星球本体大 70%，留出大气辉光和土星环
-  const PAD = 1.7, scene = new THREE.Scene();
+  const PAD = kind === 'saturn' ? 2.55 : 1.7, scene = new THREE.Scene();   // 土星环外径是星球半径的 2.27 倍，画布要放得下整个环
   const cam = new THREE.PerspectiveCamera(22, 1, 0.1, 100);
   const DIST = 1 / Math.tan((22 * Math.PI) / 360) * PAD;   // 半径 1 的球正好占画布高度的 1/PAD
   cam.position.set(0, 0, DIST); cam.lookAt(0, 0, 0);

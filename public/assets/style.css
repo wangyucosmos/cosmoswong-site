@@ -82,6 +82,8 @@ header.top.dim{background:rgba(5,6,13,.62);backdrop-filter:blur(14px);-webkit-ba
 body:not(.paper) .page-head::after{display:none}
 body:not(.paper) .page-head{padding-bottom:40px;background:transparent}
 .page-head>*{position:relative;z-index:2;max-width:680px}
+/* 电脑版：页头的说明文字、按钮停在星球左边，不伸到星球底下（星球宽 clamp(240px,34vw,460px)，贴右边） */
+@media(min-width:821px){body .page-head p,body .page-head .cta,body .page-head .eyebrow{max-width:min(680px,calc(100vw - var(--gx) - clamp(240px,34vw,460px) - 72px))}}
 .page-head .sky{position:absolute;inset:0;width:100%;height:100%;z-index:0;max-width:none;pointer-events:none}
 .page-head .eyebrow{display:flex;gap:12px;flex-wrap:wrap;color:var(--muted);font:12px var(--f-mono);letter-spacing:.06em;text-transform:none;margin:0 0 22px}
 .page-head .eyebrow b{color:var(--accent);font-weight:500}
@@ -263,7 +265,8 @@ body:not(.paper) .foot{border-radius:0;border-top:1px solid rgba(244,242,237,.08
 
 /* ---------- 动效（app.js 只在允许动效时给 <html> 加 .fx；不加时所有内容直接可见） ---------- */
 /* 逐字升起 + 边缘模糊（同首页） */
-.split .w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.12em;margin-bottom:-.12em}
+/* 每个字的裁切框左右各多留 .14em：Unbounded 字距是负的，字形比字框宽，不留就会被切掉一边（如 Tools 的 s） */
+.split .w{display:inline-block;overflow:hidden;vertical-align:top;padding:0 .14em .12em;margin:0 -.14em -.12em}
 .split .ch{display:inline-block;white-space:pre}
 .fx .split .ch{transform:translateY(105%);filter:blur(8px);opacity:0;transition:transform 1s var(--e-out),filter .9s var(--e-out),opacity .6s;transition-delay:calc(var(--i) * 28ms + var(--d0,0ms))}
 .fx .split.in .ch{transform:none;filter:none;opacity:1}
