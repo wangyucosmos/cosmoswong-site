@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Cosmos Wong · 运营十年 · 游戏 / 活动 / 内容</title>
+<title>Cosmos Wong｜一起探索宇宙</title>
 <meta name="description" content="Cosmos Wong 的作品展示、实用工具与个人计划。">
 <link rel="stylesheet" href="/assets/home/fonts.css?v=20261031004410">
 <style>
@@ -93,11 +93,11 @@ main{position:relative;z-index:1}
 .loader__pct{display:none}
 /* 入场：星点从四周飞来拼成星座 CW，连线画出、金星亮起，再从中间展开成太阳系 */
 .loader__logo{position:absolute;left:50%;top:50%;width:176px;height:176px;margin:-88px 0 0 -88px;color:var(--ink);overflow:visible;transition:transform 1s var(--e-io),opacity .7s}
-.loader__logo .s{opacity:0;transform-box:fill-box;transform-origin:center;transform:translate(var(--x),var(--y)) scale(.3);transition:transform 1.1s var(--e-out),opacity .5s}
+.loader__logo .s{opacity:0;transform-box:fill-box;transform-origin:center;transform:translate(var(--x),var(--y)) scale(.3);transition:transform .8s var(--e-out),opacity .4s}
 .loader__logo .s.in{opacity:1;transform:none}
-.loader__logo polyline{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 1s var(--e-out)}
+.loader__logo polyline{stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset .7s var(--e-out)}
 .loader__logo.done polyline{stroke-dashoffset:0}
-.loader__logo .g{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .7s cubic-bezier(.34,1.8,.5,1) .35s}
+.loader__logo .g{transform-box:fill-box;transform-origin:center;transform:scale(0);transition:transform .55s cubic-bezier(.34,1.8,.5,1) .2s}
 .loader__logo.done .g{transform:scale(1)}
 .loader.out .loader__logo{opacity:0;transition:opacity .45s}
 .loader.out{opacity:0;transition:opacity .5s ease}
@@ -144,6 +144,11 @@ main{position:relative;z-index:1}
 .ln>span{display:block}
 .chapter .ln>span{transform:translateY(112%);transition:transform .9s var(--e-out)}
 .chapter__item.on .ln>span{transform:none}
+/* 按钮那一行：磁吸会把按钮往外带，给行留出空间，免得被行的矩形裁掉；起始位置也相应压得更低 */
+.chapter .ln-go{padding:22px;margin:-22px}
+.chapter .ln-go>span{transform:translateY(180%)}
+.reel__shot{position:absolute;z-index:1;border-radius:14px;background-size:cover;background-position:top center;opacity:0;pointer-events:none;will-change:opacity}
+.pcard .tapnext{margin-top:6px;color:var(--accent)!important}
 .chapter__item.on .ln:nth-child(2)>span{transition-delay:.06s}.chapter__item.on .ln:nth-child(3)>span{transition-delay:.12s}.chapter__item.on .ln:nth-child(4)>span{transition-delay:.18s}
 .go{display:inline-flex;align-items:center;gap:10px;padding:11px 20px;border-radius:999px;background:var(--hero-fg);color:var(--ink);text-decoration:none;font-size:14px;font-weight:500;transition:transform .6s cubic-bezier(.34,1.8,.5,1),background-color .3s}
 .go:hover{transform:scale(1.05);background:var(--accent)}
@@ -362,14 +367,14 @@ main{position:relative;z-index:1}
 <meta property="og:site_name" content="Cosmos Wong">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:url" content="https://cosmoswong.com/">
-<meta property="og:title" content="Cosmos Wong · 运营十年 · 游戏 / 活动 / 内容">
+<meta property="og:title" content="Cosmos Wong｜一起探索宇宙">
 <meta property="og:description" content="Cosmos Wong 的作品展示、实用工具与个人计划。">
 <meta property="og:image" content="https://cosmoswong.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Cosmos Wong · 运营十年 · 游戏 / 活动 / 内容">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Cosmos Wong · 运营十年 · 游戏 / 活动 / 内容">
+<meta name="twitter:title" content="Cosmos Wong｜一起探索宇宙">
 <meta name="twitter:description" content="Cosmos Wong 的作品展示、实用工具与个人计划。">
 <meta name="twitter:image" content="https://cosmoswong.com/og.png">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Cosmos Wong","jobTitle":"内容运营 / 活动运营","url":"https://cosmoswong.com/","image":"https://cosmoswong.com/og.png","email":"mailto:wangyuwangxinxin@gmail.com","address":{"@type":"PostalAddress","addressLocality":"上海","addressCountry":"CN"},"sameAs":["https://github.com/wangyucosmos"],"knowsAbout":["活动策划","内容运营","社群运营","游戏运营","原型设计","AI 协作"]}</script>
@@ -419,10 +424,10 @@ main{position:relative;z-index:1}
         <div class="hint-ix mono">试试：拖动行星绕太阳跑 · 拖空白处转视角 · 长按加速时间 · 点太阳</div>
       </div>
       <div class="chapter" id="chapter">
-        <div class="chapter__item" data-k="1"><span class="ln"><span class="no">01 / 04 · 地球 · 13 个作品</span></span><h2><span class="ln"><span>Works<small>作品</small></span></span></h2><span class="ln"><span><p>活动策划、交互原型，还有给自己搭的工作台。</p></span></span><span class="ln"><span><a class="go" href="/portfolio">进入作品集 →</a></span></span></div>
-        <div class="chapter__item" data-k="2"><span class="ln"><span class="no">02 / 04 · 火星 · 2 条进行中</span></span><h2><span class="ln"><span>Trips<small>旅行</small></span></span></h2><span class="ln"><span><p>多人协作行程站，和每周自动更新的春节机票榜单。</p></span></span><span class="ln"><span><a class="go" href="/tools#travel">进入旅游计划 →</a></span></span></div>
-        <div class="chapter__item" data-k="3"><span class="ln"><span class="no">03 / 04 · 木星 · 7 个工具</span></span><h2><span class="ln"><span>Tools<small>工具箱</small></span></span></h2><span class="ln"><span><p>补时计算器、动效 H5 编辑器、跑马灯 GIF 生成器……都是自己用得上的。</p></span></span><span class="ln"><span><a class="go" href="/tools">进入工具箱 →</a></span></span></div>
-        <div class="chapter__item" data-k="4"><span class="ln"><span class="no">04 / 04 · 土星 · 持续更新</span></span><h2><span class="ln"><span>Notes<small>知识库</small></span></span></h2><span class="ln"><span><p>方法论和技术笔记，和 AI 一起干活的记录。</p></span></span><span class="ln"><span><a class="go" href="/knowledge">进入知识库 →</a></span></span></div>
+        <div class="chapter__item" data-k="1"><span class="ln"><span class="no">01 / 04 · 地球 · 13 个作品</span></span><h2><span class="ln"><span>Works<small>作品</small></span></span></h2><span class="ln"><span><p>活动策划、交互原型，还有给自己搭的工作台。</p></span></span><span class="ln ln-go"><span><a class="go" href="/portfolio">进入作品集 →</a></span></span></div>
+        <div class="chapter__item" data-k="2"><span class="ln"><span class="no">02 / 04 · 火星 · 2 条进行中</span></span><h2><span class="ln"><span>Trips<small>旅行</small></span></span></h2><span class="ln"><span><p>多人协作行程站，和每周自动更新的春节机票榜单。</p></span></span><span class="ln ln-go"><span><a class="go" href="/tools#travel">进入旅游计划 →</a></span></span></div>
+        <div class="chapter__item" data-k="3"><span class="ln"><span class="no">03 / 04 · 木星 · 11 个工具</span></span><h2><span class="ln"><span>Tools<small>工具箱</small></span></span></h2><span class="ln"><span><p>补时计算器、动效 H5 编辑器、跑马灯 GIF 生成器……都是自己用得上的。</p></span></span><span class="ln ln-go"><span><a class="go" href="/tools">进入工具箱 →</a></span></span></div>
+        <div class="chapter__item" data-k="4"><span class="ln"><span class="no">04 / 04 · 土星 · 持续更新</span></span><h2><span class="ln"><span>Notes<small>知识库</small></span></span></h2><span class="ln"><span><p>方法论和技术笔记，和 AI 一起干活的记录。</p></span></span><span class="ln ln-go"><span><a class="go" href="/knowledge">进入知识库 →</a></span></span></div>
       </div>
       <div class="hero__ctrl">
         <div class="dots" id="dots" role="group" aria-label="跳到章节">

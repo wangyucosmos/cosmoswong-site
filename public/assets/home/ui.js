@@ -8,6 +8,8 @@
   root.classList.add('js');
   const LOW = S.tier === 'low';
   const FINE = matchMedia('(hover: hover) and (pointer: fine)').matches;
+  // 手机：首屏提示换成触屏的玩法（双指缩放、轻点看介绍）
+  if (matchMedia('(hover: none) and (pointer: coarse)').matches) { const h = document.querySelector('.hint-ix'); if (h) h.textContent = '试试：拖动行星绕太阳跑 · 拖空白处转视角 · 双指缩放 · 长按加速时间 · 轻点行星看介绍'; }
 
   const E = {
     expoOut: (t) => (t === 1 ? 1 : 1 - Math.pow(2, -10 * t)),
@@ -258,7 +260,7 @@
   const edgeEls = LOW ? [] : [...$$('#intro .ln'), ...$$('#intro .intro__meta, #intro .intro__feed, #intro .intro__aside p'), ...$$('.works__head'), ...$$('.list h3, .list__head'), ...$$('.row')];
   const edgeVal = new Map();
   function updateEdgeBlur() {
-    const zone = S.vh * 0.16, top = 64;
+    const zone = Math.min(48, S.vh * 0.06), top = 64;   // 只有贴着导航下沿 / 屏幕底边那一行左右模糊
     edgeEls.forEach((el) => {
       const r = el.getBoundingClientRect();
       if (r.bottom < -40 || r.top > S.vh + 40) return;
@@ -282,6 +284,7 @@
 
   // ---------- 演示带 ----------
   const reel = $('#reel'), panel = $('#reelPanel'), rowsBox = $('#reelRows'), cta = $('.reel__cta'), glow = $('#reelGlow');
+  const shot = document.createElement('div'); shot.className = 'reel__shot'; shot.setAttribute('aria-hidden', 'true'); panel.appendChild(shot);
   const mqs = $$('.mq').map((el) => ({ el, dir: +el.dataset.dir, x: 0 }));
   // 演示带里的数字：进入画面时从 0 跳到目标值；离开到下方后复位，下次再跳
   const nums = $$('.mq.cn b').filter((b) => /^\d+$/.test(b.textContent.trim())).map((b) => ({ b, to: +b.textContent.trim() }));
@@ -298,15 +301,22 @@
     const eOut = E.p4InOut(clamp((q - 0.6) / 0.36, 0, 1));
     let t = lerp(S.vh * 0.12, 0, eIn), l = lerp(S.vw * 0.06, 0, eIn), r = l, b = t, rad = lerp(24, 0, eIn);
     if (eOut > 0) {
-      // 目标 = 演示带结束那一刻第一张卡片所在的位置（当前位置再往上挪剩余滚动距离）
-      const cr = medias[0].getBoundingClientRect(), rest = rect.bottom - S.vh;
-      const ct = cr.top - rest, cb = S.vh - (cr.bottom - rest);
+      // 目标 = 第一张卡片此刻所在的位置：演示带一路贴着真卡片收过去，最后换成它的封面再淡出，看不出接缝
+      const cr = medias[0].getBoundingClientRect();
+      const ct = cr.top, cb = S.vh - cr.bottom;
       t = lerp(t, ct, eOut); l = lerp(l, cr.left, eOut); r = lerp(r, S.vw - cr.right, eOut); b = lerp(b, cb, eOut); rad = lerp(rad, 14, eOut);
     }
     panel.style.clipPath = `inset(${t.toFixed(1)}px ${r.toFixed(1)}px ${b.toFixed(1)}px ${l.toFixed(1)}px round ${rad.toFixed(1)}px)`;
+    if (eOut > 0) {
+      if (!shot.style.backgroundImage) shot.style.backgroundImage = `url(${coverOf(0)})`;
+      const cr = medias[0].getBoundingClientRect();
+      shot.style.left = cr.left.toFixed(1) + 'px'; shot.style.top = cr.top.toFixed(1) + 'px'; shot.style.width = cr.width.toFixed(1) + 'px'; shot.style.height = cr.height.toFixed(1) + 'px';
+    }
+    shot.style.opacity = String(E.p4InOut(clamp((eOut - 0.05) / 0.45, 0, 1)));
+    glow.style.opacity = String(1 - eOut * 0.85);
     const fadeTxt = 1 - clamp((q - 0.6) / 0.16, 0, 1);
     rowsBox.style.opacity = cta.style.opacity = String(fadeTxt);
-    panel.style.opacity = String(1 - clamp((q - 0.8) / 0.18, 0, 1));
+    panel.style.opacity = String(1 - E.p4InOut(clamp((q - 0.74) / 0.22, 0, 1)));   // 早一点、柔一点地淡出：底下就是同一张卡
     panel.style.pointerEvents = q > 0.85 ? 'none' : '';
     glow.style.transform = `translate3d(${(Math.sin(S.time * 0.25) * 4).toFixed(2)}%,${((1 - q) * 22 - 6).toFixed(2)}%,0) scale(${(1 + q * 0.25).toFixed(3)})`;
     const boost = LOW ? 0 : Math.min(30, Math.abs(S.vy) * 1.2);
@@ -601,7 +611,8 @@
     const set = (k, re, v) => { const el = no(k); if (el && v) el.textContent = el.textContent.replace(re, v); };
     set(1, /\d+ 个作品/, WORKS.length && `${WORKS.length} 个作品`);
     set(2, /\d+ 条进行中/, going && `${going} 条进行中`);
-    set(3, /\d+ 个工具/, (D.tools || []).length && `${D.tools.length} 个工具`);
+    const nTools = (D.tools || []).length + (D.trips || []).reduce((n, c) => n + c.items.length, 0);   // 和工具箱页一样：旅行也算在里面
+    set(3, /\d+ 个工具/, nTools && `${nTools} 个工具`);
   })();
 
   // ---------- 流星：首屏全景和尾页偶尔划过一颗 ----------
@@ -681,7 +692,7 @@
     CW.world.ready.then(() => (done = true));
     await new Promise((res) => {
       (function step() {
-        const minT = Math.min(1, (performance.now() - t0) / 900);
+        const minT = Math.min(1, (performance.now() - t0) / 650);
         const goal = Math.min(minT, done ? 1 : Math.max(CW.world.progress, 0.05) * 0.95);
         shown = lerp(shown, goal, 0.12);
         if (done && minT >= 1 && shown > 0.995) shown = 1;
@@ -692,7 +703,7 @@
     });
     lgStars.forEach((s) => s.classList.add('in'));
     lg.classList.add('done'); pct.style.opacity = '0';
-    await wait(720);
+    await wait(480);
     // 星座 CW 变成窗口：太阳系先出现在字母笔画里，再以金星为中心向外扩散，金星铺满屏幕
     const lr = lg.getBoundingClientRect(), base = lr.width;
     const gx = lr.left + (46 / 64) * base, gy = lr.top + (31 / 64) * base;
@@ -701,9 +712,9 @@
     S.mask = { on: true, x: gx, y: gy, size: base };
     S.clip = { t: 0, r: 0, b: 0, l: 0, rad: 0 };
     loader.classList.add('out');
-    await wait(460);
-    tween(2100, E.expoOut, (t) => (S.intro = t));
-    await tween(1150, (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2), (t) => (S.mask.size = base * Math.pow(endSize / base, t)));
+    await wait(300);
+    tween(1800, E.expoOut, (t) => (S.intro = t));
+    await tween(950, (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2), (t) => (S.mask.size = base * Math.pow(endSize / base, t)));
     S.mask = { on: false };
     unboot();
     loader.remove();

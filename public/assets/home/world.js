@@ -31,9 +31,9 @@
   const PLANETS = [
     { key: 'mercury', name: '水星', tex: 'mercury.webp', a: 7.6, r: 0.42, period: 0.24, ph: 0.9, info: ['直径 4,879 km', '公转一圈 88 天'] },
     { key: 'venus', name: '金星', tex: 'venus.webp', a: 10.6, r: 0.9, period: 0.62, ph: 2.7, info: ['直径 12,104 km', '公转一圈 225 天'] },
-    { key: 'earth', name: '地球', tag: '作品', k: 1, a: 14.2, r: 1.0, period: 1, ph: 4.25, d: 3.7, dm: 5.6, up: 0.55, info: ['直径 12,742 km', '公转一圈 365 天', '这里放着：13 个作品'] },
-    { key: 'mars', name: '火星', tag: '旅行', k: 2, tex: 'mars_1k.webp', hi: 'mars.webp', a: 18.4, r: 0.62, period: 1.88, ph: 5.35, d: 4.6, dm: 6.6, up: 0.15, info: ['直径 6,779 km', '公转一圈 687 天', '这里放着：2 条旅行计划'] },
-    { key: 'jupiter', name: '木星', tag: '工具箱', k: 3, tex: 'jupiter_1k.webp', hi: 'jupiter.webp', a: 25.5, r: 2.6, period: 11.9, ph: 1.35, d: 3.5, dm: 5.2, up: 0.12, info: ['直径 139,820 km', '公转一圈 11.9 年', '这里放着：7 个工具'] },
+    { key: 'earth', name: '地球', tag: '作品', k: 1, a: 14.2, r: 1.0, period: 1, ph: 4.25, d: 3.7, dm: 5.6, up: 0.55, info: ['直径 12,742 km', '公转一圈 365 天', `这里放着：${((window.SITE && window.SITE.portfolio) || []).length} 个作品`] },
+    { key: 'mars', name: '火星', tag: '旅行', k: 2, tex: 'mars_1k.webp', hi: 'mars.webp', a: 18.4, r: 0.62, period: 1.88, ph: 5.35, d: 4.6, dm: 6.6, up: 0.15, info: ['直径 6,779 km', '公转一圈 687 天', `这里放着：${((window.SITE && window.SITE.trips) || []).reduce((n, c) => n + c.items.length, 0)} 条旅行计划`] },
+    { key: 'jupiter', name: '木星', tag: '工具箱', k: 3, tex: 'jupiter_1k.webp', hi: 'jupiter.webp', a: 25.5, r: 2.6, period: 11.9, ph: 1.35, d: 3.5, dm: 5.2, up: 0.12, info: ['直径 139,820 km', '公转一圈 11.9 年', `这里放着：${((window.SITE && window.SITE.tools) || []).length + ((window.SITE && window.SITE.trips) || []).reduce((n, c) => n + c.items.length, 0)} 个工具`] },
     { key: 'saturn', name: '土星', tag: '知识库', k: 4, tex: 'saturn_1k.webp', hi: 'saturn.webp', a: 33, r: 2.15, period: 29.5, ph: 3.3, d: 5.4, dm: 7.8, up: 0.85, ring: [2.75, 5.1], info: ['直径 116,460 km', '公转一圈 29.5 年', '这里放着：知识库笔记'] },
     { key: 'uranus', name: '天王星', tex: 'uranus.webp', a: 39, r: 1.25, period: 84, ph: 0.35, info: ['直径 50,724 km', '公转一圈 84 年'] },
     { key: 'neptune', name: '海王星', tex: 'neptune.webp', a: 44, r: 1.2, period: 165, ph: 5.95, info: ['直径 49,244 km', '公转一圈 165 年'] }
@@ -595,7 +595,7 @@
   allMats.forEach((m) => m.uniforms.uSun && m.uniforms.uSun.value.set(0, 0, 0));
 
   // ---------- 互动状态 ----------
-  const IX = { view: { az: 0, el: 0, vaz: 0, vel: 0 }, warp: 1, warpTarget: 1, hover: null, drag: null, rot: false,
+  const IX = { view: { az: 0, el: 0, vaz: 0, vel: 0 }, zoom: 1, zoomS: 1, pinch: null, tap: null, warp: 1, warpTarget: 1, hover: null, drag: null, rot: false,
     down: null, px: 0, py: 0, lastX: 0, lastY: 0, lastT: 0, holdTimer: 0, shockT: 0, shockOn: false };
   const ringN = new V3();
   // 自转（弧度/秒）：近景里看得出在慢慢转；相对快慢接近真实——木土最快，金星、天王星逆转
@@ -672,7 +672,7 @@
   function pose(k, out) {
     const narrow = S.vw < 760;
     if (k === 0) { // 太阳系全景：斜上方俯视，可以拖动旋转
-      const D = narrow ? 118 : 66;
+      const D = (narrow ? 118 : 66) * IX.zoomS;   // 双指 / 触控板捏合缩放
       const el = Math.min(1.45, Math.max(0.1, (narrow ? 0.62 : 0.46) + IX.view.el));
       const az = 0.18 + S.mxs * 0.08 + S.time * 0.006 + IX.view.az;
       out.pos.set(Math.sin(az) * Math.cos(el) * D, Math.sin(el) * D - S.mys * 3, Math.cos(az) * Math.cos(el) * D);
@@ -726,9 +726,23 @@
   }
   function setCursor(label) { if (stage.dataset.cursor !== label) stage.dataset.cursor = label; }
   function localXY(e) { const r = stage.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; }
+  // 两根手指 = 缩放：记下所有按在首屏上的触点；第二根手指落下时取消拖动 / 转视角 / 长按加速，改成按两指距离缩放
+  const PTRS = new Map();
+  const pinchDist = () => { const [a, b] = [...PTRS.values()]; return Math.hypot(a.x - b.x, a.y - b.y) || 1; };
   stage.addEventListener('pointerdown', (e) => {
     if (!interactive() || IX.chase || e.target.closest('a,button') || (e.pointerType === 'mouse' && e.button !== 0)) return;
     const [x, y] = localXY(e);
+    if (e.pointerType !== 'mouse') {
+      PTRS.set(e.pointerId, { x, y });
+      if (PTRS.size >= 2) {
+        clearTimeout(IX.holdTimer);
+        if (IX.drag) { IX.drag.spin = 0; IX.drag = null; }
+        IX.down = null; IX.rot = false; IX.view.vaz = 0; IX.view.vel = 0;
+        if (IX.warpTarget !== 1) { IX.warpTarget = 1; warpHint.classList.remove('on'); }
+        IX.pinch = { d0: pinchDist(), z0: IX.zoom };
+        return;
+      }
+    }
     const p = pick(x, y);
     IX.down = { x, y, t: performance.now(), p, moved: 0, id: e.pointerId, type: e.pointerType };
     IX.lastX = x; IX.lastY = y; IX.lastT = performance.now();
@@ -740,6 +754,8 @@
   });
   addEventListener('pointermove', (e) => {
     const [x, y] = localXY(e);
+    if (PTRS.has(e.pointerId)) PTRS.set(e.pointerId, { x, y });
+    if (IX.pinch) { if (PTRS.size >= 2) IX.zoom = Math.max(0.42, Math.min(1.7, IX.pinch.z0 * IX.pinch.d0 / pinchDist())); return; }
     if (IX.down) {
       const dx = x - IX.lastX, dy = y - IX.lastY, now = performance.now(), dtt = Math.max(1, now - IX.lastT) / 1000;
       IX.down.moved += Math.abs(dx) + Math.abs(dy);
@@ -759,15 +775,19 @@
     const sr = stage.getBoundingClientRect();
     IX.mouseIn = e.clientY <= sr.bottom && e.clientY >= sr.top;
   }, { passive: true });
-  function endPointer() {
+  function endPointer(e) {
+    if (e && PTRS.delete(e.pointerId) && PTRS.size < 2) IX.pinch = null;
     if (!IX.down) return;
     clearTimeout(IX.holdTimer);
     const d = IX.down; IX.down = null;
     if (IX.drag) {
       const p = IX.drag; IX.drag = null;
-      if (d.moved < 6) { if (p.k) world.chapterTo(p.k); }
+      // 手机没有悬停：第一次轻点先显示介绍卡片（和电脑悬停一样），3.5 秒内再点同一颗才飞过去
+      if (d.moved < 6 && d.type !== 'mouse' && !(IX.tap && IX.tap.p === p && performance.now() < IX.tap.until)) IX.tap = { p, until: performance.now() + 3500 };
+      else if (d.moved < 6) { IX.tap = null; if (p.k) world.chapterTo(p.k); }
       else p.spin = Math.max(-3.5, Math.min(3.5, p.dragV || 0)) - p.omega;
-    } else if (d.p === 'sun' && d.moved < 6 && !LOW) {
+    } else if (d.moved < 6) IX.tap = null;   // 点空白处收起介绍卡片
+    if (d.p === 'sun' && d.moved < 6 && !LOW) {
       IX.shockT = 0.0001; IX.shockOn = true;
     } else if (d.p === 'comet' && d.moved < 6) {
       // 点彗星：镜头追上去跟拍一小段，再交给 ui 跃迁到尾页「等你来信」
@@ -778,12 +798,14 @@
   }
   addEventListener('pointerup', endPointer); addEventListener('pointercancel', endPointer);
   stage.addEventListener('contextmenu', (e) => { if (interactive()) e.preventDefault(); });
+  // 电脑触控板捏合（浏览器发的是带 ctrlKey 的滚轮事件）：同样缩放太阳系，不缩放整页
+  stage.addEventListener('wheel', (e) => { if (!e.ctrlKey || !interactive()) return; e.preventDefault(); IX.zoom = Math.max(0.42, Math.min(1.7, IX.zoom * Math.exp(e.deltaY * 0.01))); }, { passive: false });
 
   function updateInteraction(dt, sr) {
     const on = interactive();
     // 行星一直在动：每帧按鼠标当前位置重新判断悬停
     if (on && IX.mouseIn && !IX.overUi && !IX.down && !IX.chase) { const p = pick(IX.mx, IX.my); IX.hover = p && p !== 'sun' && p !== 'comet' ? p : null; IX.hoverSun = p === 'sun'; IX.hoverComet = p === 'comet'; }
-    else if (!IX.down) { IX.hover = null; IX.hoverSun = false; IX.hoverComet = false; }
+    else if (!IX.down) { IX.hover = on && IX.tap && performance.now() < IX.tap.until ? IX.tap.p : null; IX.hoverSun = false; IX.hoverComet = false; }
     if (!on) { IX.hover = null; IX.hoverSun = false; IX.hoverComet = false; if (!IX.down) setCursor(''); }
     else if (IX.chase) setCursor('');
     else if (IX.drag) setCursor(IX.drag.k ? '绕太阳拖动 · 松手' : '绕太阳拖动');
@@ -797,6 +819,7 @@
       IX.view.el = Math.max(-0.36, Math.min(0.95, IX.view.el + IX.view.vel * dt)); IX.view.vel *= Math.exp(-dt * 3);
     }
     IX.warp = lerp(IX.warp, IX.warpTarget, 1 - Math.pow(IX.warpTarget > 1 ? 0.15 : 0.03, dt));
+    IX.zoomS = lerp(IX.zoomS, IX.zoom, 1 - Math.pow(0.002, dt));
     // 太阳光波
     if (IX.shockOn) {
       IX.shockT += dt / 1.8;
@@ -811,7 +834,8 @@
     const p = on ? IX.hover || IX.drag : null;
     if (p) {
       const s = screenOf(p.pos, p.r * (1 + p.hov * 0.22), sr);
-      pcard.innerHTML = `<b>${p.name}${p.tag ? `<i>${p.tag}</i>` : ''}</b>${p.info.map((t) => `<span>${t}</span>`).join('')}`;
+      const tapNext = IX.tap && IX.tap.p === p && p.k ? `<span class="tapnext">再点一下，飞到${p.name} →</span>` : '';
+      pcard.innerHTML = `<b>${p.name}${p.tag ? `<i>${p.tag}</i>` : ''}</b>${p.info.map((t) => `<span>${t}</span>`).join('')}${tapNext}`;
       const left = s.x + s.r + 18, flip = left + 200 > sr.width;
       pcard.style.transform = `translate(${(flip ? s.x - s.r - 18 - 200 : left).toFixed(1)}px,${(s.y - 30).toFixed(1)}px)`;
       pcard.classList.add('on');
