@@ -622,7 +622,7 @@
   addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCase(); });
 
   // ---------- 磁吸按钮 ----------
-  const mags = $$('.pill, .go, .foot__links > *, .skip, .nav__more, .case__close');
+  const mags = $$('.pill, .go, .foot__links > *, .skip, .nav__more, .case__close, .resume-pill');
   mags.forEach((m) => m.classList.add('mag'));
   function updateMagnet() {
     mags.forEach((m) => {

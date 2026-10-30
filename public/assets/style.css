@@ -71,6 +71,25 @@ header.top.dim{background:rgba(5,6,13,.62);backdrop-filter:blur(14px);-webkit-ba
 .menu a[aria-current]{background:var(--paper-2);font-weight:600}
 .menu hr{border:0;border-top:1px solid rgba(20,20,27,.12);margin:6px 8px}
 .menu .grp{display:block;padding:6px 12px 2px;color:#7d7b82;font:12px var(--f-mono);letter-spacing:.06em}
+/* ⋯ 菜单：面板从上往下展开，条目依次升起、由模糊变清晰（和页面文字的升起一样） */
+.menu{clip-path:inset(0 0 100% 0 round 16px);transition:clip-path .6s var(--e-out),opacity .25s,transform .6s var(--e-out),visibility 0s linear .6s}
+.menu.open{clip-path:inset(0 0 0 0 round 16px);transition:clip-path .6s var(--e-out),opacity .25s,transform .6s var(--e-out),visibility 0s}
+.menu.open>*{animation:menuIn .55s var(--e-out) both}
+.menu.open>:nth-child(1){animation-delay:.05s}.menu.open>:nth-child(2){animation-delay:.09s}.menu.open>:nth-child(3){animation-delay:.13s}.menu.open>:nth-child(4){animation-delay:.17s}
+.menu.open>:nth-child(5){animation-delay:.21s}.menu.open>:nth-child(6){animation-delay:.25s}.menu.open>:nth-child(7){animation-delay:.29s}.menu.open>:nth-child(8){animation-delay:.33s}
+.menu.open>:nth-child(9){animation-delay:.37s}.menu.open>:nth-child(10){animation-delay:.41s}.menu.open>:nth-child(11){animation-delay:.45s}.menu.open>:nth-child(12){animation-delay:.49s}
+@keyframes menuIn{from{opacity:0;transform:translateY(12px);filter:blur(4px)}}
+@media (prefers-reduced-motion:reduce){.menu,.menu.open{clip-path:none;transition:none}.menu.open>*{animation:none}}
+/* 简历按钮：金色描边胶囊 + 文件小图标，每隔几秒有一道光扫过；悬停填满金色 */
+.resume-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 15px 7px 12px;border-radius:999px;border:1px solid rgba(255,192,74,.6);background:rgba(255,192,74,.1);color:#ffd27a;font-size:14px;line-height:1.2;position:relative;overflow:hidden;isolation:isolate;
+  transition:background .35s,color .35s,border-color .35s,box-shadow .5s}
+.resume-pill svg{width:14px;height:14px;flex:none}
+.nav-r a.resume-pill::after{content:"";position:absolute;inset:0;left:0;right:0;bottom:auto;height:auto;z-index:-1;background:linear-gradient(110deg,transparent 30%,rgba(255,236,190,.55) 50%,transparent 70%);transform:translateX(-130%);transform-origin:center;animation:sheen 6s 2.4s ease-in-out infinite}
+@keyframes sheen{0%,72%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+.resume-pill:hover{background:#ffc04a;color:#241600;border-color:#ffc04a;box-shadow:0 0 0 6px rgba(255,192,74,.14),0 10px 30px -8px rgba(255,192,74,.65)}
+header.top.solid .resume-pill{color:#6b4500;border-color:#e3a83c;background:rgba(255,192,74,.2)}
+header.top.solid .resume-pill:hover{color:#241600;background:#ffc04a}
+@media (prefers-reduced-motion:reduce){.nav-r a.resume-pill::after{animation:none;opacity:0}}
 .menu-backdrop{display:none}
 @media(max-width:520px){.brand span{display:none}.brand .logo{width:42px;height:42px}}
 
@@ -156,7 +175,11 @@ body:not(.paper) .page-head{padding-bottom:40px;background:transparent}
 .tgroup{display:grid;grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:28px 48px;padding:44px 0;border-top:1px solid var(--line);scroll-margin-top:140px}
 .tgroup[hidden]{display:none}
 .tgroup:first-of-type{border-top:0}
-.tg-head{display:grid;gap:10px;align-content:start;position:sticky;top:150px}
+.tg-head{display:grid;gap:10px;align-content:start;position:sticky;top:150px;transition:top .55s var(--e-out)}
+/* 导航往下滚收起时：筛选条顶到最上面、底色横向铺满整屏（不再露出两边和上面滚过的卡片），左侧组标题跟着上移 */
+body.nav-hidden .chips{top:env(safe-area-inset-top,0px)}
+.chips{box-shadow:0 0 0 100vmax var(--paper);clip-path:inset(0 -100vmax)}
+body.nav-hidden .tg-head{top:88px}
 .tg-head h2{display:flex;align-items:center;gap:12px;font:900 26px/1.2 var(--f-cn)}
 .tg-head p{color:var(--muted);font-size:14px}
 .tg-head .mono{color:var(--faint)}
@@ -185,7 +208,6 @@ a.tcard:hover .go i{transform:translateX(4px)}
   .tgroup{grid-template-columns:minmax(0,1fr);gap:18px;padding:32px 0}
   .tg-head{position:static}
   .tcards{grid-template-columns:minmax(0,1fr)}
-  body.nav-hidden .chips{top:env(safe-area-inset-top,0px);box-shadow:0 1px 0 var(--line)}
   .chips{top:calc(64px + env(safe-area-inset-top,0px));flex-wrap:nowrap;overflow-x:auto;margin-inline:calc(-1 * var(--gx)) calc(-1 * var(--gxr));padding-inline:var(--gx) var(--gxr);scrollbar-width:none}
   .chip{flex:none}
 }

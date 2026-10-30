@@ -82,10 +82,29 @@ main{position:relative;z-index:1}
 .menu a span{color:var(--muted);font-size:12px}
 .menu hr{border:0;border-top:1px solid var(--line);margin:6px 8px}
 .menu .grp{display:block;padding:6px 12px 2px;color:var(--muted);font:12px var(--f-mono);letter-spacing:.06em}
+/* ⋯ 菜单：面板从上往下展开，条目依次升起、由模糊变清晰（和页面文字的升起一样） */
+.menu{clip-path:inset(0 0 100% 0 round 16px);transition:clip-path .6s var(--e-out),opacity .25s,transform .6s var(--e-out),visibility 0s linear .6s}
+.menu.open{clip-path:inset(0 0 0 0 round 16px);transition:clip-path .6s var(--e-out),opacity .25s,transform .6s var(--e-out),visibility 0s}
+.menu.open>*{animation:menuIn .55s var(--e-out) both}
+.menu.open>:nth-child(1){animation-delay:.05s}.menu.open>:nth-child(2){animation-delay:.09s}.menu.open>:nth-child(3){animation-delay:.13s}.menu.open>:nth-child(4){animation-delay:.17s}
+.menu.open>:nth-child(5){animation-delay:.21s}.menu.open>:nth-child(6){animation-delay:.25s}.menu.open>:nth-child(7){animation-delay:.29s}.menu.open>:nth-child(8){animation-delay:.33s}
+.menu.open>:nth-child(9){animation-delay:.37s}.menu.open>:nth-child(10){animation-delay:.41s}.menu.open>:nth-child(11){animation-delay:.45s}.menu.open>:nth-child(12){animation-delay:.49s}
+@keyframes menuIn{from{opacity:0;transform:translateY(12px);filter:blur(4px)}}
+@media (prefers-reduced-motion:reduce){.menu,.menu.open{clip-path:none;transition:none}.menu.open>*{animation:none}}
+/* 简历按钮：金色描边胶囊 + 文件小图标，每隔几秒有一道光扫过；悬停填满金色 */
+.resume-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 15px 7px 12px;border-radius:999px;border:1px solid rgba(255,192,74,.6);background:rgba(255,192,74,.1);color:#ffd27a;font-size:14px;line-height:1.2;position:relative;overflow:hidden;isolation:isolate;
+  transition:background .35s,color .35s,border-color .35s,box-shadow .5s}
+.resume-pill svg{width:14px;height:14px;flex:none}
+.nav__links a.resume-pill::after{content:"";position:absolute;inset:0;left:0;right:0;bottom:auto;height:auto;z-index:-1;background:linear-gradient(110deg,transparent 30%,rgba(255,236,190,.55) 50%,transparent 70%);transform:translateX(-130%);transform-origin:center;animation:sheen 6s 2.4s ease-in-out infinite}
+@keyframes sheen{0%,72%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+.resume-pill:hover{background:#ffc04a;color:#241600;border-color:#ffc04a;box-shadow:0 0 0 6px rgba(255,192,74,.14),0 10px 30px -8px rgba(255,192,74,.65)}
+.nav.solid .resume-pill{color:#6b4500;border-color:#e3a83c;background:rgba(255,192,74,.2)}
+.nav.solid .resume-pill:hover{color:#241600;background:#ffc04a}
+@media (prefers-reduced-motion:reduce){.nav__links a.resume-pill::after{animation:none;opacity:0}}
 @media (max-width:760px){.nav{grid-template-columns:1fr auto}.nav__role{display:none}}
 /* 中等宽度：身份标签会把左边的名字挤成两行，先藏起来；名字本身不换行 */
 .nav__name{white-space:nowrap}
-@media (max-width:1000px){.nav__role{display:none}}
+@media (max-width:1000px){.nav{grid-template-columns:1fr auto}.nav__role{display:none}}   /* 藏掉中间一栏时改成两栏，右边的按钮才会靠右 */
 
 /* ---------- 入场 ---------- */
 .boot #satLabels,.boot #heroCopy,.boot #chapter,.boot .hero__ctrl,.boot #pcard,.boot #warpHint{opacity:0!important;pointer-events:none}
@@ -413,7 +432,7 @@ main{position:relative;z-index:1}
   <a class="nav__name" href="#top" aria-label="Cosmos Wong 首页"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><g class="lg-lines" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity=".7"><polyline pathLength="1" points="29,19.9 15,19.9 8,32 15,44.1 29,44.1"/><polyline pathLength="1" points="35,20 40,44 46,31 52,44 57,20"/></g><g class="lg-stars" fill="currentColor"><circle cx="29" cy="19.9" r="3.2" style="--d:0"/><circle cx="15" cy="19.9" r="2.6" style="--d:1"/><circle cx="8" cy="32" r="3.5" style="--d:2"/><circle cx="15" cy="44.1" r="2.6" style="--d:3"/><circle cx="29" cy="44.1" r="3.0" style="--d:4"/><circle cx="35" cy="20" r="3.0" style="--d:5"/><circle cx="40" cy="44" r="2.7" style="--d:6"/><circle cx="52" cy="44" r="2.7" style="--d:7"/><circle cx="57" cy="20" r="3.3" style="--d:8"/></g><g class="lg-gold"><circle cx="46" cy="31" r="7.5" fill="#ffc04a" opacity=".22"/><path d="M46 23.2 47 30 53.8 31 47 32 46 38.8 45 32 38.2 31 45 30Z" fill="#ffd27a" opacity=".9"/><circle cx="46" cy="31" r="3.9" fill="#ffc04a"/></g></svg><span>Cosmos Wong</span></a>
   <span class="nav__role" aria-label="运营十年 · 游戏 / 活动 / 内容">运营十年 ·<span class="role-roll" id="roleRoll" aria-hidden="true"><span>游戏</span></span></span>
   <nav class="nav__links" aria-label="主导航">
-    <a href="/resume">简历</a>
+    <a class="resume-pill" href="/resume" data-cursor="看看我的经历"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5.2L12.4 5v9.2H4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M9 1.9V5.2h3.3M6 8.3h4.3M6 10.9h3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>简历</a>
     <button class="nav__more" id="moreBtn" type="button" aria-label="更多入口" aria-expanded="false" aria-controls="menu">⋯</button>
   </nav>
 </header>
