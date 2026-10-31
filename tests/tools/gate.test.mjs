@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import worker from '../../src/worker.js';
 
 const kv = () => { const m = new Map(); return { get: async k => m.get(k) ?? null, put: async (k, v) => { m.set(k, v); }, delete: async k => { m.delete(k); } }; };
-const env = (extra = {}) => ({ TOOLS_PASSWORD: 'test-pass-123', TOOLS_COOKIE_KEY: 'test-key', SUBS: kv(), ASSETS: { fetch: async req => new Response('asset:' + new URL(req.url).pathname) }, ...extra });
+const env = (extra = {}) => ({ TOOLS_PASSWORD: 'test-pass-123', RESUME_PASSWORD: 'resume-pass-456', TOOLS_COOKIE_KEY: 'test-key', SUBS: kv(), ASSETS: { fetch: async req => new Response('asset:' + new URL(req.url).pathname) }, ...extra });
 const call = (e, path, init = {}) => worker.fetch(new Request('https://cosmoswong.com' + path, init), e);
-const login = (e, password, headers = {}) => call(e, '/api/tools/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tools-request': '1', origin: 'https://cosmoswong.com', 'cf-connecting-ip': '1.2.3.4', ...headers }, body: JSON.stringify({ password }) });
+const login = (e, password, headers = {}, next) => call(e, '/api/tools/login', { method: 'POST', headers: { 'content-type': 'application/json', 'x-tools-request': '1', origin: 'https://cosmoswong.com', 'cf-connecting-ip': '1.2.3.4', ...headers }, body: JSON.stringify({ password, next }) });
 const cookieOf = r => r.headers.get('set-cookie').split(';')[0];
 
 test('没凭证：/go/* 跳口令页，/marquee 跳口令页，marquee 资源 401', async () => {
@@ -78,9 +78,21 @@ test('简历和所有知识库页面未登录被拦，next保留原页面及查�
   const r=await call(e,path);assert.equal(r.status,302);const next=new URL(r.headers.get('location'),'https://cosmoswong.com');assert.equal(next.pathname,'/unlock');assert.equal(next.searchParams.get('next'),path);assert.equal(r.headers.get('cache-control'),'no-store');
  }
 });
-test('一份旧格式tools_session在所有保护页与健身入口共用，响应不共享缓存',async()=>{
+test('简历单独一把锁：工具箱口令和凭证都打不开简历，简历凭证也打不开工具',async()=>{
+ const e=env(),tools={headers:{cookie:cookieOf(await login(e,'test-pass-123'))}};
+ for(const path of ['/resume','/resume.html','/resume.pdf'])assert.equal((await call(e,path,tools)).status,302,path);
+ assert.equal((await login(e,'test-pass-123',{},'/resume')).status,401);
+ const ok=await login(e,'resume-pass-456',{},'/resume.pdf');assert.equal(ok.status,200);assert.equal((await ok.json()).redirect,'/resume.pdf');assert.match(ok.headers.get('set-cookie'),/^resume_session=/);
+ const c={headers:{cookie:cookieOf(ok)}};
+ for(const path of ['/resume','/resume.html','/resume.pdf']){const r=await call(e,path,c);assert.equal(r.status,200);assert.equal(r.headers.get('cache-control'),'private, no-store');}
+ for(const path of ['/knowledge/','/go/travel','/marquee'])assert.equal((await call(e,path,c)).status,302,path);
+ assert.equal((await login(e,'resume-pass-456')).status,401);
+ e.RESUME_PASSWORD='changed';assert.equal((await call(e,'/resume',c)).status,302);
+ e.RESUME_PASSWORD=undefined;assert.equal((await login(e,'x',{},'/resume')).status,500);assert.equal((await call(e,'/resume',c)).status,302);
+});
+test('一份旧格式tools_session在知识库与健身入口共用，响应不共享缓存',async()=>{
  const e=env(),ok=await login(e,'test-pass-123'),c={headers:{cookie:cookieOf(ok)}};
- for(const path of ['/resume','/resume.html','/resume.pdf','/knowledge/','/knowledge/overview']){const r=await call(e,path,c);assert.equal(r.status,200);assert.equal(r.headers.get('cache-control'),'private, no-store');assert.match(r.headers.get('x-robots-tag'),/noindex/);assert.match(r.headers.get('vary'),/Cookie/);assert.match(await r.text(),/^asset:/);}
+ for(const path of ['/knowledge/','/knowledge/overview']){const r=await call(e,path,c);assert.equal(r.status,200);assert.equal(r.headers.get('cache-control'),'private, no-store');assert.match(r.headers.get('x-robots-tag'),/noindex/);assert.match(r.headers.get('vary'),/Cookie/);assert.match(await r.text(),/^asset:/);}
  assert.equal((await call(e,'/go/fitness',c)).headers.get('location'),'https://jianshen.cosmoswong.com');assert.equal((await call(e,'/go/fitness')).headers.get('location'),'/unlock?next=fitness');
  for(const path of ['/attendance','/','/portfolio'])assert.equal((await call(e,path)).status,200);
 });

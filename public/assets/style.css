@@ -275,6 +275,7 @@ body:not(.paper) a.row:hover{background:var(--glass2)}
 .xp .period{color:var(--faint);font:12.5px var(--f-mono);white-space:nowrap}
 .xp ul{margin:10px 0 0 18px;color:var(--muted);font-size:14.5px}
 .xp li{margin:4px 0}
+.xp .pdesc{margin:8px 0 0;color:var(--muted);font-size:14.5px}
 .skills .g{margin-bottom:14px}
 .skills .g b{display:block;font-size:13px;color:var(--faint);margin-bottom:6px;font-weight:500}
 .contact{font-size:14.5px;color:var(--muted);line-height:2}
@@ -596,6 +597,7 @@ body.paper .kb .thesis{background:var(--paper-3);backdrop-filter:none}
   .xp .period{color:#666;font-size:11.5px}
   .xp ul{font-size:12px;color:#333;margin-top:5px}
   .xp li{margin:2px 0}
+  .xp .pdesc{font-size:12px!important;margin-top:4px}
   .skills .g{margin-bottom:8px}
   .skills .g b{color:#111;font-size:12px}
   .pills{gap:4px;margin-top:4px}

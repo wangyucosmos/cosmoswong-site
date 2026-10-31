@@ -1,4 +1,4 @@
-import { safeNext, nextLocation, toolmapReturn } from './tools-next.mjs';
+import { safeNext, nextLocation, toolmapReturn, resumePath } from './tools-next.mjs';
 // 工具箱口令页：输对口令后跳回 /go/<next>（服务端再跳到真实工具地址）。见 src/tools-gate.js
 (() => {
   if (location.protocol === 'http:' && !['localhost', '127.0.0.1'].includes(location.hostname)) {
@@ -9,6 +9,12 @@ import { safeNext, nextLocation, toolmapReturn } from './tools-next.mjs';
   const destination = nextLocation(next);
   const validNext = !next || safeNext(next) !== null;
   const f = document.getElementById('f'), pw = document.getElementById('pw'), btn = document.getElementById('go'), err = document.getElementById('err');
+  // 简历是单独的口令（src/tools-gate.js），文案也分开说
+  if (destination && resumePath(destination.split(/[?#]/)[0])) {
+    document.title = '简历需要口令';
+    document.querySelector('h1').textContent = '简历需要口令';
+    document.querySelector('main > p').textContent = '简历只给我发过口令的人看，输入后即可浏览和下载。';
+  }
   pw.focus();
   if (!validNext) { err.textContent = '返回地址不受支持，请从站内入口重新打开'; btn.disabled = true; }
   f.addEventListener('submit', async e => {

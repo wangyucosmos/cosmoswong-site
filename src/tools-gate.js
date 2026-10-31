@@ -5,9 +5,12 @@
 //   - /attendance 补时计算器例外：同事用直链，不要口令（只有从工具箱点进去才经过口令门）。
 //   - 口令是 Worker secret TOOLS_PASSWORD，凭证签名 key 是 TOOLS_COOKIE_KEY，都不进仓库（仓库是公开的）。
 //     设置 / 换口令：HTTPS_PROXY=http://127.0.0.1:7897 npx wrangler@4 secret put TOOLS_PASSWORD（旧凭证随之全部失效）
+//   - 简历（/resume、/resume.pdf）单独一把锁（2026-10-31 用户要求：同事朋友可能知道工具箱口令，但不能看简历）：
+//     口令是 secret RESUME_PASSWORD，凭证 cookie 是 resume_session；工具箱凭证打不开简历，简历凭证也打不开工具。
+//     从口令页登录时 next 指向简历，就按简历口令校验。
 //   - 输对一次，这台设备 365 天免输；同一 IP 15 分钟输错 10 次锁定（计数复用 SUBS 这个 KV，key 前缀 tools-rl:）。
 import { json, safeEq, hmac } from './shared.js';
-import { protectedPath, nextLocation } from '../public/assets/tools-next.mjs';
+import { protectedPath, resumePath, nextLocation } from '../public/assets/tools-next.mjs';
 
 export const TARGETS = {
   attendance: '/attendance',
@@ -22,24 +25,31 @@ export const TARGETS = {
 };
 
 const COOKIE = 'tools_session';
+const RESUME_COOKIE = 'resume_session';
 const SESSION_DAYS = 365;
 const MAX_FAILS = 10;
 const FAIL_WINDOW = 900;
 
-const sign = (env, msg) => hmac(env.TOOLS_COOKIE_KEY + '\u0000' + env.TOOLS_PASSWORD, msg);
-const ready = env => !!(env.TOOLS_PASSWORD && env.TOOLS_COOKIE_KEY);
+// 两把锁：tools（工具箱 + 知识库）和 resume（简历），签名都带上各自口令，换口令旧凭证即失效
+const LOCKS = {
+  tools: { cookie: COOKIE, password: env => env.TOOLS_PASSWORD },
+  resume: { cookie: RESUME_COOKIE, password: env => env.RESUME_PASSWORD }
+};
+const sign = (env, kind, msg) => hmac(env.TOOLS_COOKIE_KEY + '\u0000' + LOCKS[kind].password(env), msg);
+const ready = (env, kind = 'tools') => !!(LOCKS[kind].password(env) && env.TOOLS_COOKIE_KEY);
 
-export async function toolsAuthed(req, env) {
-  if (!ready(env)) return false;
-  const m = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
+async function authed(req, env, kind) {
+  if (!ready(env, kind)) return false;
+  const m = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${LOCKS[kind].cookie}=([^;]+)`));
   if (!m) return false;
   const [exp, sig] = m[1].split('.');
   if (!exp || !sig || !(Number(exp) > Date.now() / 1000)) return false;
-  return safeEq(sig, await sign(env, 'tools:' + exp));
+  return safeEq(sig, await sign(env, kind, kind + ':' + exp));
 }
+export const toolsAuthed = (req, env) => authed(req, env, 'tools');
 
-const cookie = (value, maxAge) =>
-  `${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
+const cookie = (name, value, maxAge) =>
+  `${name}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 
 const redirect = (to, extra = {}) => new Response(null, {
   status: 302,
@@ -62,13 +72,15 @@ async function login(req, env) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) body = {};
   const destination = nextLocation(body.next ?? '');
   if (destination === null) return json({ error: '返回地址不受支持' }, 400);
-  if (!password || !(await safeEq(password, env.TOOLS_PASSWORD))) {
+  const kind = resumePath(destination.split(/[?#]/)[0]) ? 'resume' : 'tools';
+  if (!ready(env, kind)) return json({ error: '服务端还没设置口令' }, 500);
+  if (!password || !(await safeEq(password, LOCKS[kind].password(env)))) {
     await env.SUBS.put(rlKey, String(fails + 1), { expirationTtl: FAIL_WINDOW });
     return json({ error: '口令不对' }, 401);
   }
   await env.SUBS.delete(rlKey);
   const exp = Math.floor(Date.now() / 1000) + SESSION_DAYS * 86400;
-  return json({ ok: true, redirect: destination }, 200, { 'set-cookie': cookie(`${exp}.${await sign(env, 'tools:' + exp)}`, SESSION_DAYS * 86400) });
+  return json({ ok: true, redirect: destination }, 200, { 'set-cookie': cookie(LOCKS[kind].cookie, `${exp}.${await sign(env, kind, kind + ':' + exp)}`, SESSION_DAYS * 86400) });
 }
 
 // 返回 Response 表示已处理；返回 null 表示不归这里管
@@ -78,7 +90,7 @@ export async function toolsGate(req, env, path) {
     return req.method === 'POST' ? login(req, env) : json({ error: '不支持的请求' }, 405);
   }
   if (protectedPath(path)) {
-    if (await toolsAuthed(req, env)) return null;
+    if (await authed(req, env, resumePath(path) ? 'resume' : 'tools')) return null;
     const requested = new URL(req.url).pathname + new URL(req.url).search;
     return redirect(unlockUrl(nextLocation(requested) === null ? (nextLocation(path) === null ? '/knowledge/' : path + new URL(req.url).search) : requested));
   }

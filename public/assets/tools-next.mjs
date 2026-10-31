@@ -1,7 +1,9 @@
 // Client and Worker share the exact return-target whitelist.
 export const TOOL_IDS = ['attendance', 'cosmos-os', 'travel', 'h5-editor', 'marquee', 'fitness', 'mail-insight', 'english', 'toolmap'];
+// 简历单独一把锁（RESUME_PASSWORD），工具箱口令打不开简历
+export const resumePath = path => /^\/resume(?:\.html|\.pdf)?\/?$/.test(path);
 export function protectedPath(path) {
-  return /^\/resume(?:\.html|\.pdf)?\/?$/.test(path) || path === '/knowledge' || path.startsWith('/knowledge/');
+  return resumePath(path) || path === '/knowledge' || path.startsWith('/knowledge/');
 }
 export function safeNext(value) {
   if (typeof value !== 'string' || value.length > 2048) return null;

@@ -177,6 +177,8 @@
         <div class="rbox"><h2>经历</h2>${r.experience.map(x => `<div class="xp">
           <div class="hd"><div><h3>${esc(x.org)}</h3><span class="role">${esc(x.role)}</span></div><span class="period">${esc(x.period)}</span></div>
           <ul>${x.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul></div>`).join('')}</div>
+        ${r.projects?.length ? `<div class="rbox"><h2>个人项目 · AI 协作</h2>${r.projects.map(p => `<div class="xp">
+          <div class="hd"><div><h3>${esc(p.name)}</h3></div></div><p class="pdesc">${esc(p.desc)}</p></div>`).join('')}</div>` : ''}
         <div class="rbox"><h2>教育</h2>${r.education.map(e => `<div class="xp"><div class="hd"><div><h3>${esc(e.school)}</h3><span class="role">${esc(e.major)}</span></div><span class="period">${esc(e.period)}</span></div></div>`).join('')}</div>
       </div>
       <aside>

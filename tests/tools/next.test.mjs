@@ -1,7 +1,7 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';import vm from 'node:vm';
 import {safeNext,nextLocation,TOOL_IDS} from '../../public/assets/tools-next.mjs';import {TARGETS,toolsGate} from '../../src/tools-gate.js';
 const kv={get:async()=>null,put:async()=>{},delete:async()=>{}};
-const login=next=>toolsGate(new Request('https://cosmoswong.com/api/tools/login',{method:'POST',headers:{Origin:'https://cosmoswong.com','x-tools-request':'1','Content-Type':'application/json'},body:JSON.stringify({password:'test-pass',next})}),{TOOLS_PASSWORD:'test-pass',TOOLS_COOKIE_KEY:'test-key',SUBS:kv},'/api/tools/login');
+const login=next=>toolsGate(new Request('https://cosmoswong.com/api/tools/login',{method:'POST',headers:{Origin:'https://cosmoswong.com','x-tools-request':'1','Content-Type':'application/json'},body:JSON.stringify({password:'test-pass',next})}),{TOOLS_PASSWORD:'test-pass',RESUME_PASSWORD:'test-pass',TOOLS_COOKIE_KEY:'test-key',SUBS:kv},'/api/tools/login');
 test('前后端next只认同一工具ID和本站保护路径',async()=>{
  assert.deepEqual(TOOL_IDS.sort(),Object.keys(TARGETS).sort());
  for(const value of ['resume','unknown','https://evil.com','//evil.com','javascript:alert(1)','/resume/../portfolio','/knowledge/../../evil','/knowledge/%2e%2e/evil','/knowledge/\\evil','/knowledge/a\n','/resume-evil','/portfolio','/assets/data.js','/knowledge/%252e%252e']){assert.equal(safeNext(value),null,value);assert.equal((await login(value)).status,400,value);}
