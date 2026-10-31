@@ -7,7 +7,7 @@
   // 本脚本的 ?v= 版本号，按需加载的脚本沿用它（/assets 是长缓存）
   const VQ = (document.currentScript && /\?v=\d+/.exec(document.currentScript.src) || [''])[0];
   const $ = (s, r = document) => r.querySelector(s);
-  const { workModal, workGallery, workIndex } = RENDER;
+  const { caseView, workGallery, workIndex } = RENDER;
   const page = document.body.dataset.page || 'home';
 
   /* ---------- 公共骨架：导航、更多菜单、页脚（没预渲染时才插） ---------- */
@@ -232,51 +232,129 @@
     document.addEventListener('pointerover', e => { const c = e.target.closest('.wcard'); const v = c && c.querySelector('.shot video'); if (v && v.paused) v.play().catch(() => {}); });
     document.addEventListener('pointerout', e => { const c = e.target.closest('.wcard'); if (c && !c.contains(e.relatedTarget)) { const v = c.querySelector('.shot video'); if (v) v.pause(); } });
 
-    /* 弹窗进历史：打开 pushState，关闭走 history.back()，这样手机返回键关的是弹窗而不是离开页面。
-       Esc / 点遮罩 / 点关闭按钮三条路径都只调 close()，统一由 dialog 的 close 事件回退历史。
-       popstate 里关弹窗也会触发 close 事件，用 navigating 标志跳过那一次 back()，否则会连环后退。
-       弹窗里翻上一个 / 下一个用 replaceState：不管翻了几个，返回一次就关掉。 */
-    const dlg = $('#dlg');
-    let navigating = false;
-    const open = (id, how = 'push') => {
-      const w = S.portfolio.find(x => x.id === id); if (!w) return;
-      const L = list().some(x => x.id === id) ? list() : S.portfolio, i = L.findIndex(x => x.id === id);
-      const prev = L.length > 1 ? L[(i - 1 + L.length) % L.length] : null, next = L.length > 1 ? L[(i + 1) % L.length] : null;
-      $('#sheet').innerHTML = workModal(w, prev, next);
+    /* 案例全屏页（2026-10-31 起代替弹窗）：缩略图飞成整屏头图，深空从点击处圆形扩开；正文滚进视野依次浮起。
+       历史记录同原来的弹窗：打开 pushState，关闭走 history.back()，翻上一个 / 下一个用 replaceState——手机返回键关的是案例页。
+       页面外壳由 render.js 渲染在 main 里，这里挪到 body 下：main 自成层叠上下文（z-index:1），留在里面会被导航盖住。 */
+    const cv = $('#cv'), sc = $('#cvScroll'), bar = $('#cvBar');
+    document.body.append(cv);
+    let cur = null, io = null, skyRaf = 0, closeT = 0;
+    const listFor = id => list().some(x => x.id === id) ? list() : S.portfolio;
+    const count = el => {   // 「5 版」「3 种」这类数字从 0 数上去
+      const m = /^(\d+)(.*)$/.exec(el.dataset.num || ''); if (!m || !MOTION) return;
+      const to = +m[1], t0 = performance.now();
+      const step = t => { const k = Math.min(1, (t - t0) / 1200); el.textContent = Math.round(to * (1 - (1 - k) ** 3)) + m[2]; if (k < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    };
+    const sky = () => {   // 头图上的星点：和子页面页头同一种随机闪烁
+      cancelAnimationFrame(skyRaf);
+      const c = $('.cv-sky', sc), x = c.getContext('2d'), dpr = Math.min(2, devicePixelRatio || 1);
+      const W = c.width = c.clientWidth * dpr, H = c.height = c.clientHeight * dpr;
+      const st = Array.from({ length: 150 }, () => ({ x: Math.random() * W, y: Math.random() * H, r: (Math.random() * 1.1 + .3) * dpr, p: Math.random() * 6.28, s: .6 + Math.random() * 1.6 }));
+      const loop = t => {
+        x.clearRect(0, 0, W, H); x.fillStyle = '#f4f2ed';
+        st.forEach(o => { x.globalAlpha = .3 + .55 * Math.sin(o.p + t / 1000 * o.s) ** 2; x.beginPath(); x.arc(o.x, o.y, o.r, 0, 6.28); x.fill(); });
+        if (MOTION && !cv.hidden) skyRaf = requestAnimationFrame(loop);
+      };
+      skyRaf = requestAnimationFrame(loop);
+    };
+    const paintCase = id => {
+      const L = listFor(id), i = L.findIndex(x => x.id === id), w = L[i];
+      sc.innerHTML = caseView(w, L, i); sc.scrollTop = 0; cur = id;
+      $('#cvCrumb').innerHTML = `作品集 / ${RENDER.esc(w.category)} / <b>${RENDER.esc(w.title.split(' · ')[0])}</b>`;
+      $('[data-cv=prev]', bar).dataset.go = L[(i - 1 + L.length) % L.length].id; $('[data-cv=next]', bar).dataset.go = L[(i + 1) % L.length].id;
+      bar.querySelectorAll('[data-go]').forEach(b => { b.hidden = L.length < 2; });
+      io?.disconnect();
+      io = new IntersectionObserver(es => es.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add('in'); io.unobserve(e.target);
+        e.target.querySelectorAll('[data-num]').forEach(count);
+      }), { root: sc, threshold: .15 });
+      sc.querySelectorAll('.sp,[data-rv],[data-wipe]').forEach(el => io.observe(el));
+      sky(); onScroll();
+    };
+    const open = (id, how = 'push', from) => {
+      if (!S.portfolio.some(x => x.id === id)) return;
+      clearTimeout(closeT);
+      const r = from && from.getBoundingClientRect(), thumb = from && $('img', from);
+      // 深空从点击处扩开：起点夹在屏幕内，半径取到最远的角，保证盖满整屏
+      const ox = r ? Math.min(innerWidth, Math.max(0, r.left + r.width / 2)) : innerWidth / 2, oy = r ? Math.min(innerHeight, Math.max(0, r.top + r.height / 2)) : innerHeight / 2;
+      cv.style.setProperty('--ox', ox + 'px'); cv.style.setProperty('--oy', oy + 'px');
+      cv.style.setProperty('--rr', Math.ceil(Math.hypot(Math.max(ox, innerWidth - ox), Math.max(oy, innerHeight - oy))) + 2 + 'px');
+      paintCase(id);
       if (how === 'push') history.pushState({ work: id }, '', '#' + id);
       else if (how === 'replace') history.replaceState({ work: id }, '', '#' + id);
-      if (!dlg.open) dlg.showModal();
-      $('#sheet').scrollTop = 0;
+      if (!cv.hidden) return;
+      cv.hidden = false; root.classList.add('cv-on');
+      $('main').inert = true; $('header.top').inert = true;
+      // 有缩略图：从原位置飞到整屏，落成头图
+      if (thumb && MOTION) {
+        const tr = thumb.getBoundingClientRect(), fly = Object.assign(document.createElement('img'), { src: thumb.currentSrc || thumb.src, className: 'cv-fly', alt: '' });
+        Object.assign(fly.style, { left: tr.left + 'px', top: tr.top + 'px', width: tr.width + 'px', height: tr.height + 'px' });
+        document.body.append(fly);
+        requestAnimationFrame(() => requestAnimationFrame(() => fly.classList.add('go')));
+        setTimeout(() => { fly.classList.add('out'); setTimeout(() => fly.remove(), 500); }, 800);
+      }
+      requestAnimationFrame(() => requestAnimationFrame(() => cv.classList.add('open')));
+      setTimeout(() => cv.classList.add('ready'), 300);
+      $('[data-cv=close]', bar).focus({ preventScroll: true });
     };
-    dlg.addEventListener('close', () => {
-      dlg.querySelectorAll('video').forEach(v => v.pause());
-      // dialog 的 close 事件是异步派发的，所以标志在这里消费，不能在 popstate 里同步复位
-      if (navigating) { navigating = false; return; }
-      if (history.state?.work) history.back();
-      else history.replaceState(null, '', location.pathname);   // 直接带 hash 进来的，没有可回退的一步
-    });
+    const swap = id => {   // 上一个 / 下一个 / 底部「下一个案例」：内容上移淡出 → 换 → 重新升起
+      if (!MOTION) { open(id, 'replace'); return; }
+      sc.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-30px)' }], { duration: 320, easing: 'ease-in', fill: 'forwards' }).finished.then(() => {
+        open(id, history.state?.work ? 'replace' : 'push'); sc.getAnimations().forEach(a => a.cancel());
+        sc.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 380 });
+      });
+    };
+    const shut = () => {   // 只负责收起画面；历史记录由 close() / popstate 处理
+      if (cv.hidden) return;
+      cv.classList.remove('ready', 'open'); cv.classList.add('closing');
+      sc.querySelectorAll('video').forEach(v => v.pause());
+      $('main').inert = false; $('header.top').inert = false;
+      closeT = setTimeout(() => { cv.hidden = true; cv.classList.remove('closing'); sc.innerHTML = ''; cancelAnimationFrame(skyRaf); root.classList.remove('cv-on'); }, MOTION ? 700 : 0);
+      const back = document.querySelector(`[data-work="${CSS.escape(cur || '')}"]`); if (back) back.focus({ preventScroll: true });
+    };
+    const close = () => {
+      if (cv.hidden) return;
+      if (history.state?.work) history.back();   // popstate 里再 shut()
+      else { history.replaceState(null, '', location.pathname); shut(); }   // 直接带 hash 进来的，没有可回退的一步
+    };
     window.addEventListener('popstate', () => {
       const id = location.hash.slice(1);
       if (id && S.portfolio.some(x => x.id === id)) { open(id, 'none'); return; }
-      if (dlg.open) { navigating = true; dlg.close(); }
+      shut();
     });
+    // 顶栏：压在纸面上换纸色；头图视差；阅读进度
+    const onScroll = () => {
+      const p = sc.scrollTop / Math.max(1, sc.scrollHeight - sc.clientHeight), y = 40;
+      bar.style.setProperty('--p', p.toFixed(4));
+      const pp = $('.cv-paper', sc), nx = $('.cv-next', sc);
+      const onPaper = !!pp && pp.getBoundingClientRect().top < y && (!nx || nx.getBoundingClientRect().top > y);
+      bar.classList.toggle('paper', onPaper); bar.classList.toggle('dim', !onPaper && sc.scrollTop > 40);
+      const hb = $('.cv-hero .bg', sc); if (hb && MOTION) hb.style.setProperty('--hy', (sc.scrollTop * .35).toFixed(1) + 'px');
+    };
+    sc.addEventListener('scroll', onScroll, { passive: true });
     const lb = $('#lb');
     document.addEventListener('click', e => {
       if (!lb.hidden) { lb.hidden = true; return; }
       const z = e.target.closest('[data-zoom]'); if (z) { lb.querySelector('img').src = z.querySelector('img').src; lb.hidden = false; return; }
-      const g = e.target.closest('[data-go]'); if (g) return open(g.dataset.go, history.state?.work ? 'replace' : 'push');
-      const c = e.target.closest('[data-work]'); if (c) return open(c.dataset.work);
-      if (e.target.closest('[data-close]') || e.target.id === 'dlg') dlg.close();
+      const g = e.target.closest('[data-go]'); if (g) { e.preventDefault(); return swap(g.dataset.go); }
+      if (e.target.closest('[data-cv=close]')) return close();
+      const c = e.target.closest('[data-work]'); if (c) return open(c.dataset.work, 'push', $('.th,.shot', c) || c);
     });
     // 新旧对比：拖动滑杆
     document.addEventListener('input', e => {
-      const c = e.target.closest('.b-compare'); if (!c) return;
+      const c = e.target.closest('.cv-cmp'); if (!c) return;
       const v = +e.target.value; c.querySelector('.top').style.clipPath = `inset(0 ${100 - v}% 0 0)`; c.querySelector('.knob').style.left = v + '%';
     });
-    // 卡片 / 目录行是 role="button"，Enter 和空格都要能打开；空格要拦掉默认的翻页滚动
+    // 卡片 / 目录行是 role="button"，Enter 和空格都要能打开；案例页里 Esc 关、左右键翻
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape' && !lb.hidden) { lb.hidden = true; e.preventDefault(); return; }
-      if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.work) { e.preventDefault(); open(e.target.dataset.work); }
+      if (!cv.hidden) {
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        else if ((e.key === 'ArrowRight' || e.key === 'ArrowLeft') && e.target.tagName !== 'INPUT') swap($(`[data-cv=${e.key === 'ArrowRight' ? 'next' : 'prev'}]`, bar).dataset.go);
+        return;
+      }
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.dataset?.work) { e.preventDefault(); open(e.target.dataset.work, 'push', $('.th,.shot', e.target) || e.target); }
     });
     if (location.hash.length > 1) open(location.hash.slice(1), 'none');
   }

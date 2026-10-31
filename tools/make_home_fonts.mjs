@@ -25,8 +25,8 @@ const html = readFileSync(join(PUB, 'index.html'), 'utf8')
 const ui = readFileSync(join(PUB, 'assets/home/ui.js'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\/\/ .*$/gm, '');
 const strip = f => readFileSync(join(PUB, f), 'utf8').replace(/<style[\s\S]*?<\/style>|<script[\s\S]*?<\/script>|<!--[\s\S]*?-->|<[^>]+>/g, '');
 const js = f => readFileSync(join(PUB, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '').replace(/\/\/ .*$/gm, '');
-const pages = ['workbench.html', '404.html', ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).map(f => 'knowledge/' + f)];
-const dataText = [JSON.stringify(S), readFileSync(join(ROOT, 'data/resume.json'), 'utf8'), ...pages.map(strip), js('assets/render.js'), js('assets/app.js')].join('');
+const pages = ['workbench.html', '404.html', 'unlock.html', ...readdirSync(join(PUB, 'knowledge')).filter(f => f.endsWith('.html')).map(f => 'knowledge/' + f)];
+const dataText = [JSON.stringify(S), readFileSync(join(ROOT, 'data/resume.json'), 'utf8'), ...pages.map(strip), js('assets/render.js'), js('assets/app.js'), js('assets/unlock.js')].join('');
 const ASCII = Array.from({ length: 95 }, (_, i) => String.fromCharCode(32 + i)).join('');
 const SYM = '·—–…→←↑↓↗×©“”‘’《》「」、，。：；！？（）%·';
 const all = new Set([...html, ...ui, ...dataText, ...ASCII, ...SYM].filter(c => c.codePointAt(0) >= 32));

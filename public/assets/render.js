@@ -52,7 +52,7 @@
   const PIC = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2"><rect x="1" y="2" width="10" height="8" rx="1.5"/><path d="M1.5 9l3-3 2 2 1.5-1.5L11 9"/></svg>';
   // 作品详情 = 一串「内容块」。data.js 里的作品不用改写：封面 / 视频 → 头图，body 按段落 → 正文块，images → 大图 / 多图，links → 按钮；
   // 想加视频、对比、手机截图、数字等，在作品里写 blocks: [...]（stats 放在第一段正文后面，其余放在正文之后、配图之前）。
-  // 以后加新的展示方式：在 BLOCK 里加一种渲染即可，旧作品不受影响。
+  // 以后加新的展示方式：在 CASE 里加一种渲染即可，旧作品不受影响。
   const workBlocks = w => {
     const out = [], extra = w.blocks || [];
     if (w.video) out.push({ type: 'video', src: w.video, poster: w.poster || w.cover, hero: true });
@@ -74,19 +74,24 @@
     return { img: bs.reduce((n, b) => n + (b.type === 'hero' || b.type === 'image' ? 1 : b.type === 'gallery' ? b.items.length : 0), 0),
              vid: bs.filter(b => b.type === 'video').length };
   };
-  const BLOCK = {
-    hero: b => `<div class="b-frame"><img src="${esc(b.src)}" alt=""></div>`,
-    image: b => `<div class="b-frame"><img src="${esc(b.src)}" alt="" loading="lazy"></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
-    video: b => `<div class="b-frame"><video src="${esc(b.src)}"${b.poster ? ` poster="${esc(b.poster)}"` : ''} ${b.hero ? 'autoplay muted loop playsinline' : 'controls playsinline preload="metadata"'}></video></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
-    text: b => `<div class="b-text"><h4>${esc(b.label)}</h4><p>${esc(b.body)}</p></div>`,
-    stats: b => `<div class="b-stats">${b.items.map(i => `<div><strong>${esc(i.value)}</strong><span>${esc(i.label)}</span></div>`).join('')}</div>`,
-    gallery: b => `<div class="b-gallery">${b.items.map(i => `<figure data-zoom><img src="${esc(i.src)}" alt="" loading="lazy">${i.cap ? `<figcaption>${esc(i.cap)}</figcaption>` : ''}</figure>`).join('')}</div>`,
-    phone: b => `<div class="b-phone"><div class="phone"><img src="${esc(b.src)}" alt="" loading="lazy"></div><div><h4>${esc(b.title)}</h4><p>${esc(b.body)}</p></div></div>`,
-    compare: b => `<div class="b-compare"><img src="${esc(b.after)}" alt="" loading="lazy"><img class="top" src="${esc(b.before)}" alt="" loading="lazy"><div class="knob"></div>
-      <span class="lb l">${esc(b.beforeLabel || '之前')}</span><span class="lb r">${esc(b.afterLabel || '之后')}</span><input type="range" min="0" max="100" value="50" aria-label="拖动对比"></div>${b.cap ? `<p class="b-cap">${esc(b.cap)}</p>` : ''}`,
-    quote: b => `<blockquote class="b-quote">${esc(b.text)}</blockquote>`,
-    links: b => `<div class="b-links">${b.items.map((l, i) => `<a class="btn ${i ? 'glass' : 'solid'} sm" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>`).join('')}</div>`
+  // 全屏案例页的内容块（2026-10-31 起代替弹窗）。data-rv：滚进视野浮起；data-wipe：图片自下而上揭开；.sp：逐字升起（app.js 负责触发）
+  const fig = (src, zoom) => `<figure class="cv-fig" data-wipe${zoom ? ' data-zoom' : ''}><img src="${esc(src)}" alt="" loading="lazy"></figure>`;
+  const CASE = {
+    text: (b, n) => `<section class="cv-sec"><h3 data-rv>${String(n).padStart(2, '0')}${b.label ? `<b>${esc(b.label)}</b>` : ''}</h3><p data-rv style="--d:120ms">${esc(b.body)}</p></section>`,
+    stats: b => `<div class="cv-stats">${b.items.map((x, j) => `<div data-rv style="--d:${j * 90}ms"><strong data-num="${esc(x.value)}">${esc(x.value)}</strong><span>${esc(x.label)}</span></div>`).join('')}</div>`,
+    image: b => fig(b.src, true) + (b.cap ? `<p class="cv-cap" data-rv>${esc(b.cap)}</p>` : ''),
+    gallery: b => b.items.length === 2 ? `<div class="cv-pair">${b.items.map(x => fig(x.src, true)).join('')}</div>` : b.items.map(x => fig(x.src, true)).join(''),
+    video: b => `<figure class="cv-fig" data-wipe><video src="${esc(b.src)}"${b.poster ? ` poster="${esc(b.poster)}"` : ''} controls playsinline preload="metadata"></video></figure>${b.cap ? `<p class="cv-cap" data-rv>${esc(b.cap)}</p>` : ''}`,
+    phone: b => `<div class="cv-phone"><div class="ph" data-rv>${b.video ? `<video src="${esc(b.video)}"${b.src ? ` poster="${esc(b.src)}"` : ''} controls playsinline preload="metadata"></video>` : `<img src="${esc(b.src)}" alt="" loading="lazy">`}</div>
+      <div><h4>${split(b.title)}</h4><p data-rv style="--d:200ms">${esc(b.body)}</p></div></div>`,
+    compare: b => `<div class="cv-cmp" data-wipe><img src="${esc(b.after)}" alt="" loading="lazy"><img class="top" src="${esc(b.before)}" alt="" loading="lazy"><div class="knob"></div>
+      <span class="lb l">${esc(b.beforeLabel || '之前')}</span><span class="lb r">${esc(b.afterLabel || '之后')}</span><input type="range" min="0" max="100" value="50" aria-label="拖动对比"></div>${b.cap ? `<p class="cv-cap" data-rv>${esc(b.cap)}</p>` : ''}`,
+    quote: b => `<blockquote class="cv-quote">${split(b.text)}</blockquote>`,
+    links: b => `<div class="cv-links" data-rv>${b.items.map(l => `<a class="mag" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} <span>↗</span></a>`).join('')}</div>`
   };
+  // 标题逐字：每个词包一层遮罩，字从遮罩下面升起（和页头 .split 同一种动效）
+  const split = (t, d0 = 0) => { let i = 0; return `<span class="sp" style="--d0:${d0}ms">${String(t).split(/(\s+)/).map(w => w.trim()
+    ? `<span class="w">${[...w].map(ch => `<span class="ch" style="--i:${i++}">${esc(ch)}</span>`).join('')}</span>` : w).join('')}</span>`; };
   const workCover = w => {
     const m = workMedia(w);
     const badges = `<div class="badges">${m.vid ? `<span class="badge">${PLAY}视频</span>` : ''}${m.img ? `<span class="badge">${PIC}${m.img}</span>` : ''}</div>`;
@@ -162,7 +167,8 @@
         <button data-v="gallery" aria-pressed="false"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1.2"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1.2"/><rect x="9" y="9" width="5.5" height="5.5" rx="1.2"/></svg>画廊</button></div></div>
     <div class="windex" id="windex">${workIndex(W)}</div>
     <div class="wgrid" id="wgallery" hidden>${workGallery(W)}</div>
-    <dialog id="dlg" class="case-dlg"><div class="sheet" id="sheet"></div></dialog>
+    <div class="cv" id="cv" role="dialog" aria-modal="true" aria-labelledby="cvTitle" hidden><div class="cv-scroll" id="cvScroll"></div>
+      <div class="cv-bar" id="cvBar"><p class="cv-crumb" id="cvCrumb"></p><button class="cv-btn mag" data-cv="prev" aria-label="上一个">‹</button><button class="cv-btn mag" data-cv="next" aria-label="下一个">›</button><button class="cv-btn mag" data-cv="close" aria-label="关闭">✕</button><i class="cv-prog"></i></div></div>
     <div class="lightbox" id="lb" hidden><img alt=""></div>`;
   };
 
@@ -210,24 +216,28 @@
         ? `<a class="row" href="${esc(b.url)}" target="_blank" rel="noreferrer"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span><span class="arrow">↗</span></a>`
         : `<div class="row"><span class="t"><h3>${esc(b.title)}</h3><p>${esc(b.note)}</p></span></div>`).join('')}</div>` : '<div class="empty">这个分类还是空的</div>'}</section>`).join('')}`;
 
-  // 作品详情（只在浏览器里用，但同样是纯函数，放这里便于统一维护）。prev / next：当前筛选下的上一个、下一个
-  const workModal = (w, prev, next) => {
-    const m = workMedia(w);
+  // 作品详情 = 全屏案例页（只在浏览器里用，但同样是纯函数）：深空头图 → 纸面正文 → 深空「下一个案例」。L：当前筛选下的列表，i：在其中的位置
+  const caseView = (w, L, i) => {
+    const m = workMedia(w), next = L[(i + 1) % L.length];
     const content = [m.img ? m.img + ' 张图' : '', m.vid ? m.vid + ' 段视频' : ''].filter(Boolean).join(' · ') || '文字';
+    const [t1, ...t2] = w.title.split(' · ');
+    const bg = w.video ? `<video src="${esc(w.video)}"${w.poster || w.cover ? ` poster="${esc(w.poster || w.cover)}"` : ''} autoplay muted loop playsinline></video>`
+      : w.cover ? `<img src="${esc(w.cover)}" alt="">` : '<i class="mat"></i>';
+    let n = 0;
+    const body = workBlocks(w).filter(b => b.type !== 'hero' && !(b.type === 'video' && b.hero)).map(b => CASE[b.type] ? CASE[b.type](b, b.type === 'text' ? ++n : 0) : '').join('');
     return `
-    <div class="sheet-top"><span class="crumb">作品集 / ${esc(w.category)} / <b>${esc(w.title)}</b></span>
-      <span class="navs">${prev ? `<button class="iconbtn" data-go="${esc(prev.id)}" aria-label="上一个">‹</button><button class="iconbtn" data-go="${esc(next.id)}" aria-label="下一个">›</button>` : ''}<button class="iconbtn" data-close aria-label="关闭">✕</button></span></div>
-    <article class="case" data-cat="${esc(w.category)}">
-      <div class="wmeta"><span class="cat">${esc(w.category)}</span><span>·</span><span>${esc(w.year)}</span></div>
-      <h2>${esc(w.title)}</h2><p class="intro">${esc(w.summary)}</p>
-      <div class="facts"><div><span>类别</span><strong>${esc(w.category)}</strong></div><div><span>时间</span><strong>${esc(w.year)}</strong></div>
-        <div><span>内容</span><strong>${esc(content)}</strong></div>
-        <div><span>关键词</span><div class="ftags">${(w.tags || []).map(t => `<em>${esc(t)}</em>`).join('')}</div></div></div>
-      ${workBlocks(w).map(b => BLOCK[b.type] ? `<section class="blk blk-${b.type}">${BLOCK[b.type](b)}</section>` : '').join('')}
-      ${prev && prev.id !== w.id ? `<div class="nextcase"><button data-go="${esc(prev.id)}">← 上一个<b>${esc(prev.title)}</b></button><button data-go="${esc(next.id)}">下一个 →<b>${esc(next.title)}</b></button></div>` : ''}
-    </article>`;
+    <section class="cv-hero" data-cat="${esc(w.category)}"><div class="bg">${bg}</div><canvas class="cv-sky" aria-hidden="true"></canvas>
+      <p class="cv-eye" data-rv>${String(i + 1).padStart(2, '0')} / ${String(L.length).padStart(2, '0')}<span>${esc(w.category)} · ${esc(w.year)}</span></p>
+      <h2 class="cv-h1" id="cvTitle">${split(t1, 250)}</h2>${t2.length ? `<p class="cv-h2">${split(t2.join(' · '), 550)}</p>` : ''}
+      <p class="cv-sum" data-rv style="--d:700ms">${esc(w.summary)}</p>
+      <dl class="cv-meta">${[['类别', esc(w.category)], ['时间', esc(w.year)], ['内容', esc(content)], ['关键词', `<span class="tg">${(w.tags || []).map(t => `<i>${esc(t)}</i>`).join('')}</span>`]]
+        .map(([k, v], j) => `<div data-rv style="--d:${850 + j * 90}ms"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      <div class="cv-cue" aria-hidden="true">往下看</div></section>
+    <article class="cv-paper">${body}</article>
+    ${L.length > 1 ? `<a class="cv-next" href="#${esc(next.id)}" data-go="${esc(next.id)}" data-cat="${esc(next.category)}"><div class="bg">${next.cover ? `<img src="${esc(next.cover)}" alt="" loading="lazy">` : '<i class="mat"></i>'}</div>
+      <p class="k" data-rv>下一个案例 · ${esc(next.category)}</p><h2>${split(next.title.split(' · ')[0])}</h2><p class="go" data-rv>继续看 <i>→</i></p></a>` : ''}`;
   };
 
   // 同时兼容浏览器和 Node（build_pages.mjs 用 vm 跑这个文件，window 由它注入）
-  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, pageHead, toolCard, toolGroups, workCard, workRow, workGallery, workIndex, workBlocks, tripCard, toolRow, workModal, pages: R };
+  (typeof window !== 'undefined' ? window : globalThis).RENDER = { esc, navItems, renderHeader, renderFooter, pageHead, toolCard, toolGroups, workCard, workRow, workGallery, workIndex, workBlocks, tripCard, toolRow, caseView, pages: R };
 })();
